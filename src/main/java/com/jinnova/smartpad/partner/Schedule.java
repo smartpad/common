@@ -4,5 +4,7 @@ import java.util.LinkedList;
 
 public class Schedule {
 
-	private LinkedList<Schedule> scheduleSequences;
+	private LinkedList<ScheduleSequence> scheduleSequences;
+	
+	private String text;
 }
