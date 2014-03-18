@@ -18,24 +18,24 @@ public class Operation {
 	/**
 	 * member cards
 	 */
-	private LinkedList<Integer> mcardLevels;
+	private LinkedList<Integer> memberLevels;
 	
-	private HashMap<Integer, String> mcardLevelNames;
+	private HashMap<Integer, String> memberLevelNames;
 	
-	private boolean mcardNameRequired = false;
+	private boolean memberNameRequired = false;
 	
-	private boolean mcardAddressRequired = false;
+	private boolean memberAddressRequired = false;
 	
-	private boolean mcardPhoneRequired = false;
+	private boolean memberPhoneRequired = false;
 	
-	private boolean mcardEmailRequired = false;
+	private boolean memberEmailRequired = false;
 	
-	private boolean mcardOfferedFree = false;
+	private boolean memberOfferedFree = false;
 	
-	private int mcardOfferedFreeLevel;
+	private int memberOfferedFreeLevel;
 	
-	private String mcardOfferedSurvey;
+	private String memberOfferedSurvey;
 	
-	private int mcardOfferedSurveyLevel;
+	private int memberOfferedSurveyLevel;
 
 }
