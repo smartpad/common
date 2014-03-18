@@ -14,10 +14,10 @@ public class Consumer {
 			return false;
 		}
 		for (MCard c : mcards) {
-			if (operationId.equals(c.getLevel().getOperationId()) ) {
+			if (operationId.equals(c.getOperationId()) ) {
 				continue;
 			}
-			if (c.getLevel().getLevel() < requiredLevel) {
+			if (c.getLevel() < requiredLevel) {
 				continue;
 			}
 			if (c.getPoint() < requiredMemberPoint) {

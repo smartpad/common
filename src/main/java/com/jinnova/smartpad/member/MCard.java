@@ -1,14 +1,20 @@
 package com.jinnova.smartpad.member;
 
 public class MCard {
+	
+	private String operationId;
 
-	private MCardLevel level;
+	private int level;
 	
 	private int point;
 	
 	private int pointRotator;
+	
+	public String getOperationId() {
+		return operationId;
+	}
 
-	public MCardLevel getLevel() {
+	public int getLevel() {
 		return level;
 	}
 	
