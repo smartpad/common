@@ -10,16 +10,16 @@ public class SmartpadConnectionPool {
 	
 	public final DataSource dataSource;
 
-    private SmartpadConnectionPool(String connectURI) {
+    private SmartpadConnectionPool(String login, String password, String connectURI) {
         BasicDataSource ds = new BasicDataSource();
         ds.setDriverClassName("com.mysql.jdbc.Driver");
-        ds.setUsername("scott");
-        ds.setPassword("tiger");
+        ds.setUsername(login);
+        ds.setPassword(password);
         ds.setUrl(connectURI);
         dataSource = ds;
     }
     
-    public static void initialize(String connectURI) {
-    	instance = new SmartpadConnectionPool(connectURI);
+    public static void initialize(String login, String password, String connectURI) {
+    	instance = new SmartpadConnectionPool(login, password, connectURI);
     }
 }

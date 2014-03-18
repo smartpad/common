@@ -6,11 +6,12 @@ public class User {
 	
 	private String passhash;
 
-	private Branch branch;
+	private String branchId;
 
-	public User(String login) {
+	public User(String login, String branchId) {
 		super();
 		this.login = login;
+		this.branchId = branchId;
 	}
 	
 	public String getLogin() {
@@ -23,5 +24,9 @@ public class User {
 
 	public void setPasshash(String passhash) {
 		this.passhash = passhash;
+	}
+	
+	public String getBranchId() {
+		return this.branchId;
 	}
 }
