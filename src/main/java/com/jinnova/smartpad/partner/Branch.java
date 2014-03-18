@@ -7,4 +7,6 @@ public class Branch {
 	private Operation operation;
 	
 	private LinkedList<Store> allStores;
+	
+	private User primaryUser;
 }
