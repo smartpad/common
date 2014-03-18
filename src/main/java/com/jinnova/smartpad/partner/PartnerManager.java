@@ -1,13 +1,15 @@
 package com.jinnova.smartpad.partner;
 
-import java.sql.SQLException;
 import java.util.Iterator;
 
-public class PartnerManager {
+import com.jinnova.smartpad.db.BranchDao;
+import com.jinnova.smartpad.db.IBranchDao;
+import com.jinnova.smartpad.db.IUserDao;
+import com.jinnova.smartpad.db.UserDao;
+
+public class PartnerManager implements IPartnerManager {
 	
 	public static PartnerManager instance;
-	
-	private PartnerPersistor persistor = new PartnerPersistor();
 	
 	private PartnerManager() {
 		
@@ -17,12 +19,15 @@ public class PartnerManager {
 		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
 		instance = new PartnerManager();
 	}
-	
-	public User createPrimaryUser(String login, String password) throws SQLException {
-		User u = new User(login, login);
-		u.setPasshash(PartnerUtils.md5(password));
-		persistor.createUser(u);
-		return u;
+
+	@Override
+	public IUserDao getUserDao() {
+		return new UserDao();
+	}
+
+	@Override
+	public IBranchDao getBranchDao() {
+		return new BranchDao();
 	}
 	
 	public Iterator<Branch> branchIterator() {
