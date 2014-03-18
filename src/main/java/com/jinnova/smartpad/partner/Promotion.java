@@ -2,9 +2,10 @@ package com.jinnova.smartpad.partner;
 
 import java.util.Date;
 
-import com.jinnova.smartpad.creditcard.CCardBranch;
-import com.jinnova.smartpad.creditcard.CCardIssuer;
-import com.jinnova.smartpad.creditcard.CCardType;
+import com.jinnova.smartpad.member.CCardBranch;
+import com.jinnova.smartpad.member.CCardIssuer;
+import com.jinnova.smartpad.member.CCardType;
+import com.jinnova.smartpad.member.Consumer;
 
 public class Promotion {
 	

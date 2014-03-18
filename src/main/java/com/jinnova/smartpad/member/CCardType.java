@@ -1,4 +1,4 @@
-package com.jinnova.smartpad.creditcard;
+package com.jinnova.smartpad.member;
 
 public enum CCardType {
 

@@ -1,12 +1,7 @@
-package com.jinnova.smartpad.partner;
+package com.jinnova.smartpad.member;
 
 import java.util.LinkedList;
 
-import com.jinnova.smartpad.creditcard.CCard;
-import com.jinnova.smartpad.creditcard.CCardBranch;
-import com.jinnova.smartpad.creditcard.CCardIssuer;
-import com.jinnova.smartpad.creditcard.CCardType;
-import com.jinnova.smartpad.member.MCard;
 
 public class Consumer {
 
@@ -14,7 +9,7 @@ public class Consumer {
 	
 	private LinkedList<CCard> ccards;
 	
-	boolean qualify(String operationId, int requiredLevel, int requiredMemberPoint) {
+	public boolean qualify(String operationId, int requiredLevel, int requiredMemberPoint) {
 		if (mcards == null) {
 			return false;
 		}
