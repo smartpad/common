@@ -5,6 +5,8 @@ package com.jinnova.smartpad.member;
  *
  */
 public class MCardLevel {
+	
+	private String operationId;
 
 	private int level;
 
@@ -12,6 +14,14 @@ public class MCardLevel {
 	
 	public int getLevel() {
 		return level;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getOperationId() {
+		return this.operationId;
 	}
 	
 	public boolean qualify(MCard card) {

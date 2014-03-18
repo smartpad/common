@@ -5,13 +5,16 @@ import java.util.Date;
 import com.jinnova.smartpad.creditcard.CCardBranch;
 import com.jinnova.smartpad.creditcard.CCardIssuer;
 import com.jinnova.smartpad.creditcard.CCardType;
-import com.jinnova.smartpad.member.MCardLevel;
 
 public class Promotion {
+	
+	private String operationId;
 
 	private Schedule schedule;
 	
-	private MCardLevel requiredLevel;
+	private int requiredMemberLevel;
+	
+	private int requiredMemberPoint;
 	
 	private CCardType requiredCreditType;
 	
@@ -20,10 +23,8 @@ public class Promotion {
 	private CCardIssuer requiredCreditIssuer;
 	
 	public boolean qualify(Consumer consumer) {
-		if (requiredLevel != null) {
-			if (!consumer.qualify(requiredLevel)) {
-				return false;
-			}
+		if (!consumer.qualify(operationId, requiredMemberLevel, requiredMemberPoint)) {
+			return false;
 		}
 		
 		if (schedule != null) {

@@ -7,7 +7,6 @@ import com.jinnova.smartpad.creditcard.CCardBranch;
 import com.jinnova.smartpad.creditcard.CCardIssuer;
 import com.jinnova.smartpad.creditcard.CCardType;
 import com.jinnova.smartpad.member.MCard;
-import com.jinnova.smartpad.member.MCardLevel;
 
 public class Consumer {
 
@@ -15,14 +14,21 @@ public class Consumer {
 	
 	private LinkedList<CCard> ccards;
 	
-	boolean qualify(MCardLevel level) {
+	boolean qualify(String operationId, int requiredLevel, int requiredMemberPoint) {
 		if (mcards == null) {
 			return false;
 		}
 		for (MCard c : mcards) {
-			if (level.qualify(c)) {
-				return true;
+			if (operationId.equals(c.getLevel().getOperationId()) ) {
+				continue;
 			}
+			if (c.getLevel().getLevel() < requiredLevel) {
+				continue;
+			}
+			if (c.getPoint() < requiredMemberPoint) {
+				continue;
+			}
+			return true;
 		}
 		return false;
 	}

@@ -20,7 +20,7 @@ public class CCard {
 		if (requiredCreditIssuer != null && this.issuer != requiredCreditIssuer) {
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 }
