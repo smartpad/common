@@ -10,6 +10,14 @@ public class MCard {
 	
 	private int pointRotator;
 	
+	private String name;
+	
+	private String address;
+	
+	private String phone;
+	
+	private String email;
+	
 	public String getOperationId() {
 		return operationId;
 	}
