@@ -6,31 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.jinnova.smartpad.partner.IUser;
-import com.jinnova.smartpad.partner.PartnerUtils;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.User;
 
-public class UserDao implements IUserDao {
+public class UserDao {
 	
-	@Override
-	public IUser createPrimaryUser(String login, String password) throws SQLException {
-		IUser u = new User(login, login);
-		u.setPasshash(PartnerUtils.md5(password));
-		createUser(u);
-		
-		new BranchDao().createBranch(login);
-		return u;
-	}
-
-	@Override
-	public IUser createUser(IUser primaryUser, String login, String password) throws SQLException {
-		IUser u = new User(login, primaryUser.getBranchId());
-		u.setPasshash(PartnerUtils.md5(password));
-		createUser(u);
-		return u;
-	}
-	
-	private void createUser(IUser u) throws SQLException {
+	public void createUser(IUser u) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -51,7 +32,6 @@ public class UserDao implements IUserDao {
 		}
 	}
 
-	@Override
 	public IUser loadUser(String login) throws SQLException {
 		
 		Connection conn = null;
@@ -84,7 +64,6 @@ public class UserDao implements IUserDao {
 	 * @param user
 	 * @throws SQLException
 	 */
-	@Override
 	public void updateUser(IUser u) throws SQLException {
 		
 		Connection conn = null;
@@ -105,7 +84,6 @@ public class UserDao implements IUserDao {
 		}
 	}
 
-	@Override
 	public void deleteUser(IUser u) throws SQLException {
 		
 		//not delete primary user

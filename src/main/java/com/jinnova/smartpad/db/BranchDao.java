@@ -9,9 +9,9 @@ import com.jinnova.smartpad.partner.Branch;
 import com.jinnova.smartpad.partner.IBranch;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
-public class BranchDao implements IBranchDao {
+public class BranchDao {
 
-	void createBranch(String branchId) throws SQLException {
+	public void createBranch(String branchId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -36,7 +36,6 @@ public class BranchDao implements IBranchDao {
 	 * @param branch
 	 * @throws SQLException
 	 */
-	@Override
 	public void updateBranch(IBranch branch) throws SQLException {
 		
 		Connection conn = null;
@@ -57,7 +56,6 @@ public class BranchDao implements IBranchDao {
 		}
 	}
 
-	@Override
 	public IBranch loadBranch(String branchId) throws SQLException {
 		
 		Connection conn = null;
