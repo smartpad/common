@@ -56,7 +56,7 @@ public class BranchDao {
 		}
 	}
 
-	public IBranch loadBranch(String branchId) throws SQLException {
+	public Branch loadBranch(String branchId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;

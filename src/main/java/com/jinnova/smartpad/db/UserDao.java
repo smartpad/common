@@ -12,7 +12,7 @@ import com.jinnova.smartpad.partner.User;
 
 public class UserDao {
 	
-	public void createUser(IUser u) throws SQLException {
+	public void createUser(User u) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -39,13 +39,14 @@ public class UserDao {
 	 * @param user
 	 * @throws SQLException
 	 */
-	public void updateUser(IUser u) throws SQLException {
+	public void updateUser(IUser user) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("update sp_user set passhash=? where login=?");
+			User u = (User) user;
 			ps.setString(1, u.getPasshash());
 			ps.setString(2, u.getLogin());
 			ps.executeUpdate();
@@ -62,8 +63,8 @@ public class UserDao {
 	public void deleteUser(IUser u) throws SQLException {
 		
 		//not delete primary user
-		if (u.getLogin().equals(u.getBranchId())) {
-			u.setPasshash("");
+		if (u.isPrimary()) {
+			((User) u).setPasshash("");
 			updateUser(u);
 			return;
 		}

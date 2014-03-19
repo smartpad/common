@@ -34,7 +34,7 @@ public class PartnerManager implements IPartnerManager {
 	
 	@Override
 	public IUser createPrimaryUser(String login, String password) throws SQLException {
-		IUser u = new User(login, login);
+		User u = new User(login, login);
 		u.setPasshash(PartnerUtils.md5(password));
 		new UserDao().createUser(u);
 		
@@ -47,7 +47,7 @@ public class PartnerManager implements IPartnerManager {
 		if (!authorizedUser.isPrimary()) {
 			return null;
 		}
-		IUser u = new User(login, authorizedUser.getBranchId());
+		User u = new User(login, ((User) authorizedUser).getBranchId());
 		u.setPasshash(PartnerUtils.md5(password));
 		new UserDao().createUser(u);
 		return u;
@@ -86,19 +86,6 @@ public class PartnerManager implements IPartnerManager {
 
 	@Override
 	public LinkedList<IUser> listUsers(IUser authorizedUser) throws SQLException {
-		return new UserDao().listUsers(authorizedUser.getBranchId());
-	}
-
-	@Override
-	public void updateBranch(IUser authorizedUser, IBranch branch) throws SQLException {
-		if (!authorizedUser.isPrimary()) {
-			return;
-		}
-		new BranchDao().updateBranch(branch);
-	}
-
-	@Override
-	public IBranch loadBranch(String branchId) throws SQLException {
-		return new BranchDao().loadBranch(branchId);
+		return new UserDao().listUsers(((User) authorizedUser).getBranchId());
 	}
 }
