@@ -10,16 +10,14 @@ CREATE TABLE `sp_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE `branch` (
-  `branch_id` varchar(64) NOT NULL,
-  `name` varchar(256) DEFAULT NULL,
-  PRIMARY KEY (`branch_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `operations` (
-  `oper_id` varchar(128) NOT NULL,
+  `branch_id` varchar(64) NOT NULL,
+  `store_id` varchar(32) NOT NULL DEFAULT '',
+  `name` varchar(2048) DEFAULT NULL,
   `schedule` varchar(1024) DEFAULT NULL,
   `address` varchar(1024) DEFAULT NULL,
+  `gps_lon` float DEFAULT NULL,
+  `gps_lat` float DEFAULT NULL,
   `phone` varchar(128) DEFAULT NULL,
   `email` varchar(256) DEFAULT NULL,
   `mname_req` tinyint(4) DEFAULT NULL,
@@ -30,5 +28,8 @@ CREATE TABLE `operations` (
   `moffer_free_level` int(11) DEFAULT NULL,
   `moffer_survey` varchar(256) DEFAULT NULL,
   `moffer_survey_level` int(11) DEFAULT NULL,
-  PRIMARY KEY (`oper_id`)
+  `member_levels` varchar(2048) DEFAULT NULL,
+  `open_hours` varchar(2048) DEFAULT NULL,
+  `open_hours_numbers` varchar(2048) DEFAULT NULL,
+  PRIMARY KEY (`branch_id`, `store_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

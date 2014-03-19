@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.jinnova.smartpad.db.BranchDao;
 import com.jinnova.smartpad.db.UserDao;
 
 public class PartnerManager implements IPartnerManager {
@@ -19,9 +18,9 @@ public class PartnerManager implements IPartnerManager {
 		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
 		instance = new PartnerManager();
 	}
-	
-	public Iterator<Branch> branchIterator() {
-		return null;
+
+	public void clearDatabaseForTests() throws SQLException {
+		new UserDao().clearDatabaseForTests();
 	}
 	
 	public Iterator<StoreItem> storeItemIterator() {
@@ -38,7 +37,7 @@ public class PartnerManager implements IPartnerManager {
 		u.setPasshash(PartnerUtils.md5(password));
 		new UserDao().createUser(u);
 		
-		new BranchDao().createBranch(login);
+		//new OperationDao().createOperation(login);
 		return u;
 	}
 

@@ -1,8 +1,9 @@
 package com.jinnova.smartpad.partner;
 
 import java.sql.SQLException;
+import java.util.LinkedList;
 
-import com.jinnova.smartpad.db.BranchDao;
+import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.IUser;
 
 public class User implements IUser {
@@ -12,7 +13,11 @@ public class User implements IUser {
 	private String passhash;
 
 	private final String branchId;
-	private Branch branch;
+	//private Branch branch;
+	
+	private Operation branch;
+	
+	private LinkedList<Operation> allStores;
 
 	public User(String login, String branchId) {
 		super();
@@ -58,17 +63,22 @@ public class User implements IUser {
 		if (!isPrimary()) {
 			return;
 		}
-		new BranchDao().updateBranch(branch);
+		if (branch.isPersisted()) {
+			new OperationDao().updateOperation(branch);
+		} else {
+			new OperationDao().createOperation(branch);
+		}
 	}
 
 	@Override
-	public IBranch loadBranch() throws SQLException {
+	public IOperation loadBranch() throws SQLException {
 		if (branch != null) {
 			return branch;
 		}
-		branch = new BranchDao().loadBranch(branchId);
+		branch = (Operation) new OperationDao().loadOperation(branchId, Operation.STORE_MAIN_ID);
 		if (branch == null) {
-			branch = new Branch(this.branchId);
+			//branch = new Branch(this.branchId);
+			branch = new Operation(this.branchId, Operation.STORE_MAIN_ID, false);
 		}
 		return branch;
 	}

@@ -3,15 +3,27 @@ package com.jinnova.smartpad.partner;
 import java.util.Date;
 import java.util.LinkedList;
 
-public class Schedule {
+public class Schedule implements ISchedule {
 
-	private LinkedList<ScheduleSequence> scheduleSequences;
+	private final LinkedList<IScheduleSequence> scheduleSequences = new LinkedList<IScheduleSequence>();
 	
 	private String text;
 	
+	public String getText() {
+		return text;
+	}
+	
+	public void setText(String text) {
+		this.text = text;
+	}
+	
+	public LinkedList<IScheduleSequence> getScheduleSequences() {
+		return scheduleSequences;
+	}
+	
 	public boolean isInAffect(Date date) {
-		for (ScheduleSequence ss : scheduleSequences) {
-			if (ss.isInAffect(date)) {
+		for (IScheduleSequence ss : scheduleSequences) {
+			if (((ScheduleSequence) ss).isInAffect(date)) {
 				return true;
 			}
 		}

@@ -1,9 +1,10 @@
 package com.jinnova.smartpad.partner;
 
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 
 /**
  * Linux style schedule
@@ -18,24 +19,24 @@ import java.util.GregorianCalendar;
  * Numbers follow java.util.Calendar fields
  *
  */
-public class ScheduleSequence {
+public class ScheduleSequence implements IScheduleSequence {
 	
 	/**
 	 * all arrays are sorted 
 	 */
-	private int[] minutes;
-	
-	private int[] hours;
-	
-	private int[] daysOfWeek;
-	
-	private int[] daysOfMonth;
-	
-	private int[] months;
-	
-	private int[] years;
+	private final LinkedList<Integer> minutes = new LinkedList<Integer>();
 
-	public ScheduleSequence(int[] minutes, int[] hours, int[] daysOfWeek,
+	private final LinkedList<Integer> hours = new LinkedList<Integer>();
+	
+	private final LinkedList<Integer> daysOfWeek = new LinkedList<Integer>();
+	
+	private final LinkedList<Integer> daysOfMonth = new LinkedList<Integer>();
+	
+	private final LinkedList<Integer> months = new LinkedList<Integer>();
+	
+	private final LinkedList<Integer> years = new LinkedList<Integer>();
+
+	/*public ScheduleSequence(int[] minutes, int[] hours, int[] daysOfWeek,
 			int[] daysOfMonth, int[] months, int[] years) {
 
 		sort(minutes);
@@ -62,40 +63,83 @@ public class ScheduleSequence {
 			return;
 		}
 		Arrays.sort(source);
+	}*/
+	
+	private static void addAll(LinkedList<Integer> dest, int[] source) {
+		for (int i : source) {
+			dest.add(i);
+		}
+	}
+	
+	public static ScheduleSequence create(int[] minutes, int[] hours, int[] daysOfWeek,
+			int[] daysOfMonth, int[] months, int[] years) {
+
+		ScheduleSequence s = new ScheduleSequence();
+		addAll(s.minutes, minutes);
+		addAll(s.hours, hours);
+		addAll(s.daysOfWeek, daysOfWeek);
+		addAll(s.daysOfMonth, daysOfMonth);
+		addAll(s.months, months);
+		addAll(s.years, years);
+		return s;
+	}
+	
+	public LinkedList<Integer> getMinutes() {
+		return minutes;
+	}
+
+	public LinkedList<Integer> getHours() {
+		return hours;
+	}
+
+	public LinkedList<Integer> getDaysOfWeek() {
+		return daysOfWeek;
+	}
+
+	public LinkedList<Integer> getDaysOfMonth() {
+		return daysOfMonth;
+	}
+
+	public LinkedList<Integer> getMonths() {
+		return months;
+	}
+
+	public LinkedList<Integer> getYears() {
+		return years;
 	}
 
 	public boolean isInAffect(Date date) {
+
+		Collections.sort(years);
+		Collections.sort(months);
+		Collections.sort(daysOfMonth);
+		Collections.sort(daysOfWeek);
+		Collections.sort(hours);
+		Collections.sort(minutes);
+		
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(date);
-		if (!isInAffect(years, cal.get(Calendar.YEAR))) {
+		if (!years.contains(cal.get(Calendar.YEAR))) {
 			return false;
 		}
-		if (!isInAffect(months, cal.get(Calendar.MONTH))) {
+		if (!months.contains(cal.get(Calendar.MONTH))) {
 			return false;
 		}
-		if (!isInAffect(daysOfMonth, cal.get(Calendar.DAY_OF_MONTH))) {
+		if (!daysOfMonth.contains(cal.get(Calendar.DAY_OF_MONTH))) {
 			return false;
 		}
-		if (!isInAffect(daysOfWeek, cal.get(Calendar.DAY_OF_WEEK))) {
+		if (!daysOfWeek.contains(cal.get(Calendar.DAY_OF_WEEK))) {
 			return false;
 		}
-		if (!isInAffect(hours, cal.get(Calendar.HOUR_OF_DAY))) {
+		if (!hours.contains(cal.get(Calendar.HOUR_OF_DAY))) {
 			return false;
 		}
-		if (!isInAffect(minutes, cal.get(Calendar.MINUTE))) {
+		if (!minutes.contains(cal.get(Calendar.MINUTE))) {
 			return false;
 		}
-		if (!isInAffect(years, cal.get(Calendar.YEAR))) {
+		if (!years.contains(cal.get(Calendar.YEAR))) {
 			return false;
 		}
 		return true;
-	}
-
-	private static boolean isInAffect(int[] array, int value) {
-		if (array == null) {
-			return true;
-		}
-		
-		return Arrays.binarySearch(array, value) >= 0;
 	}
 }

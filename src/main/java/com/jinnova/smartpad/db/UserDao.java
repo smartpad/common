@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IUser;
@@ -11,6 +12,16 @@ import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.User;
 
 public class UserDao {
+
+	public void clearDatabaseForTests() throws SQLException {
+
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		stmt.executeUpdate("delete from sp_user");
+		stmt.executeUpdate("delete from operations");
+		stmt.close();
+		conn.close();
+	}
 	
 	public void createUser(User u) throws SQLException {
 		
@@ -22,6 +33,7 @@ public class UserDao {
 			ps.setString(1, u.getLogin());
 			ps.setString(2, u.getPasshash());
 			ps.setString(3, u.getBranchId());
+			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
 			if (ps != null) {
@@ -49,6 +61,7 @@ public class UserDao {
 			User u = (User) user;
 			ps.setString(1, u.getPasshash());
 			ps.setString(2, u.getLogin());
+			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
 			if (ps != null) {
@@ -75,6 +88,7 @@ public class UserDao {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("delete from sp_user login=?");
 			ps.setString(1, u.getLogin());
+			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
 			if (ps != null) {
@@ -101,6 +115,7 @@ public class UserDao {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("select * from sp_user where login = ?");
 			ps.setString(1, login);
+			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
 				return null;
@@ -129,6 +144,7 @@ public class UserDao {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("select * from sp_user where branch_id = ?");
 			ps.setString(1, branchId);
+			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IUser> userList = new LinkedList<IUser>();
 			while (!rs.next()) {
