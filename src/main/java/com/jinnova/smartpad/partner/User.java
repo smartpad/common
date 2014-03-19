@@ -49,7 +49,7 @@ public class User implements IUser {
 	 */
 	@Override
 	public void setPassword(String password) {
-		this.passhash = PartnerUtils.md5(password);
+		this.passhash = SmartpadCommon.md5(password);
 	}
 	
 	public void setPasshash(String passhash) {
@@ -114,7 +114,7 @@ public class User implements IUser {
 		if (st.isPersisted()) {
 			new OperationDao().updateOperation(st);
 		} else {
-			st.setStoreId(PartnerUtils.md5(st.getName()));
+			st.setStoreId(SmartpadCommon.md5(st.getName()));
 			new OperationDao().createOperation(st);
 			allStores.add(st);
 			st.setPersisted(true);

@@ -33,7 +33,7 @@ public class PartnerManager implements IPartnerManager {
 	@Override
 	public IUser createPrimaryUser(String login, String password) throws SQLException {
 		User u = new User(login, login);
-		u.setPasshash(PartnerUtils.md5(password));
+		u.setPasshash(SmartpadCommon.md5(password));
 		new UserDao().createUser(u);
 		
 		//new OperationDao().createOperation(login);
@@ -46,7 +46,7 @@ public class PartnerManager implements IPartnerManager {
 			return null;
 		}
 		User u = new User(login, ((User) authorizedUser).getBranchId());
-		u.setPasshash(PartnerUtils.md5(password));
+		u.setPasshash(SmartpadCommon.md5(password));
 		new UserDao().createUser(u);
 		return u;
 	}
@@ -60,7 +60,7 @@ public class PartnerManager implements IPartnerManager {
 		if (u == null) {
 			return null;
 		}
-		if (!PartnerUtils.md5(password).equals(u.getPasshash())) {
+		if (!SmartpadCommon.md5(password).equals(u.getPasshash())) {
 			return null;
 		}
 		return u;

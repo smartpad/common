@@ -71,6 +71,16 @@ public class ScheduleSequence implements IScheduleSequence {
 		}
 	}
 	
+	private static int[] toArray(LinkedList<Integer> source) {
+		int[] array = new int[source.size()];
+		int i = 0;
+		for (int one : source) {
+			array[i] = one;
+			i++;
+		}
+		return array;
+	}
+	
 	public static ScheduleSequence create(int[] minutes, int[] hours, int[] daysOfWeek,
 			int[] daysOfMonth, int[] months, int[] years) {
 
@@ -84,28 +94,28 @@ public class ScheduleSequence implements IScheduleSequence {
 		return s;
 	}
 	
-	public LinkedList<Integer> getMinutes() {
-		return minutes;
+	public int[] getMinutes() {
+		return toArray(minutes);
 	}
 
-	public LinkedList<Integer> getHours() {
-		return hours;
+	public int[] getHours() {
+		return toArray(hours);
 	}
 
-	public LinkedList<Integer> getDaysOfWeek() {
-		return daysOfWeek;
+	public int[] getDaysOfWeek() {
+		return toArray(daysOfWeek);
 	}
 
-	public LinkedList<Integer> getDaysOfMonth() {
-		return daysOfMonth;
+	public int[] getDaysOfMonth() {
+		return toArray(daysOfMonth);
 	}
 
-	public LinkedList<Integer> getMonths() {
-		return months;
+	public int[] getMonths() {
+		return toArray(months);
 	}
 
-	public LinkedList<Integer> getYears() {
-		return years;
+	public int[] getYears() {
+		return toArray(years);
 	}
 
 	public boolean isInAffect(Date date) {

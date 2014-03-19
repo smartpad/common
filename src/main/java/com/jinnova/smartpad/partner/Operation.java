@@ -14,15 +14,27 @@ public class Operation implements IOperation {
 	
 	private String name;
 
-	private final Schedule openingHours = new Schedule();
-	
-	private final Address address = new Address();
+	private final Schedule openHours = new Schedule();
 	
 	private String phone;
 	
 	private String email;
 
 	//private Catalog rootCatalog;
+
+	private long gpsLon;
+
+	private long gpsLat;
+	
+	/*private String numberStreet;
+	
+	private String ward;
+	
+	private String district;
+	
+	private String city;*/
+	
+	private String addressLines;
 	
 	/**
 	 * member cards
@@ -79,12 +91,32 @@ public class Operation implements IOperation {
 		return name;
 	}
 	
-	public Schedule getOpeningHours() {
-		return openingHours;
+	public Schedule getOpenHours() {
+		return openHours;
+	}
+	
+	public long getGpsLon() {
+		return gpsLon;
 	}
 
-	public IAddress getAddress() {
-		return address;
+	public void setGpsLon(long gpsLon) {
+		this.gpsLon = gpsLon;
+	}
+
+	public long getGpsLat() {
+		return gpsLat;
+	}
+
+	public void setGpsLat(long gpsLat) {
+		this.gpsLat = gpsLat;
+	}
+
+	public String getAddressLines() {
+		return addressLines;
+	}
+
+	public void setAddressLines(String addressLines) {
+		this.addressLines = addressLines;
 	}
 
 	public String getPhone() {

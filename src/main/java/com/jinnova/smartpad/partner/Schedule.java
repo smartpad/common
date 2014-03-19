@@ -17,8 +17,9 @@ public class Schedule implements ISchedule {
 		this.text = text;
 	}
 	
-	public LinkedList<IScheduleSequence> getScheduleSequences() {
-		return scheduleSequences;
+	@Override
+	public IScheduleSequence[] getScheduleSequences() {
+		return scheduleSequences.toArray(new IScheduleSequence[scheduleSequences.size()]);
 	}
 	
 	public boolean isInAffect(Date date) {
