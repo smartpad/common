@@ -16,6 +16,11 @@ public class User implements IUser {
 		this.branchId = branchId;
 	}
 	
+	@Override
+	public boolean isPrimary() {
+		return this.login.equals(branchId);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.jinnova.smartpad.partner.IUser#getLogin()
 	 */

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IUser;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
@@ -22,32 +23,6 @@ public class UserDao {
 			ps.setString(2, u.getPasshash());
 			ps.setString(3, u.getBranchId());
 			ps.executeUpdate();
-		} finally {
-			if (ps != null) {
-				ps.close();
-			}
-			if (conn != null) {
-				conn.close();
-			}
-		}
-	}
-
-	public IUser loadUser(String login) throws SQLException {
-		
-		Connection conn = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from sp_user where login = ?");
-			ps.setString(1, login);
-			rs = ps.executeQuery();
-			if (!rs.next()) {
-				return null;
-			}
-			IUser user = new User(login, rs.getString("branch_id"));
-			user.setPasshash(rs.getString("passhash"));
-			return user;
 		} finally {
 			if (ps != null) {
 				ps.close();
@@ -101,6 +76,69 @@ public class UserDao {
 			ps.setString(1, u.getLogin());
 			ps.executeUpdate();
 		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+	
+	private static User populateUser(ResultSet rs) throws SQLException {
+		User user = new User(rs.getString("login"), rs.getString("branch_id"));
+		user.setPasshash(rs.getString("passhash"));
+		return user;
+	}
+
+	public IUser loadUser(String login) throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select * from sp_user where login = ?");
+			ps.setString(1, login);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				return null;
+			}
+			IUser user = populateUser(rs);
+			return user;
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public LinkedList<IUser> listUsers(String branchId) throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select * from sp_user where branch_id = ?");
+			ps.setString(1, branchId);
+			rs = ps.executeQuery();
+			LinkedList<IUser> userList = new LinkedList<IUser>();
+			while (!rs.next()) {
+				User user = populateUser(rs);
+				userList.add(user);
+			}
+			return userList;
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
 			if (ps != null) {
 				ps.close();
 			}
