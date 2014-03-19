@@ -108,6 +108,9 @@ public class User implements IUser {
 			return;
 		}
 		Operation st = (Operation) store;
+		if (!st.getBranchId().equals(this.branchId)) {
+			throw new RuntimeException("Store does not belong to branch");
+		}
 		if (st.isPersisted()) {
 			new OperationDao().updateOperation(st);
 		} else {
