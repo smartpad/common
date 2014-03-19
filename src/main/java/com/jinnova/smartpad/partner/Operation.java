@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 public class Operation implements IOperation {
 	
-	static final String STORE_MAIN_ID = "BRANCH";
+	public static final String STORE_MAIN_ID = "BRANCH";
 	
-	public final String branchId;
+	private final String branchId;
 	
-	public final String storeId;
+	private String storeId;
 	
 	private boolean persisted;
 	
@@ -45,14 +45,30 @@ public class Operation implements IOperation {
 	
 	private Integer memberOfferedSurveyLevel;
 	
-	public Operation(String branchId, String storeId, boolean persisted) {
+	public Operation(String branchId, /*String storeId,*/ boolean persisted) {
 		this.branchId = branchId;
-		this.storeId = storeId;
+		//this.storeId = storeId;
 		this.persisted = persisted;
+	}
+	
+	public String getBranchId() {
+		return this.branchId;
+	}
+	
+	public String getStoreId() {
+		return this.storeId;
+	}
+	
+	public void setStoreId(String storeId) {
+		this.storeId = storeId;
 	}
 	
 	boolean isPersisted() {
 		return this.persisted;
+	}
+	
+	void setPersisted(boolean b) {
+		this.persisted = b;
 	}
 	
 	public void setName(String name) {

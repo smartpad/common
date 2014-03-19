@@ -17,7 +17,9 @@ public class User implements IUser {
 	
 	private Operation branch;
 	
-	private LinkedList<Operation> allStores;
+	private final LinkedList<IOperation> allStores = new LinkedList<IOperation>();
+	
+	private boolean storesLoaded = false;
 
 	public User(String login, String branchId) {
 		super();
@@ -67,6 +69,7 @@ public class User implements IUser {
 			new OperationDao().updateOperation(branch);
 		} else {
 			new OperationDao().createOperation(branch);
+			branch.setPersisted(true);
 		}
 	}
 
@@ -78,8 +81,51 @@ public class User implements IUser {
 		branch = (Operation) new OperationDao().loadOperation(branchId, Operation.STORE_MAIN_ID);
 		if (branch == null) {
 			//branch = new Branch(this.branchId);
-			branch = new Operation(this.branchId, Operation.STORE_MAIN_ID, false);
+			branch = new Operation(this.branchId, false);
+			branch.setStoreId(Operation.STORE_MAIN_ID);
 		}
 		return branch;
+	}
+
+	@Override
+	public IOperation[] loadStores() throws SQLException {
+		if (!storesLoaded) {
+			allStores.clear();
+			allStores.addAll(new OperationDao().loadStores(branchId));
+			storesLoaded = true;
+		}
+		return allStores.toArray(new IOperation[allStores.size()]);
+	}
+
+	@Override
+	public IOperation newStoreInstance() {
+		return new Operation(branchId, false);
+	}
+
+	@Override
+	public void putStore(IOperation store) throws SQLException {
+		if (!isPrimary()) {
+			return;
+		}
+		Operation st = (Operation) store;
+		if (st.isPersisted()) {
+			new OperationDao().updateOperation(st);
+		} else {
+			st.setStoreId(PartnerUtils.md5(st.getName()));
+			new OperationDao().createOperation(st);
+			allStores.add(st);
+			st.setPersisted(true);
+		}
+	}
+
+	@Override
+	public void deleteStore(IOperation store) throws SQLException {
+		if (!isPrimary()) {
+			return;
+		}
+		Operation st = (Operation) store;
+		new OperationDao().deleteOperation(st);
+		allStores.remove(st);
+		st.setPersisted(false);
 	}
 }

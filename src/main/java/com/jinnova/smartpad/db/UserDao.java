@@ -135,7 +135,7 @@ public class UserDao {
 		}
 	}
 
-	public LinkedList<IUser> listUsers(String branchId) throws SQLException {
+	public IUser[] listUsers(String branchId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -151,7 +151,7 @@ public class UserDao {
 				User user = populateUser(rs);
 				userList.add(user);
 			}
-			return userList;
+			return userList.toArray(new IUser[userList.size()]);
 		} finally {
 			if (rs != null) {
 				rs.close();

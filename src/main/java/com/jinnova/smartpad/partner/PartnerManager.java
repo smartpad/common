@@ -2,7 +2,6 @@ package com.jinnova.smartpad.partner;
 
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import com.jinnova.smartpad.db.UserDao;
 
@@ -84,7 +83,7 @@ public class PartnerManager implements IPartnerManager {
 	}
 
 	@Override
-	public LinkedList<IUser> listUsers(IUser authorizedUser) throws SQLException {
+	public IUser[] listUsers(IUser authorizedUser) throws SQLException {
 		return new UserDao().listUsers(((User) authorizedUser).getBranchId());
 	}
 }
