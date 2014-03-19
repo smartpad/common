@@ -1,8 +1,9 @@
 package com.jinnova.smartpad.partner;
 
+import java.sql.SQLException;
 import java.util.LinkedList;
 
-import com.jinnova.smartpad.partner.IUser;
+import com.jinnova.smartpad.db.OperationDao;
 
 public class Branch implements IBranch {
 	
@@ -10,11 +11,7 @@ public class Branch implements IBranch {
 	
 	private String name;
 	
-	private Operation operation;
-	
 	private LinkedList<Store> allStores;
-	
-	private IUser primaryUser;
 	
 	public Branch(String id) {
 		this.id = id;
@@ -30,5 +27,15 @@ public class Branch implements IBranch {
 	
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public IOperation loadOperation() throws SQLException {
+		return new OperationDao().loadOperation(this.id);
+	}
+
+	@Override
+	public void updateOperation(IOperation operation) throws SQLException {
+		new OperationDao().updateOperation(operation);
 	}
 }

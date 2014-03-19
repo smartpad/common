@@ -3,7 +3,9 @@ package com.jinnova.smartpad.partner;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class Operation {
+public class Operation implements IOperation {
+	
+	//private final String operationId;
 
 	private Schedule openingHours;
 	
@@ -37,5 +39,9 @@ public class Operation {
 	private String memberOfferedSurvey;
 	
 	private int memberOfferedSurveyLevel;
+	
+	/*public Operation(String operationId) {
+		this.operationId = operationId;
+	}*/
 
 }

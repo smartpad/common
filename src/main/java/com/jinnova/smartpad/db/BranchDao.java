@@ -73,6 +73,9 @@ public class BranchDao {
 			b.setName(rs.getString("name"));
 			return b;
 		} finally {
+			if (rs != null) {
+				rs.close();
+			}
 			if (ps != null) {
 				ps.close();
 			}
