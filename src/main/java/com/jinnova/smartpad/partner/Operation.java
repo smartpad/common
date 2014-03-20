@@ -135,8 +135,15 @@ public class Operation implements IOperation {
 		this.email = email;
 	}
 
-	public LinkedList<String> getMemberLevels() {
-		return memberLevels;
+	public String[] getMemberLevels() {
+		return memberLevels.toArray(new String[memberLevels.size()]);
+	}
+
+	public void setMemberLevels(String[] levels) {
+		this.memberLevels.clear();
+		for (String s : levels) {
+			this.memberLevels.add(s);
+		}
 	}
 
 	public Boolean isMemberNameRequired() {

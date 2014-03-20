@@ -29,7 +29,7 @@ CREATE TABLE `operations` (
   `moffer_survey` varchar(256) DEFAULT NULL,
   `moffer_survey_level` int(11) DEFAULT NULL,
   `member_levels` varchar(2048) DEFAULT NULL,
+  `open_text` varchar(1024) DEFAULT NULL,
   `open_hours` varchar(2048) DEFAULT NULL,
-  `open_hours_numbers` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`branch_id`, `store_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

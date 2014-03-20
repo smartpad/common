@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.jinnova.smartpad.partner.IOperation;
 import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
@@ -16,6 +19,9 @@ public class OperationDao {
 		Operation oper = new Operation(rs.getString("branch_id"), true);
 		oper.setStoreId( rs.getString("store_id"));
 		oper.setName(rs.getString("name"));
+		oper.getOpenHours().setText(rs.getString("open_text"));
+		oper.getOpenHours().fromString(rs.getString("open_hours"));
+		oper.setMemberLevels(stringArrayFromJson(rs.getString("member_levels")));
 		return oper;
 	}
 
@@ -130,11 +136,13 @@ public class OperationDao {
 		}
 	}
 	
-	private static final String OP_FIELDS = "name=?";
+	private static final String OP_FIELDS = "name=?, open_text=?, open_hours=?, member_levels=?";
 	
 	private static int setValues(int i, Operation op, PreparedStatement ps) throws SQLException {
-		ps.setString(i, op.getName());
-		i++;
+		ps.setString(i++, op.getName());
+		ps.setString(i++, op.getOpenHours().getText());
+		ps.setString(i++, op.getOpenHours().toString());
+		ps.setString(i++, stringArrayToJson(op.getMemberLevels()));
 		return i;
 	}
 
@@ -161,6 +169,24 @@ public class OperationDao {
 				conn.close();
 			}
 		}
+	}
+	
+	private static String stringArrayToJson(String[] array) {
+		JsonArray ja = new JsonArray();
+		for (String s : array) {
+			ja.add(new JsonPrimitive(s));
+		}
+		return ja.toString();
+	}
+	
+	private static String[] stringArrayFromJson(String s) {
+		JsonParser p = new JsonParser();
+		JsonArray ja = p.parse(s).getAsJsonArray();
+		String[] array = new String[ja.size()];
+		for (int i = 0; i < array.length; i++) {
+			array[i] = ja.get(i).getAsString();
+		}
+		return array;
 	}
 
 }
