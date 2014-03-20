@@ -60,7 +60,11 @@ public class Catalog implements ICatalog {
 	}
 
 	@Override
-	public void putSubCatalog(ICatalog subCatalog) throws SQLException {
+	public void putSubCatalog(IUser authorizedUser, ICatalog subCatalog) throws SQLException {
+		
+		if (!authorizedUser.isPrimary()) {
+			throw new RuntimeException("Unauthorized user");
+		}
 		
 		Catalog subCat = (Catalog) subCatalog;
 		if (!this.catalogId.equals(subCat.parentCatalogId)) {
@@ -83,7 +87,12 @@ public class Catalog implements ICatalog {
 	}
 
 	@Override
-	public void putCatalogItem(ICatalogItem catItem) throws SQLException {
+	public void putCatalogItem(IUser authorizedUser, ICatalogItem catItem) throws SQLException {
+		
+		if (!authorizedUser.isPrimary()) {
+			throw new RuntimeException("Unauthorized user");
+		}
+		
 		CatalogItem item = (CatalogItem) catItem;
 		/*if (!this.catalogId.equals(item.catalogId)) {
 			throw new RuntimeException("Invalid catalog item structure");
@@ -105,13 +114,13 @@ public class Catalog implements ICatalog {
 	}
 
 	@Override
-	public void delete(ICatalog cat) {
+	public void delete(IUser authorizedUser, ICatalog cat) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void delete(ICatalogItem item) {
+	public void delete(IUser authorizedUser, ICatalogItem item) {
 		// TODO Auto-generated method stub
 		
 	}

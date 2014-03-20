@@ -64,11 +64,11 @@ public class Operation implements IOperation {
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
 	}
 	
-	public String getBranchId() {
-		return this.branchId;
+	boolean checkBranch(String branchId) {
+		return this.branchId.equals(branchId);
 	}
 	
-	public String getStoreId() {
+	String getStoreId() {
 		return this.storeId;
 	}
 	

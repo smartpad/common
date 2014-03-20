@@ -25,7 +25,7 @@ public class UserDao {
 		conn.close();
 	}
 	
-	public void createUser(User u) throws SQLException {
+	public void createUser(String branchId, User u) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -34,7 +34,7 @@ public class UserDao {
 			ps = conn.prepareStatement("insert into sp_user (login, passhash, branch_id) values (?, ?, ?)");
 			ps.setString(1, u.getLogin());
 			ps.setString(2, u.getPasshash());
-			ps.setString(3, u.getBranchId());
+			ps.setString(3, branchId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {

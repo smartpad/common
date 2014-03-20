@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.db.OperationDao;
+import com.jinnova.smartpad.db.UserDao;
 import com.jinnova.smartpad.partner.IUser;
 
 public class User implements IUser {
@@ -55,9 +56,19 @@ public class User implements IUser {
 	public void setPasshash(String passhash) {
 		this.passhash = passhash;
 	}
+
+	IUser createUser(String login, String password) throws SQLException {
+		if (!isPrimary()) {
+			throw new RuntimeException("Unauthorized user");
+		}
+		User u = new User(login, this.branchId);
+		u.setPasshash(SmartpadCommon.md5(password));
+		new UserDao().createUser(this.branchId, u);
+		return u;
+	}
 	
-	public String getBranchId() {
-		return this.branchId;
+	IUser[] listUsers() throws SQLException {
+		return new UserDao().listUsers(this.branchId);
 	}
 
 	@Override
@@ -66,9 +77,9 @@ public class User implements IUser {
 			return;
 		}
 		if (branch.isPersisted()) {
-			new OperationDao().updateOperation(branch);
+			new OperationDao().updateOperation(this.branchId, branch.getStoreId(), branch);
 		} else {
-			new OperationDao().createOperation(branch);
+			new OperationDao().createOperation(this.branchId, branch.getStoreId(), branch);
 			branch.setPersisted(true);
 		}
 	}
@@ -108,14 +119,14 @@ public class User implements IUser {
 			return;
 		}
 		Operation st = (Operation) store;
-		if (!st.getBranchId().equals(this.branchId)) {
+		if (!st.checkBranch(this.branchId)) {
 			throw new RuntimeException("Store does not belong to branch");
 		}
 		if (st.isPersisted()) {
-			new OperationDao().updateOperation(st);
+			new OperationDao().updateOperation(this.branchId, st.getStoreId(), st);
 		} else {
 			st.setStoreId(SmartpadCommon.md5(st.getName()));
-			new OperationDao().createOperation(st);
+			new OperationDao().createOperation(this.branchId, st.getStoreId(), st);
 			allStores.add(st);
 			st.setPersisted(true);
 		}
@@ -127,7 +138,7 @@ public class User implements IUser {
 			return;
 		}
 		Operation st = (Operation) store;
-		new OperationDao().deleteOperation(st);
+		new OperationDao().deleteOperation(this.branchId, st.getStoreId());
 		allStores.remove(st);
 		st.setPersisted(false);
 	}

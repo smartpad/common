@@ -82,7 +82,7 @@ public class OperationDao {
 		}
 	}
 
-	public void createOperation(Operation operation) throws SQLException {
+	public void createOperation(String branchId, String operId, Operation operation) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -91,9 +91,9 @@ public class OperationDao {
 			ps = conn.prepareStatement("insert into operations set branch_id = ?, store_id = ?, " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
-			ps.setString(i, op.getBranchId());
+			ps.setString(i, branchId);
 			i++;
-			ps.setString(i, op.getStoreId());
+			ps.setString(i, operId);
 			i++;
 			setValues(i, op, ps);
 			System.out.println("SQL: " + ps);
@@ -108,7 +108,7 @@ public class OperationDao {
 		}
 	}
 
-	public void updateOperation(IOperation operation) throws SQLException {
+	public void updateOperation(String branchId, String operId, IOperation operation) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -118,9 +118,9 @@ public class OperationDao {
 			Operation op = (Operation) operation;
 			int i = 1;
 			i = setValues(i, op, ps);
-			ps.setString(i, op.getBranchId());
+			ps.setString(i, branchId);
 			i++;
-			ps.setString(i, op.getStoreId());
+			ps.setString(i, operId);
 			i++;
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -144,18 +144,17 @@ public class OperationDao {
 		return i;
 	}
 
-	public void deleteOperation(IOperation operation) throws SQLException {
+	public void deleteOperation(String branchId, String operId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("delete operations where where branch_id = ? and store_id = ?");
-			Operation op = (Operation) operation;
 			int i = 1;
-			ps.setString(i, op.getBranchId());
+			ps.setString(i, branchId);
 			i++;
-			ps.setString(i, op.getStoreId());
+			ps.setString(i, operId);
 			i++;
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
