@@ -3,15 +3,15 @@ CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8;
 use smartpad;
 
 CREATE TABLE `sp_user` (
-  `login` varchar(64) NOT NULL,
-  `passhash` varchar(256) DEFAULT NULL,
-  `branch_id` varchar(256) DEFAULT NULL,
+  `login` varchar(32) NOT NULL,
+  `passhash` varchar(32) DEFAULT NULL,
+  `branch_id` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `operations` (
-  `branch_id` varchar(64) NOT NULL,
+  `branch_id` varchar(32) NOT NULL,
   `store_id` varchar(32) NOT NULL DEFAULT '',
   `name` varchar(2048) DEFAULT NULL,
   `schedule` varchar(1024) DEFAULT NULL,
@@ -32,4 +32,25 @@ CREATE TABLE `operations` (
   `open_text` varchar(1024) DEFAULT NULL,
   `open_hours` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`branch_id`, `store_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `catalog` (
+  `catalog_id` varchar(32) NOT NULL,
+  `parent_id` varchar(32) NOT NULL,
+  `branch_id` varchar(32) NOT NULL,
+  `name` varchar(1024) NOT NULL,
+  `descript` text,
+  `images` text,
+  PRIMARY KEY (`catalog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `catalog_items` (
+  `item_id` varchar(32) NOT NULL,
+  `catalog_id` varchar(32) NOT NULL,
+  `branch_id` varchar(32) NOT NULL,
+  `name` varchar(1024) NOT NULL,
+  `descript` text,
+  `images` text,
+  `unit_price` decimal(12,2) DEFAULT NULL,
+  PRIMARY KEY (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

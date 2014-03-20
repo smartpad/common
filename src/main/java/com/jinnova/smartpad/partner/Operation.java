@@ -20,7 +20,7 @@ public class Operation implements IOperation {
 	
 	private String email;
 
-	//private Catalog rootCatalog;
+	private final Catalog rootCatalog;
 
 	private long gpsLon;
 
@@ -61,6 +61,7 @@ public class Operation implements IOperation {
 		this.branchId = branchId;
 		//this.storeId = storeId;
 		this.persisted = persisted;
+		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
 	}
 	
 	public String getBranchId() {
@@ -82,63 +83,83 @@ public class Operation implements IOperation {
 	void setPersisted(boolean b) {
 		this.persisted = b;
 	}
-	
+
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
-	
+
+	@Override
+	public ICatalog getRootCatalog() {
+		return rootCatalog;
+	}
+
+	@Override
 	public Schedule getOpenHours() {
 		return openHours;
 	}
-	
+
+	@Override
 	public long getGpsLon() {
 		return gpsLon;
 	}
 
+	@Override
 	public void setGpsLon(long gpsLon) {
 		this.gpsLon = gpsLon;
 	}
 
+	@Override
 	public long getGpsLat() {
 		return gpsLat;
 	}
 
+	@Override
 	public void setGpsLat(long gpsLat) {
 		this.gpsLat = gpsLat;
 	}
 
+	@Override
 	public String getAddressLines() {
 		return addressLines;
 	}
 
+	@Override
 	public void setAddressLines(String addressLines) {
 		this.addressLines = addressLines;
 	}
 
+	@Override
 	public String getPhone() {
 		return phone;
 	}
 
+	@Override
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
 
+	@Override
 	public String getEmail() {
 		return email;
 	}
 
+	@Override
 	public void setEmail(String email) {
 		this.email = email;
 	}
 
+	@Override
 	public String[] getMemberLevels() {
 		return memberLevels.toArray(new String[memberLevels.size()]);
 	}
 
+	@Override
 	public void setMemberLevels(String[] levels) {
 		this.memberLevels.clear();
 		for (String s : levels) {
@@ -146,66 +167,82 @@ public class Operation implements IOperation {
 		}
 	}
 
+	@Override
 	public Boolean isMemberNameRequired() {
 		return memberNameRequired;
 	}
 
+	@Override
 	public void setMemberNameRequired(boolean memberNameRequired) {
 		this.memberNameRequired = memberNameRequired;
 	}
 
+	@Override
 	public Boolean isMemberAddressRequired() {
 		return memberAddressRequired;
 	}
 
+	@Override
 	public void setMemberAddressRequired(boolean memberAddressRequired) {
 		this.memberAddressRequired = memberAddressRequired;
 	}
 
+	@Override
 	public Boolean isMemberPhoneRequired() {
 		return memberPhoneRequired;
 	}
 
+	@Override
 	public void setMemberPhoneRequired(boolean memberPhoneRequired) {
 		this.memberPhoneRequired = memberPhoneRequired;
 	}
 
+	@Override
 	public Boolean isMemberEmailRequired() {
 		return memberEmailRequired;
 	}
 
+	@Override
 	public void setMemberEmailRequired(boolean memberEmailRequired) {
 		this.memberEmailRequired = memberEmailRequired;
 	}
 
+	@Override
 	public Boolean isMemberOfferedFree() {
 		return memberOfferedFree;
 	}
 
+	@Override
 	public void setMemberOfferedFree(boolean memberOfferedFree) {
 		this.memberOfferedFree = memberOfferedFree;
 	}
 
+	@Override
 	public Integer getMemberOfferedFreeLevel() {
 		return memberOfferedFreeLevel;
 	}
 
+	@Override
 	public void setMemberOfferedFreeLevel(int memberOfferedFreeLevel) {
 		this.memberOfferedFreeLevel = memberOfferedFreeLevel;
 	}
 
+	@Override
 	public String getMemberOfferedSurvey() {
 		return memberOfferedSurvey;
 	}
 
+	@Override
 	public void setMemberOfferedSurvey(String memberOfferedSurvey) {
 		this.memberOfferedSurvey = memberOfferedSurvey;
 	}
 
+	@Override
 	public Integer getMemberOfferedSurveyLevel() {
 		return memberOfferedSurveyLevel;
 	}
 
+	@Override
 	public void setMemberOfferedSurveyLevel(int memberOfferedSurveyLevel) {
 		this.memberOfferedSurveyLevel = memberOfferedSurveyLevel;
 	}

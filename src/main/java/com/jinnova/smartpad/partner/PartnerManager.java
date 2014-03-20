@@ -22,7 +22,7 @@ public class PartnerManager implements IPartnerManager {
 		new UserDao().clearDatabaseForTests();
 	}
 	
-	public Iterator<StoreItem> storeItemIterator() {
+	public Iterator<CatalogItem> storeItemIterator() {
 		return null;
 	}
 	

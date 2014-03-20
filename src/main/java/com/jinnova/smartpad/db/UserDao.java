@@ -19,6 +19,8 @@ public class UserDao {
 		Statement stmt = conn.createStatement();
 		stmt.executeUpdate("delete from sp_user");
 		stmt.executeUpdate("delete from operations");
+		stmt.executeUpdate("delete from catalog");
+		stmt.executeUpdate("delete from catalog_items");
 		stmt.close();
 		conn.close();
 	}
@@ -147,7 +149,7 @@ public class UserDao {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IUser> userList = new LinkedList<IUser>();
-			while (!rs.next()) {
+			while (rs.next()) {
 				User user = populateUser(rs);
 				userList.add(user);
 			}
