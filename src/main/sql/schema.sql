@@ -39,8 +39,8 @@ CREATE TABLE `catalog` (
   `parent_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `name` varchar(1024) NOT NULL,
-  `descript` text,
-  `images` text,
+  `descript` text DEFAULT NULL,
+  `images` text DEFAULT NULL,
   PRIMARY KEY (`catalog_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -49,8 +49,20 @@ CREATE TABLE `catalog_items` (
   `catalog_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `name` varchar(1024) NOT NULL,
-  `descript` text,
-  `images` text,
+  `descript` text DEFAULT NULL,
+  `images` text DEFAULT NULL,
   `unit_price` decimal(12,2) DEFAULT NULL,
   PRIMARY KEY (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `promos` (
+  `promo_id` varchar(32) NOT NULL,
+  `oper_id` varchar(32) NOT NULL,
+  `branch_id` varchar(32) NOT NULL,
+  `creation` datetime NOT NULL,
+  `update_last` datetime NOT NULL,
+  `name` varchar(1024) NOT NULL,
+  `descript` text DEFAULT NULL,
+  `images` text DEFAULT NULL,
+  PRIMARY KEY (`promo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

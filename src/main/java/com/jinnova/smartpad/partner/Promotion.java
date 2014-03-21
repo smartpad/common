@@ -2,14 +2,24 @@ package com.jinnova.smartpad.partner;
 
 import java.util.Date;
 
+import com.jinnova.smartpad.IName;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.member.CCardBranch;
 import com.jinnova.smartpad.member.CCardIssuer;
 import com.jinnova.smartpad.member.CCardType;
 import com.jinnova.smartpad.member.Consumer;
 
-public class Promotion {
+public class Promotion implements IPromotion {
 	
-	private String operationId;
+	private String promotionId;
+	
+	private final String operationId;
+	
+	private final Name name = new Name();
+	
+	private Date creationDate;
+	
+	private Date lastUpdate;
 
 	private Schedule schedule;
 	
@@ -22,6 +32,19 @@ public class Promotion {
 	private CCardBranch requiredCreditBranch;
 	
 	private CCardIssuer requiredCreditIssuer;
+	
+	public Promotion(String promotionId, String operationId) {
+		this.promotionId = promotionId;
+		this.operationId = operationId;
+	}
+
+	String getPromotionId() {
+		return this.promotionId;
+	}
+
+	boolean isPersisted() {
+		return promotionId != null;
+	}
 	
 	public boolean qualify(Consumer consumer) {
 		if (!consumer.qualify(operationId, requiredMemberLevel, requiredMemberPoint)) {
@@ -37,5 +60,28 @@ public class Promotion {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public IName getName() {
+		return name;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date d) {
+		this.lastUpdate = d;
 	}
 }

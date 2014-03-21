@@ -1,6 +1,14 @@
 package com.jinnova.smartpad.partner;
 
+import java.sql.SQLException;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
+
+import com.jinnova.smartpad.CachedPagingList;
+import com.jinnova.smartpad.IPagingList;
+import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.db.PromotionDao;
 
 public class Operation implements IOperation {
 	
@@ -8,7 +16,7 @@ public class Operation implements IOperation {
 	
 	private final String branchId;
 	
-	private String storeId;
+	private String operationId;
 	
 	private boolean persisted;
 	
@@ -21,6 +29,8 @@ public class Operation implements IOperation {
 	private String email;
 
 	private final Catalog rootCatalog;
+	
+	private final CachedPagingList<IPromotion> promotions;
 
 	private long gpsLon;
 
@@ -62,18 +72,66 @@ public class Operation implements IOperation {
 		//this.storeId = storeId;
 		this.persisted = persisted;
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
+		Comparator<IPromotion> memberComparator = new Comparator<IPromotion>() {
+			
+			@Override
+			public int compare(IPromotion o1, IPromotion o2) {
+				return o1.getCreationDate().compareTo(o2.getCreationDate());
+			}
+		};
+		PageMemberMate<IPromotion> mate = new PageMemberMate<IPromotion>() {
+
+			@Override
+			public IPromotion newMemberInstance() {
+				return new Promotion(null, Operation.this.operationId);
+			}
+
+			@Override
+			public boolean isPersisted(IPromotion member) {
+				return ((Promotion) member).isPersisted();
+			}
+
+			@Override
+			public LinkedList<IPromotion> load(int offset, int pageSize) throws SQLException {
+				return new PromotionDao().load(Operation.this.operationId, offset, pageSize);
+			}
+
+			@Override
+			public void insert(IPromotion t) throws SQLException {
+				if (t.getName().getName() == null || "".equals(t.getName().getName())) {
+					throw new RuntimeException("Promotion name is missing");
+				}
+				Date now = new Date();
+				((Promotion) t).setCreationDate(now);
+				((Promotion) t).setLastUpdate(now);
+				String newId = SmartpadCommon.md5(Operation.this.branchId + Operation.this.operationId + t.getName().getName()); 
+				new PromotionDao().insert(newId, operationId, Operation.this.branchId, t);
+			}
+
+			@Override
+			public void update(IPromotion t) throws SQLException {
+				Date now = new Date();
+				((Promotion) t).setLastUpdate(now);
+				new PromotionDao().update(((Promotion) t).getPromotionId(), t);
+			}
+
+			@Override
+			public void delete(IPromotion t) throws SQLException {
+				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
+			}};
+		this.promotions = new CachedPagingList<IPromotion>(mate, memberComparator, new IPromotion[0]);
 	}
 	
 	boolean checkBranch(String branchId) {
 		return this.branchId.equals(branchId);
 	}
 	
-	String getStoreId() {
-		return this.storeId;
+	String getOperationId() {
+		return this.operationId;
 	}
 	
-	public void setStoreId(String storeId) {
-		this.storeId = storeId;
+	public void setOperationId(String operationId) {
+		this.operationId = operationId;
 	}
 	
 	boolean isPersisted() {
@@ -82,6 +140,16 @@ public class Operation implements IOperation {
 	
 	void setPersisted(boolean b) {
 		this.persisted = b;
+	}
+
+	@Override
+	public void setPromotionPageSize(int pageSize) {
+		promotions.setPageSize(pageSize);
+	}
+
+	@Override
+	public IPagingList<IPromotion> getPromotionPagingList() {
+		return promotions;
 	}
 
 	@Override
@@ -161,10 +229,7 @@ public class Operation implements IOperation {
 
 	@Override
 	public void setMemberLevels(String[] levels) {
-		this.memberLevels.clear();
-		for (String s : levels) {
-			this.memberLevels.add(s);
-		}
+		StringArrayUtils.load(this.memberLevels, levels);
 	}
 
 	@Override

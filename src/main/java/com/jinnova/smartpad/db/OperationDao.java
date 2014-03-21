@@ -15,7 +15,7 @@ public class OperationDao {
 	
 	private Operation populateOperation(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("branch_id"), true);
-		oper.setStoreId( rs.getString("store_id"));
+		oper.setOperationId( rs.getString("store_id"));
 		oper.setName(rs.getString("name"));
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));

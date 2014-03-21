@@ -1,7 +1,9 @@
-package com.jinnova.smartpad.partner;
+package com.jinnova.smartpad;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+
+import com.jinnova.smartpad.IName;
 
 public class Name implements IName {
 	

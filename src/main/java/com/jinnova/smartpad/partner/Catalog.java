@@ -3,6 +3,8 @@ package com.jinnova.smartpad.partner;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
+import com.jinnova.smartpad.IName;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.CatalogItemDao;
 

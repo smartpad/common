@@ -4,7 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.jinnova.smartpad.partner.IName;
+import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.partner.StringArrayUtils;
 
 class NameDao {

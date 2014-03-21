@@ -77,9 +77,9 @@ public class User implements IUser {
 			return;
 		}
 		if (branch.isPersisted()) {
-			new OperationDao().updateOperation(this.branchId, branch.getStoreId(), branch);
+			new OperationDao().updateOperation(this.branchId, branch.getOperationId(), branch);
 		} else {
-			new OperationDao().createOperation(this.branchId, branch.getStoreId(), branch);
+			new OperationDao().createOperation(this.branchId, branch.getOperationId(), branch);
 			branch.setPersisted(true);
 		}
 	}
@@ -93,7 +93,7 @@ public class User implements IUser {
 		if (branch == null) {
 			//branch = new Branch(this.branchId);
 			branch = new Operation(this.branchId, false);
-			branch.setStoreId(Operation.STORE_MAIN_ID);
+			branch.setOperationId(Operation.STORE_MAIN_ID);
 		}
 		return branch;
 	}
@@ -123,10 +123,10 @@ public class User implements IUser {
 			throw new RuntimeException("Store does not belong to branch");
 		}
 		if (st.isPersisted()) {
-			new OperationDao().updateOperation(this.branchId, st.getStoreId(), st);
+			new OperationDao().updateOperation(this.branchId, st.getOperationId(), st);
 		} else {
-			st.setStoreId(SmartpadCommon.md5(st.getName()));
-			new OperationDao().createOperation(this.branchId, st.getStoreId(), st);
+			st.setOperationId(SmartpadCommon.md5(st.getName()));
+			new OperationDao().createOperation(this.branchId, st.getOperationId(), st);
 			allStores.add(st);
 			st.setPersisted(true);
 		}
@@ -138,7 +138,7 @@ public class User implements IUser {
 			return;
 		}
 		Operation st = (Operation) store;
-		new OperationDao().deleteOperation(this.branchId, st.getStoreId());
+		new OperationDao().deleteOperation(this.branchId, st.getOperationId());
 		allStores.remove(st);
 		st.setPersisted(false);
 	}

@@ -21,6 +21,7 @@ public class UserDao {
 		stmt.executeUpdate("delete from operations");
 		stmt.executeUpdate("delete from catalog");
 		stmt.executeUpdate("delete from catalog_items");
+		stmt.executeUpdate("delete from promos");
 		stmt.close();
 		conn.close();
 	}

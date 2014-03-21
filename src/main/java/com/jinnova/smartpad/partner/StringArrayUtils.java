@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import java.util.Collection;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -24,4 +26,10 @@ public class StringArrayUtils {
 		return array;
 	}
 
+	public static <T> void load(Collection<T> list, T[] array) {
+		list.clear();
+		for (T t : array) {
+			list.add(t);
+		}
+	}
 }
