@@ -1,6 +1,7 @@
 package com.jinnova.smartpad;
 
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.LinkedList;
 
 public interface PageMemberMate<T, E> {
@@ -12,6 +13,8 @@ public interface PageMemberMate<T, E> {
 	//E getDefaultSort();
 	
 	//boolean isDefaultSortAscending();
+	
+	Comparator<T> getComparator(E sortField);
 
 	LinkedList<T> load(int offset, int pageSize, E sortField, boolean ascending) throws SQLException;
 	

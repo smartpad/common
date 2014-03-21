@@ -38,12 +38,8 @@ public class CachedPagingList<T, E> implements IPagingList<T, E> {
 		}
 	};
 	
-	private final Comparator<T> memberComparator;
-	
-	public CachedPagingList(PageMemberMate<T, E> memberMate, Comparator<T> memberComparator, 
-			E defaultSort, boolean defaultAscending, T[] array) {
+	public CachedPagingList(PageMemberMate<T, E> memberMate, E defaultSort, boolean defaultAscending, T[] array) {
 		this.memberMate = memberMate;
-		this.memberComparator = memberComparator;
 		this.array = array;
 		this.sortField = defaultSort;
 		this.ascending = defaultAscending;
@@ -78,10 +74,12 @@ public class CachedPagingList<T, E> implements IPagingList<T, E> {
 		
 		if (pageSize < 0) {
 			//throw new RuntimeException("Negative pageSize");
-			return null;
+			//return null;
+			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, new LinkedList<T>(), array);
 		}
 		if (pageNumber < 0) {
-			return null;
+			//return null;
+			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, new LinkedList<T>(), array);
 		}
 		
 		if (totalCount < 0) {
@@ -93,7 +91,7 @@ public class CachedPagingList<T, E> implements IPagingList<T, E> {
 		}
 		
 		if (pageNumber > pageCount) {
-			return null;
+			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, new LinkedList<T>(), array);
 		}
 		
 		for (CachedPage<T> onePage : pages) {
@@ -134,7 +132,7 @@ public class CachedPagingList<T, E> implements IPagingList<T, E> {
 				it.remove();
 				continue;
 			}
-			if (page.put(newMember, memberComparator)) {
+			if (page.put(newMember, memberMate.getComparator(this.sortField))) {
 				putInPage = true;
 			}
 		}
@@ -154,7 +152,7 @@ public class CachedPagingList<T, E> implements IPagingList<T, E> {
 				it.remove();
 				continue;
 			}
-			if (page.isInPage(newMember, memberComparator)) {
+			if (page.isInPage(newMember, memberMate.getComparator(this.sortField))) {
 				it.remove();
 				removedFromPage = true;
 			}

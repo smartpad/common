@@ -58,9 +58,8 @@ public class OperationDao {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != ?");
+			ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id");
 			ps.setString(1, branchId);
-			ps.setString(2, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IOperation> opList = new LinkedList<IOperation>();
@@ -68,6 +67,34 @@ public class OperationDao {
 				opList.add(populateOperation(rs));
 			}
 			return opList;
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public int countStores(String branchId) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select count(*) from operations where branch_id = ? and oper_id != branch_id");
+			ps.setString(1, branchId);
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(1);
+			} else {
+				return 0;
+			}
 		} finally {
 			if (rs != null) {
 				rs.close();

@@ -31,11 +31,50 @@ public class User implements IUser {
 		super();
 		this.login = login;
 		this.branchId = branchId;
+		@SuppressWarnings("unchecked")
+		final Comparator<IOperation>[] comparators = new Comparator[5];
+		comparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
+			@Override
+			public int compare(IOperation o1, IOperation o2) {
+				return 0; //TODO sort operation by creation date
+				//return o1.getCreationDate().compareTo(o2.getCreationDate());
+			}
+		};
+		comparators[IOperationSort.lastUpdate.ordinal()] = new Comparator<IOperation>() {
+			@Override
+			public int compare(IOperation o1, IOperation o2) {
+				return 0; //TODO sort operation by last update
+				//return o1.getLastUpdate().compareTo(o2.getLastUpdate());
+			}
+		};
+		comparators[IOperationSort.start.ordinal()] = new Comparator<IOperation>() {
+			@Override
+			public int compare(IOperation o1, IOperation o2) {
+				return 0; //TODO sort operation by start date
+			}
+		};
+		comparators[IOperationSort.end.ordinal()] = new Comparator<IOperation>() {
+			@Override
+			public int compare(IOperation o1, IOperation o2) {
+				return 0; //TODO sort operation by end date
+			}
+		};
+		comparators[IOperationSort.name.ordinal()] = new Comparator<IOperation>() {
+			@Override
+			public int compare(IOperation o1, IOperation o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
+			}
+		};
 		PageMemberMate<IOperation, IOperationSort> memberMate = new PageMemberMate<IOperation, IOperationSort>() {
 
 			@Override
 			public IOperation newMemberInstance() {
 				return new Operation(null, User.this.branchId);
+			}
+
+			@Override
+			public Comparator<IOperation> getComparator(IOperationSort sortField) {
+				return comparators[sortField.ordinal()];
 			}
 
 			@Override
@@ -71,19 +110,10 @@ public class User implements IUser {
 
 			@Override
 			public int count() throws SQLException {
-				// TODO Auto-generated method stub
-				return 0;
+				return new OperationDao().countStores(User.this.branchId);
 			}
 		};
-		Comparator<IOperation> memberComparator = new Comparator<IOperation>() {
-
-			@Override
-			public int compare(IOperation o1, IOperation o2) {
-				// TODO Auto-generated method stub
-				return 0;
-			}
-		};
-		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(memberMate, memberComparator, IOperationSort.creation, true, new IOperation[0]);
+		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(memberMate, IOperationSort.creation, true, new IOperation[0]);
 	}
 	
 	@Override

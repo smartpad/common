@@ -72,13 +72,34 @@ public class Operation implements IOperation {
 		this.branchId = branchId;
 		//this.persisted = persisted;
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
-		Comparator<IPromotion> memberComparator = new Comparator<IPromotion>() {
-			
+		
+		@SuppressWarnings({ "unchecked" })
+		final Comparator<IPromotion>[] comparators = new Comparator[4];
+		comparators[IPromotionSort.creation.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
 				return o1.getCreationDate().compareTo(o2.getCreationDate());
 			}
 		};
+		comparators[IPromotionSort.lastUpdate.ordinal()] = new Comparator<IPromotion>() {
+			@Override
+			public int compare(IPromotion o1, IPromotion o2) {
+				return o1.getLastUpdate().compareTo(o2.getLastUpdate());
+			}
+		};
+		comparators[IPromotionSort.startDate.ordinal()] = new Comparator<IPromotion>() {
+			@Override
+			public int compare(IPromotion o1, IPromotion o2) {
+				return 0; //TODO sort promotion by start date
+			}
+		};
+		comparators[IPromotionSort.endDate.ordinal()] = new Comparator<IPromotion>() {
+			@Override
+			public int compare(IPromotion o1, IPromotion o2) {
+				return 0; //TODO sort promotion by end date
+			}
+		};
+		
 		PageMemberMate<IPromotion, IPromotionSort> mate = new PageMemberMate<IPromotion, IPromotionSort>() {
 
 			@Override
@@ -99,6 +120,11 @@ public class Operation implements IOperation {
 			@Override
 			public LinkedList<IPromotion> load(int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
 				return new PromotionDao().load(Operation.this.operationId, offset, pageSize, sortField, ascending);
+			}
+			
+			@Override
+			public Comparator<IPromotion> getComparator(IPromotionSort sortField) {
+				return comparators[sortField.ordinal()];
 			}
 
 			@Override
@@ -124,7 +150,7 @@ public class Operation implements IOperation {
 			public void delete(IPromotion t) throws SQLException {
 				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
 			}};
-		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, memberComparator, IPromotionSort.creation, true, new IPromotion[0]);
+		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, IPromotionSort.creation, true, new IPromotion[0]);
 	}
 	
 	boolean checkBranch(String branchId) {
