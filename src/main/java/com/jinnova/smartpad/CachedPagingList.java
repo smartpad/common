@@ -40,12 +40,13 @@ public class CachedPagingList<T, E> implements IPagingList<T, E> {
 	
 	private final Comparator<T> memberComparator;
 	
-	public CachedPagingList(PageMemberMate<T, E> memberMate, Comparator<T> memberComparator, T[] array) {
+	public CachedPagingList(PageMemberMate<T, E> memberMate, Comparator<T> memberComparator, 
+			E defaultSort, boolean defaultAscending, T[] array) {
 		this.memberMate = memberMate;
 		this.memberComparator = memberComparator;
 		this.array = array;
-		this.sortField = memberMate.getDefaultSort();
-		this.ascending = memberMate.isDefaultSortAscending();
+		this.sortField = defaultSort;
+		this.ascending = defaultAscending;
 	}
 	
 	@Override

@@ -9,9 +9,9 @@ public interface PageMemberMate<T, E> {
 	
 	boolean isPersisted(T member);
 	
-	E getDefaultSort();
+	//E getDefaultSort();
 	
-	boolean isDefaultSortAscending();
+	//boolean isDefaultSortAscending();
 
 	LinkedList<T> load(int offset, int pageSize, E sortField, boolean ascending) throws SQLException;
 	

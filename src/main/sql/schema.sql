@@ -11,8 +11,8 @@ CREATE TABLE `sp_user` (
 
 
 CREATE TABLE `operations` (
+  `oper_id` varchar(32) NOT NULL DEFAULT '',
   `branch_id` varchar(32) NOT NULL,
-  `store_id` varchar(32) NOT NULL DEFAULT '',
   `name` varchar(2048) DEFAULT NULL,
   `schedule` varchar(1024) DEFAULT NULL,
   `address` varchar(1024) DEFAULT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE `operations` (
   `member_levels` varchar(2048) DEFAULT NULL,
   `open_text` varchar(1024) DEFAULT NULL,
   `open_hours` varchar(2048) DEFAULT NULL,
-  PRIMARY KEY (`branch_id`, `store_id`)
+  PRIMARY KEY (`oper_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `catalog` (

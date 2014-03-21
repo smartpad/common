@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 
-public class CachedPage<T> implements IPage<T> {
+class CachedPage<T> implements IPage<T> {
 	
 	private final int totalCount;
 	

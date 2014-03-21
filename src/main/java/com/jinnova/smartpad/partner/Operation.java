@@ -12,13 +12,13 @@ import com.jinnova.smartpad.db.PromotionDao;
 
 public class Operation implements IOperation {
 	
-	public static final String STORE_MAIN_ID = "BRANCH";
+	//public static final String STORE_MAIN_ID = "BRANCH";
 	
 	private final String branchId;
 	
 	private String operationId;
 	
-	private boolean persisted;
+	//private boolean persisted;
 	
 	private String name;
 
@@ -67,10 +67,10 @@ public class Operation implements IOperation {
 	
 	private Integer memberOfferedSurveyLevel;
 	
-	public Operation(String branchId, /*String storeId,*/ boolean persisted) {
+	public Operation(String operId, String branchId/*, boolean persisted*/) {
+		this.operationId = operId;
 		this.branchId = branchId;
-		//this.storeId = storeId;
-		this.persisted = persisted;
+		//this.persisted = persisted;
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
 		Comparator<IPromotion> memberComparator = new Comparator<IPromotion>() {
 			
@@ -84,16 +84,6 @@ public class Operation implements IOperation {
 			@Override
 			public IPromotion newMemberInstance() {
 				return new Promotion(null, Operation.this.operationId);
-			}
-
-			@Override
-			public IPromotionSort getDefaultSort() {
-				return IPromotionSort.creation;
-			}
-
-			@Override
-			public boolean isDefaultSortAscending() {
-				return true;
 			}
 
 			@Override
@@ -134,7 +124,7 @@ public class Operation implements IOperation {
 			public void delete(IPromotion t) throws SQLException {
 				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
 			}};
-		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, memberComparator, new IPromotion[0]);
+		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, memberComparator, IPromotionSort.creation, true, new IPromotion[0]);
 	}
 	
 	boolean checkBranch(String branchId) {
@@ -149,18 +139,13 @@ public class Operation implements IOperation {
 		this.operationId = operationId;
 	}
 	
-	boolean isPersisted() {
-		return this.persisted;
-	}
+	/*boolean isPersisted() {
+		return this.operationId != null;
+	}*/
 	
-	void setPersisted(boolean b) {
+	/*void setPersisted(boolean b) {
 		this.persisted = b;
-	}
-
-	@Override
-	public void setPromotionPageSize(int pageSize) {
-		promotions.setPageSize(pageSize);
-	}
+	}*/
 
 	@Override
 	public IPagingList<IPromotion, IPromotionSort> getPromotionPagingList() {

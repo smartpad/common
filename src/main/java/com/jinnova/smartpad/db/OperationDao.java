@@ -14,8 +14,8 @@ import com.jinnova.smartpad.partner.StringArrayUtils;
 public class OperationDao {
 	
 	private Operation populateOperation(ResultSet rs) throws SQLException {
-		Operation oper = new Operation(rs.getString("branch_id"), true);
-		oper.setOperationId( rs.getString("store_id"));
+		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"));
+		//oper.setOperationId( rs.getString("store_id"));
 		oper.setName(rs.getString("name"));
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));
@@ -23,16 +23,15 @@ public class OperationDao {
 		return oper;
 	}
 
-	public IOperation loadOperation(String branchId, String storeId) throws SQLException {
+	public IOperation loadBranch(String operationId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from operations where branch_id = ? and store_id = ?");
-			ps.setString(1, branchId);
-			ps.setString(2, storeId);
+			ps = conn.prepareStatement("select * from operations where oper_id = ?");
+			ps.setString(1, operationId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
@@ -52,19 +51,19 @@ public class OperationDao {
 		}
 	}
 
-	public LinkedList<Operation> loadStores(String branchId) throws SQLException {
+	public LinkedList<IOperation> loadStores(String branchId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from operations where branch_id = ? and store_id != ?");
+			ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != ?");
 			ps.setString(1, branchId);
-			ps.setString(2, Operation.STORE_MAIN_ID);
+			ps.setString(2, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
-			LinkedList<Operation> opList = new LinkedList<Operation>();
+			LinkedList<IOperation> opList = new LinkedList<IOperation>();
 			while (rs.next()) {
 				opList.add(populateOperation(rs));
 			}
@@ -82,13 +81,13 @@ public class OperationDao {
 		}
 	}
 
-	public void createOperation(String branchId, String operId, Operation operation) throws SQLException {
+	public void createOperation(String operId, String branchId, Operation operation) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into operations set branch_id = ?, store_id = ?, " + OP_FIELDS);
+			ps = conn.prepareStatement("insert into operations set branch_id = ?, oper_id = ?, " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
 			ps.setString(i, branchId);
@@ -108,18 +107,16 @@ public class OperationDao {
 		}
 	}
 
-	public void updateOperation(String branchId, String operId, IOperation operation) throws SQLException {
+	public void updateOperation(String operId, IOperation operation) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update operations set " + OP_FIELDS + " where branch_id = ? and store_id = ?");
+			ps = conn.prepareStatement("update operations set " + OP_FIELDS + " where oper_id = ?");
 			Operation op = (Operation) operation;
 			int i = 1;
 			i = setValues(i, op, ps);
-			ps.setString(i, branchId);
-			i++;
 			ps.setString(i, operId);
 			i++;
 			System.out.println("SQL: " + ps);
@@ -144,16 +141,14 @@ public class OperationDao {
 		return i;
 	}
 
-	public void deleteOperation(String branchId, String operId) throws SQLException {
+	public void deleteOperation(String operId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("delete operations where where branch_id = ? and store_id = ?");
+			ps = conn.prepareStatement("delete operations where where oper_id = ?");
 			int i = 1;
-			ps.setString(i, branchId);
-			i++;
 			ps.setString(i, operId);
 			i++;
 			System.out.println("SQL: " + ps);
