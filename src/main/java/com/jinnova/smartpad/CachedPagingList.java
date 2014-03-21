@@ -8,13 +8,17 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IUser;
 
-public class CachedPagingList<T> implements IPagingList<T> {
+public class CachedPagingList<T, E> implements IPagingList<T, E> {
 	
 	private int totalCount = -1;
 	
 	private int pageCount = -1;
 	
 	private int pageSize = 100;
+	
+	private E sortField;
+	
+	private boolean ascending;
 
 	/**
 	 * maximum 3 pages, first two are never retire, last page does retire
@@ -24,7 +28,7 @@ public class CachedPagingList<T> implements IPagingList<T> {
 	//must be zero-lenght
 	private final T[] array;
 	
-	private final PageMemberMate<T> memberMate;
+	private final PageMemberMate<T, E> memberMate;
 	
 	private final Comparator<CachedPage<T>> pageComparator = new Comparator<CachedPage<T>>() {
 
@@ -36,15 +40,30 @@ public class CachedPagingList<T> implements IPagingList<T> {
 	
 	private final Comparator<T> memberComparator;
 	
-	public CachedPagingList(PageMemberMate<T> memberMate, Comparator<T> memberComparator, T[] array) {
+	public CachedPagingList(PageMemberMate<T, E> memberMate, Comparator<T> memberComparator, T[] array) {
 		this.memberMate = memberMate;
 		this.memberComparator = memberComparator;
 		this.array = array;
+		this.sortField = memberMate.getDefaultSort();
+		this.ascending = memberMate.isDefaultSortAscending();
 	}
 	
+	@Override
 	public void setPageSize(int pageSize) {
 		this.pageCount = -1;
 		this.pageSize = pageSize;
+		this.pages.clear();
+	}
+
+	@Override
+	public void setSortField(E e) {
+		this.pageCount = -1;
+		this.pages.clear();
+	}
+
+	@Override
+	public void setSortDirection(boolean ascending) {
+		this.pageCount = -1;
 		this.pages.clear();
 	}
 	
@@ -57,9 +76,22 @@ public class CachedPagingList<T> implements IPagingList<T> {
 	public CachedPage<T> loadPage(int pageNumber) throws SQLException {
 		
 		if (pageSize < 0) {
-			throw new RuntimeException("Negative pageSize");
+			//throw new RuntimeException("Negative pageSize");
+			return null;
 		}
 		if (pageNumber < 0) {
+			return null;
+		}
+		
+		if (totalCount < 0) {
+			totalCount = memberMate.count();
+			pageCount = totalCount / pageSize;
+			if (totalCount > 0 && totalCount % pageSize != 0) {
+				pageCount++;
+			}
+		}
+		
+		if (pageNumber > pageCount) {
 			return null;
 		}
 		
@@ -70,7 +102,7 @@ public class CachedPagingList<T> implements IPagingList<T> {
 		}
 		
 		int offset = (pageNumber - 1) * pageSize;
-		LinkedList<T> members = memberMate.load(offset, pageSize);
+		LinkedList<T> members = memberMate.load(offset, pageSize, sortField, ascending);
 		CachedPage<T> newPage = new CachedPage<>(totalCount, pageCount, pageNumber, offset, members, array);
 		pages.add(newPage);
 		Collections.sort(pages, pageComparator);

@@ -30,7 +30,7 @@ public class Operation implements IOperation {
 
 	private final Catalog rootCatalog;
 	
-	private final CachedPagingList<IPromotion> promotions;
+	private final CachedPagingList<IPromotion, IPromotionSort> promotions;
 
 	private long gpsLon;
 
@@ -79,11 +79,21 @@ public class Operation implements IOperation {
 				return o1.getCreationDate().compareTo(o2.getCreationDate());
 			}
 		};
-		PageMemberMate<IPromotion> mate = new PageMemberMate<IPromotion>() {
+		PageMemberMate<IPromotion, IPromotionSort> mate = new PageMemberMate<IPromotion, IPromotionSort>() {
 
 			@Override
 			public IPromotion newMemberInstance() {
 				return new Promotion(null, Operation.this.operationId);
+			}
+
+			@Override
+			public IPromotionSort getDefaultSort() {
+				return IPromotionSort.creation;
+			}
+
+			@Override
+			public boolean isDefaultSortAscending() {
+				return true;
 			}
 
 			@Override
@@ -92,8 +102,13 @@ public class Operation implements IOperation {
 			}
 
 			@Override
-			public LinkedList<IPromotion> load(int offset, int pageSize) throws SQLException {
-				return new PromotionDao().load(Operation.this.operationId, offset, pageSize);
+			public int count() throws SQLException {
+				return new PromotionDao().count(Operation.this.operationId);
+			}
+
+			@Override
+			public LinkedList<IPromotion> load(int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
+				return new PromotionDao().load(Operation.this.operationId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -119,7 +134,7 @@ public class Operation implements IOperation {
 			public void delete(IPromotion t) throws SQLException {
 				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
 			}};
-		this.promotions = new CachedPagingList<IPromotion>(mate, memberComparator, new IPromotion[0]);
+		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, memberComparator, new IPromotion[0]);
 	}
 	
 	boolean checkBranch(String branchId) {
@@ -148,7 +163,7 @@ public class Operation implements IOperation {
 	}
 
 	@Override
-	public IPagingList<IPromotion> getPromotionPagingList() {
+	public IPagingList<IPromotion, IPromotionSort> getPromotionPagingList() {
 		return promotions;
 	}
 

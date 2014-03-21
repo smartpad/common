@@ -8,19 +8,71 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IPromotion;
+import com.jinnova.smartpad.partner.IPromotionSort;
 import com.jinnova.smartpad.partner.Promotion;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class PromotionDao {
 
-	public LinkedList<IPromotion> load(String operationId, int offset, int pageSize) throws SQLException {
+	public int count(String operationId) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select count(*) from promos where oper_id = ?");
+			ps.setString(1, operationId);
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(1);
+			} else {
+				return 0;
+			}
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public LinkedList<IPromotion> load(String operationId, int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
+		
+		String sortTerm;
+		if (sortField == IPromotionSort.creation) {
+			sortTerm = "creation";
+		} else if (sortField == IPromotionSort.lastUpdate) {
+			sortTerm = "update_last";
+		} else if (sortField == IPromotionSort.startDate) {
+			sortTerm = null;
+		} else if (sortField == IPromotionSort.endDate) {
+			sortTerm = null;
+		} else {
+			sortTerm = null;
+		}
+		
+		if (sortTerm != null) {
+			if (ascending) {
+				sortTerm += " asc";
+			} else {
+				sortTerm += " desc";
+			}
+		} else {
+			sortTerm = "";
+		}
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from promos where oper_id = ? limit ? offset ?");
+			ps = conn.prepareStatement("select * from promos where oper_id = ? order by " + sortTerm + " limit ? offset ?");
 			ps.setString(1, operationId);
 			ps.setInt(2, pageSize);
 			ps.setInt(3, offset);
