@@ -2,18 +2,26 @@ CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8;
 
 use smartpad;
 
-CREATE TABLE `sp_user` (
+CREATE TABLE `sp_users` (
   `login` varchar(32) NOT NULL,
   `passhash` varchar(32) DEFAULT NULL,
   `branch_id` varchar(32) DEFAULT NULL,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
   PRIMARY KEY (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `operations` (
-  `oper_id` varchar(32) NOT NULL DEFAULT '',
+  `oper_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
-  `name` varchar(2048) DEFAULT NULL,
+  `name` varchar(1024) NOT NULL,
+  `descript` text DEFAULT NULL,
+  `images` text DEFAULT NULL,
   `schedule` varchar(1024) DEFAULT NULL,
   `address` varchar(1024) DEFAULT NULL,
   `gps_lon` float DEFAULT NULL,

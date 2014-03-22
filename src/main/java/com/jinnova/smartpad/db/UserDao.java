@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IUser;
+import com.jinnova.smartpad.partner.IUserSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.User;
 
@@ -17,7 +18,7 @@ public class UserDao {
 
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("delete from sp_user");
+		stmt.executeUpdate("delete from sp_users");
 		stmt.executeUpdate("delete from operations");
 		stmt.executeUpdate("delete from catalog");
 		stmt.executeUpdate("delete from catalog_items");
@@ -32,10 +33,12 @@ public class UserDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into sp_user (login, passhash, branch_id) values (?, ?, ?)");
-			ps.setString(1, u.getLogin());
-			ps.setString(2, u.getPasshash());
-			ps.setString(3, branchId);
+			ps = conn.prepareStatement("insert into sp_users set login=?, passhash=?, branch_id=?, " + DaoSupport.RECINFO_FIELDS);
+			int i = 1;
+			ps.setString(i++, u.getLogin());
+			ps.setString(i++, u.getPasshash());
+			ps.setString(i++, branchId);
+			i = DaoSupport.setRecinfoFields(ps, u.getRecordInfo(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
@@ -60,10 +63,12 @@ public class UserDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update sp_user set passhash=? where login=?");
+			ps = conn.prepareStatement("update sp_users set passhash=?, " + DaoSupport.RECINFO_FIELDS + " where login=?");
 			User u = (User) user;
-			ps.setString(1, u.getPasshash());
-			ps.setString(2, u.getLogin());
+			int i = 1;
+			ps.setString(i++, u.getPasshash());
+			i = DaoSupport.setRecinfoFields(ps, user.getRecordInfo(), i);
+			ps.setString(i++, u.getLogin());
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
@@ -80,16 +85,17 @@ public class UserDao {
 		
 		//not delete primary user
 		if (u.isPrimary()) {
-			((User) u).setPasshash("");
+			/*((User) u).setPasshash("");
 			updateUser(u);
-			return;
+			return;*/
+			throw new RuntimeException("Can't delete primary user");
 		}
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("delete from sp_user login=?");
+			ps = conn.prepareStatement("delete from sp_users login=?");
 			ps.setString(1, u.getLogin());
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -104,8 +110,7 @@ public class UserDao {
 	}
 	
 	private static User populateUser(ResultSet rs) throws SQLException {
-		User user = new User(rs.getString("login"), rs.getString("branch_id"));
-		user.setPasshash(rs.getString("passhash"));
+		User user = new User(rs.getString("login"), rs.getString("branch_id"), rs.getString("passhash"));
 		return user;
 	}
 
@@ -116,7 +121,7 @@ public class UserDao {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from sp_user where login = ?");
+			ps = conn.prepareStatement("select * from sp_users where login = ?");
 			ps.setString(1, login);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -138,14 +143,26 @@ public class UserDao {
 		}
 	}
 
-	public IUser[] listUsers(String branchId) throws SQLException {
+	public LinkedList<IUser> listUsers(String branchId, int offset, int pageSize, IUserSort sortField, boolean ascending) throws SQLException {
+		
+		String fieldName;
+		if (sortField == IUserSort.creation) {
+			fieldName = "creation";
+		} else if (sortField == IUserSort.lastUpdate) {
+			fieldName = "update_last";
+		} else if (sortField == IUserSort.login) {
+			fieldName = "login";
+		} else {
+			fieldName = null;
+		}
+		String orderLimitClause = DaoSupport.buildOrderLimit(fieldName, ascending, offset, pageSize);
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from sp_user where branch_id = ?");
+			ps = conn.prepareStatement("select * from sp_users where branch_id = ? " + orderLimitClause);
 			ps.setString(1, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -154,7 +171,35 @@ public class UserDao {
 				User user = populateUser(rs);
 				userList.add(user);
 			}
-			return userList.toArray(new IUser[userList.size()]);
+			return userList;
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public int count(String branchId) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select count(*) from sp_users where branch_id = ?");
+			ps.setString(1, branchId);
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(0);
+			} else {
+				return 0;
+			}
 		} finally {
 			if (rs != null) {
 				rs.close();

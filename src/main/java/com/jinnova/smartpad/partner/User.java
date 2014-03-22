@@ -7,30 +7,35 @@ import java.util.LinkedList;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.RecordInfoHolder;
 import com.jinnova.smartpad.db.OperationDao;
-import com.jinnova.smartpad.db.UserDao;
 import com.jinnova.smartpad.partner.IUser;
 
-public class User implements IUser {
+public class User implements IUser, RecordInfoHolder {
 
 	private String login;
+	
+	private String loginTemp;
 	
 	private String passhash;
 
 	private final String branchId;
-	//private Branch branch;
 	
 	private Operation branch;
+	
+	private final RecordInfo recordInfo = new RecordInfo();
 	
 	//private final LinkedList<IOperation> allStores = new LinkedList<IOperation>();
 	private final CachedPagingList<IOperation, IOperationSort> storePagingList;
 	
 	//private boolean storesLoaded = false;
 
-	public User(String login, String branchId) {
+	public User(String login, String branchId, String passhash) {
 		super();
 		this.login = login;
 		this.branchId = branchId;
+		this.passhash = passhash;
 		@SuppressWarnings("unchecked")
 		final Comparator<IOperation>[] comparators = new Comparator[5];
 		comparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
@@ -62,19 +67,14 @@ public class User implements IUser {
 		comparators[IOperationSort.name.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
+				return o1.getName().getName().compareToIgnoreCase(o2.getName().getName());
 			}
 		};
 		PageMemberMate<IOperation, IOperationSort> memberMate = new PageMemberMate<IOperation, IOperationSort>() {
 
 			@Override
-			public IOperation newMemberInstance() {
+			public IOperation newMemberInstance(IUser authorizedUser) {
 				return new Operation(null, User.this.branchId);
-			}
-
-			@Override
-			public Comparator<IOperation> getComparator(IOperationSort sortField) {
-				return comparators[sortField.ordinal()];
 			}
 
 			@Override
@@ -83,12 +83,12 @@ public class User implements IUser {
 			}
 
 			@Override
-			public LinkedList<IOperation> load(int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
+			public LinkedList<IOperation> load(IUser authorizedUser, int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
 				return new OperationDao().loadStores(User.this.branchId); //TODO offset, pagesize, sort
 			}
 
 			@Override
-			public void insert(IOperation t) throws SQLException {
+			public void insert(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
 				String newId = SmartpadCommon.md5(User.this.branchId +  op.getName());
 				op.setOperationId(newId);
@@ -96,24 +96,24 @@ public class User implements IUser {
 			}
 
 			@Override
-			public void update(IOperation t) throws SQLException {
+			public void update(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
 				new OperationDao().updateOperation(op.getOperationId(), op);
 			}
 
 			@Override
-			public void delete(IOperation t) throws SQLException {
+			public void delete(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
 				new OperationDao().deleteOperation(op.getOperationId());
 				op.setOperationId(null);
 			}
 
 			@Override
-			public int count() throws SQLException {
+			public int count(IUser authorizedUser) throws SQLException {
 				return new OperationDao().countStores(User.this.branchId);
 			}
 		};
-		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(memberMate, IOperationSort.creation, true, new IOperation[0]);
+		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(memberMate, comparators, IOperationSort.creation, new IOperation[0]);
 	}
 	
 	@Override
@@ -128,24 +128,37 @@ public class User implements IUser {
 	public String getLogin() {
 		return login;
 	}
+	
+	@Override
+	public void setLogin(String login) {
+		if (this.login != null) {
+			throw new RuntimeException("Login can't be changed");
+		}
+		this.loginTemp = login;
+	}
+	
+	void setLogin() {
+		this.login = this.loginTemp;
+	}
 
 	public String getPasshash() {
 		return passhash;
 	}
+	
+	String getBranchId() {
+		return this.branchId;
+	}
 
-	/* (non-Javadoc)
-	 * @see com.jinnova.smartpad.partner.IUser#setPasshash(java.lang.String)
-	 */
 	@Override
 	public void setPassword(String password) {
 		this.passhash = SmartpadCommon.md5(password);
 	}
 	
-	public void setPasshash(String passhash) {
+	/*public void setPasshash(String passhash) {
 		this.passhash = passhash;
-	}
+	}*/
 
-	IUser createUser(String login, String password) throws SQLException {
+	/*IUser createUser(String login, String password) throws SQLException {
 		if (!isPrimary()) {
 			throw new RuntimeException("Unauthorized user");
 		}
@@ -153,11 +166,11 @@ public class User implements IUser {
 		u.setPasshash(SmartpadCommon.md5(password));
 		new UserDao().createUser(this.branchId, u);
 		return u;
-	}
+	}*/
 	
-	IUser[] listUsers() throws SQLException {
+	/*IUser[] listUsers() throws SQLException {
 		return new UserDao().listUsers(this.branchId);
-	}
+	}*/
 
 	@Override
 	public void updateBranch() throws SQLException {
@@ -190,6 +203,11 @@ public class User implements IUser {
 	@Override
 	public IPagingList<IOperation, IOperationSort> getStorePagingList() throws SQLException {
 		return storePagingList;
+	}
+
+	@Override
+	public IRecordInfo getRecordInfo() {
+		return recordInfo;
 	}
 
 	/*@Override

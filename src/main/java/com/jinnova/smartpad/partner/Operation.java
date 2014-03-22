@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
+import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.PageMemberMate;
 import com.jinnova.smartpad.db.PromotionDao;
 
@@ -20,7 +22,7 @@ public class Operation implements IOperation {
 	
 	//private boolean persisted;
 	
-	private String name;
+	private final Name name = new Name();
 
 	private final Schedule openHours = new Schedule();
 	
@@ -103,7 +105,7 @@ public class Operation implements IOperation {
 		PageMemberMate<IPromotion, IPromotionSort> mate = new PageMemberMate<IPromotion, IPromotionSort>() {
 
 			@Override
-			public IPromotion newMemberInstance() {
+			public IPromotion newMemberInstance(IUser authorizedUser) {
 				return new Promotion(null, Operation.this.operationId);
 			}
 
@@ -113,22 +115,17 @@ public class Operation implements IOperation {
 			}
 
 			@Override
-			public int count() throws SQLException {
+			public int count(IUser authorizedUser) throws SQLException {
 				return new PromotionDao().count(Operation.this.operationId);
 			}
 
 			@Override
-			public LinkedList<IPromotion> load(int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
+			public LinkedList<IPromotion> load(IUser authorizedUser, int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
 				return new PromotionDao().load(Operation.this.operationId, offset, pageSize, sortField, ascending);
-			}
-			
-			@Override
-			public Comparator<IPromotion> getComparator(IPromotionSort sortField) {
-				return comparators[sortField.ordinal()];
 			}
 
 			@Override
-			public void insert(IPromotion t) throws SQLException {
+			public void insert(IUser authorizedUser, IPromotion t) throws SQLException {
 				if (t.getName().getName() == null || "".equals(t.getName().getName())) {
 					throw new RuntimeException("Promotion name is missing");
 				}
@@ -140,17 +137,17 @@ public class Operation implements IOperation {
 			}
 
 			@Override
-			public void update(IPromotion t) throws SQLException {
+			public void update(IUser authorizedUser, IPromotion t) throws SQLException {
 				Date now = new Date();
 				((Promotion) t).setLastUpdate(now);
 				new PromotionDao().update(((Promotion) t).getPromotionId(), t);
 			}
 
 			@Override
-			public void delete(IPromotion t) throws SQLException {
+			public void delete(IUser authorizedUser, IPromotion t) throws SQLException {
 				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
 			}};
-		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, IPromotionSort.creation, true, new IPromotion[0]);
+		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, comparators, IPromotionSort.creation, new IPromotion[0]);
 	}
 	
 	boolean checkBranch(String branchId) {
@@ -179,12 +176,7 @@ public class Operation implements IOperation {
 	}
 
 	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String getName() {
+	public IName getName() {
 		return name;
 	}
 

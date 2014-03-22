@@ -24,7 +24,7 @@ public class CatalogDao {
 			rs = ps.executeQuery();
 			while (rs.next()) {
 				Catalog cat = new Catalog(branchId, rs.getString("catalog_id"), parentId);
-				NameDao.populate(rs, cat.getName());
+				DaoSupport.populateName(rs, cat.getName());
 				subCatalogs.add(cat);
 			}
 		} finally {
@@ -46,12 +46,12 @@ public class CatalogDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into catalog set catalog_id=?, parent_id=?, branch_id=?, " + NameDao.FIELDS);
+			ps = conn.prepareStatement("insert into catalog set catalog_id=?, parent_id=?, branch_id=?, " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, catalogId);
 			ps.setString(i++, parentCatalogId);
 			ps.setString(i++, branchId);
-			NameDao.setFields(ps, cat.getName(), i);
+			DaoSupport.setNameFields(ps, cat.getName(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
@@ -69,9 +69,9 @@ public class CatalogDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update catalog set " + NameDao.FIELDS + " where catalog_id=?");
+			ps = conn.prepareStatement("update catalog set " + DaoSupport.NAME_FIELDS + " where catalog_id=?");
 			int i = 1;
-			i = NameDao.setFields(ps, subCat.getName(), i);
+			i = DaoSupport.setNameFields(ps, subCat.getName(), i);
 			ps.setString(i++, catalogId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

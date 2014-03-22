@@ -16,7 +16,7 @@ public class OperationDao {
 	private Operation populateOperation(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"));
 		//oper.setOperationId( rs.getString("store_id"));
-		oper.setName(rs.getString("name"));
+		DaoSupport.populateName(rs, oper.getName());
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));
 		oper.setMemberLevels(StringArrayUtils.stringArrayFromJson(rs.getString("member_levels")));
@@ -114,14 +114,16 @@ public class OperationDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into operations set branch_id = ?, oper_id = ?, " + OP_FIELDS);
+			ps = conn.prepareStatement("insert into operations set branch_id = ?, oper_id = ?, " + 
+					DaoSupport.NAME_FIELDS + ", " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
 			ps.setString(i, branchId);
 			i++;
 			ps.setString(i, operId);
 			i++;
-			setValues(i, op, ps);
+			i = DaoSupport.setNameFields(ps, operation.getName(), i);
+			setFields(i, op, ps);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
@@ -140,10 +142,11 @@ public class OperationDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update operations set " + OP_FIELDS + " where oper_id = ?");
+			ps = conn.prepareStatement("update operations set " + DaoSupport.NAME_FIELDS + ", " + OP_FIELDS + " where oper_id = ?");
 			Operation op = (Operation) operation;
 			int i = 1;
-			i = setValues(i, op, ps);
+			i = DaoSupport.setNameFields(ps, operation.getName(), i);
+			i = setFields(i, op, ps);
 			ps.setString(i, operId);
 			i++;
 			System.out.println("SQL: " + ps);
@@ -158,10 +161,9 @@ public class OperationDao {
 		}
 	}
 	
-	private static final String OP_FIELDS = "name=?, open_text=?, open_hours=?, member_levels=?";
+	private static final String OP_FIELDS = "open_text=?, open_hours=?, member_levels=?";
 	
-	private static int setValues(int i, Operation op, PreparedStatement ps) throws SQLException {
-		ps.setString(i++, op.getName());
+	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
 		ps.setString(i++, op.getOpenHours().getText());
 		ps.setString(i++, op.getOpenHours().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));

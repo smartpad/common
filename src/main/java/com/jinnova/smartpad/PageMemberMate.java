@@ -1,28 +1,23 @@
 package com.jinnova.smartpad;
 
 import java.sql.SQLException;
-import java.util.Comparator;
 import java.util.LinkedList;
+
+import com.jinnova.smartpad.partner.IUser;
 
 public interface PageMemberMate<T, E> {
 
-	T newMemberInstance();
+	T newMemberInstance(IUser authorizedUser);
 	
 	boolean isPersisted(T member);
-	
-	//E getDefaultSort();
-	
-	//boolean isDefaultSortAscending();
-	
-	Comparator<T> getComparator(E sortField);
 
-	LinkedList<T> load(int offset, int pageSize, E sortField, boolean ascending) throws SQLException;
+	LinkedList<T> load(IUser authorizedUser, int offset, int pageSize, E sortField, boolean ascending) throws SQLException;
 	
-	void insert(T t) throws SQLException;
+	void insert(IUser authorizedUser, T newMember) throws SQLException;
 	
-	void update(T t) throws SQLException;
+	void update(IUser authorizedUser, T member) throws SQLException;
 	
-	void delete(T t) throws SQLException;
+	void delete(IUser authorizedUser, T member) throws SQLException;
 
-	int count() throws SQLException;
+	int count(IUser authorizedUser) throws SQLException;
 }
