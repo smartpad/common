@@ -49,10 +49,8 @@ public class PromotionDao {
 			fieldName = "creation";
 		} else if (sortField == IPromotionSort.lastUpdate) {
 			fieldName = "update_last";
-		} else if (sortField == IPromotionSort.startDate) {
-			fieldName = null;
-		} else if (sortField == IPromotionSort.endDate) {
-			fieldName = null;
+		} else if (sortField == IPromotionSort.name) {
+			fieldName = "name";
 		} else {
 			fieldName = null;
 		}

@@ -116,11 +116,6 @@ public class PartnerManager implements IPartnerManager {
 		return u;
 	}
 
-	/*@Override
-	public IUser createUser(IUser authorizedUser, String login, String password) throws SQLException {
-		return ((User) authorizedUser).createUser(login, password);
-	}*/
-
 	@Override
 	public IUser login(String login, String password) throws SQLException {
 		if (password == null || login == null) {
@@ -140,25 +135,4 @@ public class PartnerManager implements IPartnerManager {
 	public IPagingList<IUser, IUserSort> getUserPagingList() throws SQLException {
 		return userPagingList;
 	}
-
-	/*@Override
-	public void updateUser(IUser authorizedUser, IUser u) throws SQLException {
-		if (!authorizedUser.isPrimary() && !authorizedUser.getLogin().equals(u.getLogin())) {
-			return;
-		}
-		new UserDao().updateUser(u);
-	}
-
-	@Override
-	public void deleteUser(IUser authorizedUser, IUser u) throws SQLException {
-		if (!authorizedUser.isPrimary()) {
-			return;
-		}
-		new UserDao().deleteUser(u);
-	}
-
-	@Override
-	public IPagingList<IUser, IUserSort> listUsers(IUser authorizedUser) throws SQLException {
-		return userPagingList;
-	}*/
 }

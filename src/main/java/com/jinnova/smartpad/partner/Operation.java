@@ -10,17 +10,17 @@ import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.RecordInfoHolder;
 import com.jinnova.smartpad.db.PromotionDao;
 
-public class Operation implements IOperation {
-	
-	//public static final String STORE_MAIN_ID = "BRANCH";
+public class Operation implements IOperation, RecordInfoHolder {
 	
 	private final String branchId;
 	
 	private String operationId;
 	
-	//private boolean persisted;
+	private final RecordInfo recordInfo = new RecordInfo();
 	
 	private final Name name = new Name();
 
@@ -69,10 +69,9 @@ public class Operation implements IOperation {
 	
 	private Integer memberOfferedSurveyLevel;
 	
-	public Operation(String operId, String branchId/*, boolean persisted*/) {
+	public Operation(String operId, String branchId) {
 		this.operationId = operId;
 		this.branchId = branchId;
-		//this.persisted = persisted;
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
 		
 		@SuppressWarnings({ "unchecked" })
@@ -89,16 +88,10 @@ public class Operation implements IOperation {
 				return o1.getLastUpdate().compareTo(o2.getLastUpdate());
 			}
 		};
-		comparators[IPromotionSort.startDate.ordinal()] = new Comparator<IPromotion>() {
+		comparators[IPromotionSort.name.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
-				return 0; //TODO sort promotion by start date
-			}
-		};
-		comparators[IPromotionSort.endDate.ordinal()] = new Comparator<IPromotion>() {
-			@Override
-			public int compare(IPromotion o1, IPromotion o2) {
-				return 0; //TODO sort promotion by end date
+				return o1.getName().getName().compareTo(o2.getName().getName());
 			}
 		};
 		
@@ -150,6 +143,11 @@ public class Operation implements IOperation {
 		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, comparators, IPromotionSort.creation, new IPromotion[0]);
 	}
 	
+	@Override
+	public RecordInfo getRecordInfo() {
+		return this.recordInfo;
+	}
+	
 	boolean checkBranch(String branchId) {
 		return this.branchId.equals(branchId);
 	}
@@ -161,14 +159,6 @@ public class Operation implements IOperation {
 	public void setOperationId(String operationId) {
 		this.operationId = operationId;
 	}
-	
-	/*boolean isPersisted() {
-		return this.operationId != null;
-	}*/
-	
-	/*void setPersisted(boolean b) {
-		this.persisted = b;
-	}*/
 
 	@Override
 	public IPagingList<IPromotion, IPromotionSort> getPromotionPagingList() {

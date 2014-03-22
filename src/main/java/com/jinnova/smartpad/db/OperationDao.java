@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IOperation;
+import com.jinnova.smartpad.partner.IOperationSort;
 import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.StringArrayUtils;
@@ -15,8 +16,8 @@ public class OperationDao {
 	
 	private Operation populateOperation(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"));
-		//oper.setOperationId( rs.getString("store_id"));
 		DaoSupport.populateName(rs, oper.getName());
+		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));
 		oper.setMemberLevels(StringArrayUtils.stringArrayFromJson(rs.getString("member_levels")));
@@ -51,14 +52,27 @@ public class OperationDao {
 		}
 	}
 
-	public LinkedList<IOperation> loadStores(String branchId) throws SQLException {
+	public LinkedList<IOperation> loadStores(String branchId, int offset, int pageSize, 
+			IOperationSort sortField, boolean ascending) throws SQLException {
+
+		String fieldName;
+		if (sortField == IOperationSort.creation) {
+			fieldName = "create_date";
+		} else if (sortField == IOperationSort.lastUpdate) {
+			fieldName = "update_date";
+		} else if (sortField == IOperationSort.name) {
+			fieldName = "name";
+		} else {
+			fieldName = null;
+		}
+		String orderLimitClause = DaoSupport.buildOrderLimit(fieldName, ascending, offset, pageSize);
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id");
+			ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id " + orderLimitClause);
 			ps.setString(1, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -115,14 +129,13 @@ public class OperationDao {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("insert into operations set branch_id = ?, oper_id = ?, " + 
-					DaoSupport.NAME_FIELDS + ", " + OP_FIELDS);
+					DaoSupport.NAME_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
-			ps.setString(i, branchId);
-			i++;
-			ps.setString(i, operId);
-			i++;
+			ps.setString(i++, branchId);
+			ps.setString(i++, operId);
 			i = DaoSupport.setNameFields(ps, operation.getName(), i);
+			i = DaoSupport.setRecinfoFields(ps, operation.getRecordInfo(), i);
 			setFields(i, op, ps);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -142,10 +155,12 @@ public class OperationDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update operations set " + DaoSupport.NAME_FIELDS + ", " + OP_FIELDS + " where oper_id = ?");
+			ps = conn.prepareStatement("update operations set " + DaoSupport.NAME_FIELDS + ", " + 
+					DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS + " where oper_id = ?");
 			Operation op = (Operation) operation;
 			int i = 1;
 			i = DaoSupport.setNameFields(ps, operation.getName(), i);
+			i = DaoSupport.setRecinfoFields(ps, operation.getRecordInfo(), i);
 			i = setFields(i, op, ps);
 			ps.setString(i, operId);
 			i++;

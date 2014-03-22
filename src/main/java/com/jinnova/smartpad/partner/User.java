@@ -2,6 +2,7 @@ package com.jinnova.smartpad.partner;
 
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
@@ -26,10 +27,7 @@ public class User implements IUser, RecordInfoHolder {
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
-	//private final LinkedList<IOperation> allStores = new LinkedList<IOperation>();
 	private final CachedPagingList<IOperation, IOperationSort> storePagingList;
-	
-	//private boolean storesLoaded = false;
 
 	public User(String login, String branchId, String passhash) {
 		super();
@@ -41,27 +39,13 @@ public class User implements IUser, RecordInfoHolder {
 		comparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
-				return 0; //TODO sort operation by creation date
-				//return o1.getCreationDate().compareTo(o2.getCreationDate());
+				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
 			}
 		};
 		comparators[IOperationSort.lastUpdate.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
-				return 0; //TODO sort operation by last update
-				//return o1.getLastUpdate().compareTo(o2.getLastUpdate());
-			}
-		};
-		comparators[IOperationSort.start.ordinal()] = new Comparator<IOperation>() {
-			@Override
-			public int compare(IOperation o1, IOperation o2) {
-				return 0; //TODO sort operation by start date
-			}
-		};
-		comparators[IOperationSort.end.ordinal()] = new Comparator<IOperation>() {
-			@Override
-			public int compare(IOperation o1, IOperation o2) {
-				return 0; //TODO sort operation by end date
+				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
 			}
 		};
 		comparators[IOperationSort.name.ordinal()] = new Comparator<IOperation>() {
@@ -83,8 +67,10 @@ public class User implements IUser, RecordInfoHolder {
 			}
 
 			@Override
-			public LinkedList<IOperation> load(IUser authorizedUser, int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
-				return new OperationDao().loadStores(User.this.branchId); //TODO offset, pagesize, sort
+			public LinkedList<IOperation> load(IUser authorizedUser, 
+					int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
+				
+				return new OperationDao().loadStores(User.this.branchId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -153,24 +139,6 @@ public class User implements IUser, RecordInfoHolder {
 	public void setPassword(String password) {
 		this.passhash = SmartpadCommon.md5(password);
 	}
-	
-	/*public void setPasshash(String passhash) {
-		this.passhash = passhash;
-	}*/
-
-	/*IUser createUser(String login, String password) throws SQLException {
-		if (!isPrimary()) {
-			throw new RuntimeException("Unauthorized user");
-		}
-		User u = new User(login, this.branchId);
-		u.setPasshash(SmartpadCommon.md5(password));
-		new UserDao().createUser(this.branchId, u);
-		return u;
-	}*/
-	
-	/*IUser[] listUsers() throws SQLException {
-		return new UserDao().listUsers(this.branchId);
-	}*/
 
 	@Override
 	public void updateBranch() throws SQLException {
@@ -178,11 +146,14 @@ public class User implements IUser, RecordInfoHolder {
 			return;
 		}
 		if (branch.getOperationId() != null) {
+			branch.getRecordInfo().setUpdateDate(new Date());
+			branch.getRecordInfo().setUpdateBy(this.login);
 			new OperationDao().updateOperation(branch.getOperationId(), branch);
 		} else {
 			branch.setOperationId(this.branchId);
+			branch.getRecordInfo().setCreateDate(new Date());
+			branch.getRecordInfo().setCreateBy(this.login);
 			new OperationDao().createOperation(this.branchId, branch.getOperationId(), branch);
-			//branch.setPersisted(true);
 		}
 	}
 
@@ -193,9 +164,7 @@ public class User implements IUser, RecordInfoHolder {
 		}
 		branch = (Operation) new OperationDao().loadBranch(branchId);
 		if (branch == null) {
-			//branch = new Branch(this.branchId);
 			branch = new Operation(null, this.branchId);
-			//branch.setOperationId(Operation.STORE_MAIN_ID);
 		}
 		return branch;
 	}
@@ -209,49 +178,4 @@ public class User implements IUser, RecordInfoHolder {
 	public IRecordInfo getRecordInfo() {
 		return recordInfo;
 	}
-
-	/*@Override
-	public IOperation[] loadStores() throws SQLException {
-		if (!storesLoaded) {
-			allStores.clear();
-			allStores.addAll(new OperationDao().loadStores(branchId));
-			storesLoaded = true;
-		}
-		return allStores.toArray(new IOperation[allStores.size()]);
-	}
-
-	@Override
-	public IOperation newStoreInstance() {
-		return new Operation(branchId, false);
-	}
-
-	@Override
-	public void putStore(IOperation store) throws SQLException {
-		if (!isPrimary()) {
-			return;
-		}
-		Operation st = (Operation) store;
-		if (!st.checkBranch(this.branchId)) {
-			throw new RuntimeException("Store does not belong to branch");
-		}
-		if (st.isPersisted()) {
-			new OperationDao().updateOperation(this.branchId, st.getOperationId(), st);
-		} else {
-			st.setOperationId(SmartpadCommon.md5(st.getName()));
-			new OperationDao().createOperation(this.branchId, st.getOperationId(), st);
-			allStores.add(st);
-			st.setPersisted(true);
-		}
-	}
-
-	@Override
-	public void deleteStore(IOperation store) throws SQLException {
-		if (!isPrimary()) {
-			return;
-		}
-		Operation st = (Operation) store;
-		new OperationDao().deleteOperation(this.branchId, st.getOperationId());
-		allStores.remove(st);
-		st.setPersisted(false);
-	}*/
 }

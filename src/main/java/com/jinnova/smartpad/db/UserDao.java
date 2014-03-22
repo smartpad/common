@@ -147,9 +147,9 @@ public class UserDao {
 		
 		String fieldName;
 		if (sortField == IUserSort.creation) {
-			fieldName = "creation";
+			fieldName = "create_date";
 		} else if (sortField == IUserSort.lastUpdate) {
-			fieldName = "update_last";
+			fieldName = "update_date";
 		} else if (sortField == IUserSort.login) {
 			fieldName = "login";
 		} else {

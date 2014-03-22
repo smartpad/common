@@ -17,11 +17,19 @@ CREATE TABLE `sp_users` (
 
 
 CREATE TABLE `operations` (
+
   `oper_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
   `schedule` varchar(1024) DEFAULT NULL,
   `address` varchar(1024) DEFAULT NULL,
   `gps_lon` float DEFAULT NULL,

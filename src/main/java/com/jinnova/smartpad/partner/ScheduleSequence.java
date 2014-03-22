@@ -39,35 +39,6 @@ public class ScheduleSequence implements IScheduleSequence {
 	private final LinkedList<Integer> months = new LinkedList<Integer>();
 	
 	private final LinkedList<Integer> years = new LinkedList<Integer>();
-
-	/*public ScheduleSequence(int[] minutes, int[] hours, int[] daysOfWeek,
-			int[] daysOfMonth, int[] months, int[] years) {
-
-		sort(minutes);
-		this.minutes = minutes;
-		
-		sort(hours);
-		this.hours = hours;
-		
-		sort(daysOfWeek);
-		this.daysOfWeek = daysOfWeek;
-		
-		sort(daysOfMonth);
-		this.daysOfMonth = daysOfMonth;
-		
-		sort(months);
-		this.months = months;
-		
-		sort(years);
-		this.years = years;
-	}
-	
-	private static void sort(int[] source) {
-		if (source == null) {
-			return;
-		}
-		Arrays.sort(source);
-	}*/
 	
 	private static void addAll(LinkedList<Integer> dest, int[] source) {
 		for (int i : source) {
@@ -187,6 +158,31 @@ public class ScheduleSequence implements IScheduleSequence {
 		}
 		return true;
 	}
+	
+	/*public Date getEarliestStart() {
+
+		Collections.sort(years);
+		Collections.sort(months);
+		Collections.sort(daysOfMonth);
+		Collections.sort(daysOfWeek);
+		Collections.sort(hours);
+		Collections.sort(minutes);
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(0);
+		cal.set(Calendar.MINUTE, minutes.getFirst());
+		return null;
+	}
+	
+	public Date getLatestEnd() {
+
+		Collections.sort(years);
+		Collections.sort(months);
+		Collections.sort(daysOfMonth);
+		Collections.sort(daysOfWeek);
+		Collections.sort(hours);
+		Collections.sort(minutes);
+		return null;
+	}*/
 	
 	private static JsonArray toJson(LinkedList<Integer> numbers) {
 		JsonArray ja = new JsonArray();
