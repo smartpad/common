@@ -8,6 +8,7 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.CatalogItem;
 import com.jinnova.smartpad.partner.ICatalogItem;
+import com.jinnova.smartpad.partner.ICatalogItemSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class CatalogItemDao {
@@ -40,13 +41,14 @@ public class CatalogItemDao {
 		}
 	}
 
-	public LinkedList<ICatalogItem> loadCatalogItems(String catalogId) throws SQLException {
+	public LinkedList<ICatalogItem> loadCatalogItems(String catalogId, int offset,
+			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from catalog_items where catalog_id = ?");
+			ps = conn.prepareStatement("select * from catalog_items where catalog_id = ?"); //TODO order by
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();

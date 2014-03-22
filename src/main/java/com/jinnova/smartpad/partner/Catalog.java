@@ -185,7 +185,7 @@ public class Catalog implements ICatalog {
 			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
 					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 				
-				return new CatalogItemDao().loadCatalogItems(Catalog.this.catalogId);
+				return new CatalogItemDao().loadCatalogItems(Catalog.this.catalogId, offset, pageSize, sortField, ascending);
 			}
 			
 			@Override

@@ -196,7 +196,7 @@ public class UserDao {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (rs.next()) {
-				return rs.getInt(0);
+				return rs.getInt(1);
 			} else {
 				return 0;
 			}

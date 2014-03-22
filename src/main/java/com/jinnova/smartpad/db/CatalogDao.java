@@ -46,7 +46,7 @@ public class CatalogDao {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from catalogs where parent_id = ?");
+			ps = conn.prepareStatement("select * from catalogs where parent_id = ?"); //TODO order by
 			ps.setString(1, parentId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
