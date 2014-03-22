@@ -46,7 +46,8 @@ class DaoSupport {
 		return i;
 	}
 	
-	static void populateRecinfo(ResultSet rs, RecordInfo recinfo) throws SQLException {
+	static void populateRecinfo(ResultSet rs, IRecordInfo recordInfo) throws SQLException {
+		RecordInfo recinfo = (RecordInfo) recordInfo;
 		recinfo.setCreateDate(rs.getTimestamp("create_date"));
 		recinfo.setUpdateDate(rs.getTimestamp("update_date"));
 		recinfo.setCreateBy(rs.getString("create_by"));

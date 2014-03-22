@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.Name;
+import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.member.CCardBranch;
 import com.jinnova.smartpad.member.CCardIssuer;
 import com.jinnova.smartpad.member.CCardType;
@@ -17,9 +18,7 @@ public class Promotion implements IPromotion {
 	
 	private final Name name = new Name();
 	
-	private Date creationDate;
-	
-	private Date lastUpdate;
+	private final RecordInfo recordInfo = new RecordInfo();
 
 	private Schedule schedule;
 	
@@ -66,22 +65,9 @@ public class Promotion implements IPromotion {
 	public IName getName() {
 		return name;
 	}
-
+	
 	@Override
-	public Date getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
-	}
-
-	@Override
-	public Date getLastUpdate() {
-		return lastUpdate;
-	}
-
-	public void setLastUpdate(Date d) {
-		this.lastUpdate = d;
+	public IRecordInfo getRecordInfo() {
+		return recordInfo;
 	}
 }

@@ -20,7 +20,7 @@ public class UserDao {
 		Statement stmt = conn.createStatement();
 		stmt.executeUpdate("delete from sp_users");
 		stmt.executeUpdate("delete from operations");
-		stmt.executeUpdate("delete from catalog");
+		stmt.executeUpdate("delete from catalogs");
 		stmt.executeUpdate("delete from catalog_items");
 		stmt.executeUpdate("delete from promos");
 		stmt.close();

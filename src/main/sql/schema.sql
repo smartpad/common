@@ -50,13 +50,20 @@ CREATE TABLE `operations` (
   PRIMARY KEY (`oper_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `catalog` (
+CREATE TABLE `catalogs` (
   `catalog_id` varchar(32) NOT NULL,
   `parent_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
   PRIMARY KEY (`catalog_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -64,9 +71,16 @@ CREATE TABLE `catalog_items` (
   `item_id` varchar(32) NOT NULL,
   `catalog_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
   `unit_price` decimal(12,2) DEFAULT NULL,
   PRIMARY KEY (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -75,8 +89,12 @@ CREATE TABLE `promos` (
   `promo_id` varchar(32) NOT NULL,
   `oper_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
-  `creation` datetime NOT NULL,
-  `update_last` datetime NOT NULL,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,

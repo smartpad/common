@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.jinnova.smartpad.partner.IRecordInfoHolder;
 import com.jinnova.smartpad.partner.IUser;
 
 public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E> {
@@ -51,6 +52,13 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		if (defaultSort == null) {
 			throw new IllegalArgumentException("Default sort can't be null");
 		}
+		for (int i = 0; i < comparators.length; i++) {
+			Comparator<T> c = comparators[i];
+			if (c == null) {
+				throw new IllegalArgumentException("Null comparator at " + i);
+			}
+		}
+		
 		this.memberMate = memberMate;
 		this.comparators = comparators;
 		this.array = array;
@@ -132,18 +140,18 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		}
 		
 		if (memberMate.isPersisted(newMember)) {
-			if (newMember instanceof RecordInfoHolder) {
-				((RecordInfo) ((RecordInfoHolder) newMember).getRecordInfo()).setUpdateDate(new Date());
-				((RecordInfo) ((RecordInfoHolder) newMember).getRecordInfo()).setUpdateBy(authorizedUser.getLogin());
+			if (newMember instanceof IRecordInfoHolder) {
+				((RecordInfo) ((IRecordInfoHolder) newMember).getRecordInfo()).setUpdateDate(new Date());
+				((RecordInfo) ((IRecordInfoHolder) newMember).getRecordInfo()).setUpdateBy(authorizedUser.getLogin());
 			}
 			memberMate.update(authorizedUser, newMember);
 			return;
 		}
 		
 		//add new
-		if (newMember instanceof RecordInfoHolder) {
-			((RecordInfo) ((RecordInfoHolder) newMember).getRecordInfo()).setCreateDate(new Date());
-			((RecordInfo) ((RecordInfoHolder) newMember).getRecordInfo()).setCreateBy(authorizedUser.getLogin());
+		if (newMember instanceof IRecordInfoHolder) {
+			((RecordInfo) ((IRecordInfoHolder) newMember).getRecordInfo()).setCreateDate(new Date());
+			((RecordInfo) ((IRecordInfoHolder) newMember).getRecordInfo()).setCreateBy(authorizedUser.getLogin());
 		}
 		memberMate.insert(authorizedUser, newMember);
 		boolean putInPage = false;

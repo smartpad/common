@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IPromotion;
@@ -46,7 +45,7 @@ public class PromotionDao {
 		
 		String fieldName;
 		if (sortField == IPromotionSort.creation) {
-			fieldName = "creation";
+			fieldName = "create_date";
 		} else if (sortField == IPromotionSort.lastUpdate) {
 			fieldName = "update_last";
 		} else if (sortField == IPromotionSort.name) {
@@ -86,8 +85,7 @@ public class PromotionDao {
 	
 	private static Promotion populate(ResultSet rs) throws SQLException {
 		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("oper_id"));
-		promo.setCreationDate(rs.getTimestamp("creation"));
-		promo.setLastUpdate(rs.getTimestamp("update_last"));
+		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
 		DaoSupport.populateName(rs, promo.getName());
 		return promo;
 	}
@@ -97,13 +95,13 @@ public class PromotionDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into promos set promo_id=?, oper_id=?, branch_id=?, creation=?, update_last=?, " + DaoSupport.NAME_FIELDS);
+			ps = conn.prepareStatement("insert into promos set promo_id=?, oper_id=?, branch_id=?, " +
+					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, promotionId);
 			ps.setString(i++, operationId);
 			ps.setString(i++, branchId);
-			ps.setTimestamp(i++, new Timestamp(t.getCreationDate().getTime()));
-			ps.setTimestamp(i++, new Timestamp(t.getLastUpdate().getTime()));
+			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, t.getName(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

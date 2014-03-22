@@ -2,7 +2,6 @@ package com.jinnova.smartpad.partner;
 
 import java.sql.SQLException;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
@@ -11,10 +10,9 @@ import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.PageMemberMate;
 import com.jinnova.smartpad.RecordInfo;
-import com.jinnova.smartpad.RecordInfoHolder;
 import com.jinnova.smartpad.db.PromotionDao;
 
-public class Operation implements IOperation, RecordInfoHolder {
+public class Operation implements IOperation {
 	
 	private final String branchId;
 	
@@ -75,17 +73,17 @@ public class Operation implements IOperation, RecordInfoHolder {
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
 		
 		@SuppressWarnings({ "unchecked" })
-		final Comparator<IPromotion>[] comparators = new Comparator[4];
+		final Comparator<IPromotion>[] comparators = new Comparator[IPromotionSort.values().length];
 		comparators[IPromotionSort.creation.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
-				return o1.getCreationDate().compareTo(o2.getCreationDate());
+				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
 			}
 		};
 		comparators[IPromotionSort.lastUpdate.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
-				return o1.getLastUpdate().compareTo(o2.getLastUpdate());
+				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
 			}
 		};
 		comparators[IPromotionSort.name.ordinal()] = new Comparator<IPromotion>() {
@@ -122,17 +120,12 @@ public class Operation implements IOperation, RecordInfoHolder {
 				if (t.getName().getName() == null || "".equals(t.getName().getName())) {
 					throw new RuntimeException("Promotion name is missing");
 				}
-				Date now = new Date();
-				((Promotion) t).setCreationDate(now);
-				((Promotion) t).setLastUpdate(now);
 				String newId = SmartpadCommon.md5(Operation.this.branchId + Operation.this.operationId + t.getName().getName()); 
 				new PromotionDao().insert(newId, operationId, Operation.this.branchId, t);
 			}
 
 			@Override
 			public void update(IUser authorizedUser, IPromotion t) throws SQLException {
-				Date now = new Date();
-				((Promotion) t).setLastUpdate(now);
 				new PromotionDao().update(((Promotion) t).getPromotionId(), t);
 			}
 

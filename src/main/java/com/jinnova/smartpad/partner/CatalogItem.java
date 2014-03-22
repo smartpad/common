@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.Name;
+import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem {
 	
@@ -14,6 +15,8 @@ public class CatalogItem implements ICatalogItem {
 	private String unit;
 	
 	private BigDecimal unitPrice;
+
+	private final RecordInfo recordInfo = new RecordInfo();
 	
 	public CatalogItem(String itemId) {
 		this.itemId = itemId;
@@ -30,6 +33,11 @@ public class CatalogItem implements ICatalogItem {
 	@Override
 	public IName getName() {
 		return this.name;
+	}
+
+	@Override
+	public IRecordInfo getRecordInfo() {
+		return recordInfo;
 	}
 
 	@Override

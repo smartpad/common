@@ -9,11 +9,10 @@ import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.PageMemberMate;
 import com.jinnova.smartpad.RecordInfo;
-import com.jinnova.smartpad.RecordInfoHolder;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.IUser;
 
-public class User implements IUser, RecordInfoHolder {
+public class User implements IUser {
 
 	private String login;
 	
@@ -35,7 +34,7 @@ public class User implements IUser, RecordInfoHolder {
 		this.branchId = branchId;
 		this.passhash = passhash;
 		@SuppressWarnings("unchecked")
-		final Comparator<IOperation>[] comparators = new Comparator[5];
+		final Comparator<IOperation>[] comparators = new Comparator[IOperationSort.values().length];
 		comparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
