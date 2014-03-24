@@ -31,9 +31,15 @@ public class ScheduleSequence implements IScheduleSequence {
 	private final LinkedList<Integer> minutes = new LinkedList<Integer>();
 
 	private final LinkedList<Integer> hours = new LinkedList<Integer>();
-	
+
+	/**
+	 * either daysOfMonth or daysOfWeek can be used once
+	 */
 	private final LinkedList<Integer> daysOfWeek = new LinkedList<Integer>();
 	
+	/**
+	 * either daysOfMonth or daysOfWeek can be used once
+	 */
 	private final LinkedList<Integer> daysOfMonth = new LinkedList<Integer>();
 	
 	private final LinkedList<Integer> months = new LinkedList<Integer>();
@@ -41,6 +47,9 @@ public class ScheduleSequence implements IScheduleSequence {
 	private final LinkedList<Integer> years = new LinkedList<Integer>();
 	
 	private static void addAll(LinkedList<Integer> dest, int[] source) {
+		if (source == null) {
+			return;
+		}
 		for (int i : source) {
 			dest.add(i);
 		}
@@ -135,7 +144,18 @@ public class ScheduleSequence implements IScheduleSequence {
 		
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(date);
-		if (!years.contains(cal.get(Calendar.YEAR))) {
+		
+		return calendarFieldContainsValue(years, cal, Calendar.YEAR) &&
+				calendarFieldContainsValue(months, cal, Calendar.MONTH) &&
+				calendarFieldContainsValue(daysOfMonth, cal, Calendar.DAY_OF_MONTH) &&
+				calendarFieldContainsValue(daysOfWeek, cal, Calendar.DAY_OF_WEEK) &&
+				calendarFieldContainsValue(hours, cal, Calendar.HOUR_OF_DAY) &&
+				calendarFieldContainsValue(minutes, cal, Calendar.MINUTE);
+		
+		/*if (!years.isEmpty() && !years.contains(cal.get(Calendar.YEAR))) {
+			return false;
+		}
+		if (!calendarFieldContainsValue(years, cal, Calendar.YEAR)) {
 			return false;
 		}
 		if (!months.contains(cal.get(Calendar.MONTH))) {
@@ -156,10 +176,14 @@ public class ScheduleSequence implements IScheduleSequence {
 		if (!years.contains(cal.get(Calendar.YEAR))) {
 			return false;
 		}
-		return true;
+		return true;*/
 	}
 	
-	/*public Date getEarliestStart() {
+	private static boolean calendarFieldContainsValue(LinkedList<Integer> values, GregorianCalendar cal, int calField) {
+		return values.isEmpty() || values.contains(cal.get(calField));
+	}
+	
+	public Date getEarliestStart() {
 
 		Collections.sort(years);
 		Collections.sort(months);
@@ -167,10 +191,25 @@ public class ScheduleSequence implements IScheduleSequence {
 		Collections.sort(daysOfWeek);
 		Collections.sort(hours);
 		Collections.sort(minutes);
+		
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTimeInMillis(0);
-		cal.set(Calendar.MINUTE, minutes.getFirst());
-		return null;
+		if (years.isEmpty()) {
+			//infinite-start
+			return null;
+		} else {
+			cal.set(Calendar.YEAR, years.getFirst());
+		}
+		setFirst(cal, Calendar.MONTH, months, Calendar.JANUARY);	
+		if (daysOfWeek.isEmpty()) {
+			setFirst(cal, Calendar.DAY_OF_MONTH, daysOfMonth, 1);	
+		} else {
+			cal.set(Calendar.DAY_OF_WEEK, daysOfWeek.getFirst());
+		}
+		setFirst(cal, Calendar.HOUR_OF_DAY, hours, 0);
+		setLast(cal, Calendar.MINUTE, minutes, 0);
+		
+		return cal.getTime();
 	}
 	
 	public Date getLatestEnd() {
@@ -181,8 +220,41 @@ public class ScheduleSequence implements IScheduleSequence {
 		Collections.sort(daysOfWeek);
 		Collections.sort(hours);
 		Collections.sort(minutes);
-		return null;
-	}*/
+		
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(0);
+		if (years.isEmpty()) {
+			//never ends
+			return null;
+		}
+		cal.set(Calendar.YEAR, years.getLast());
+		setLast(cal, Calendar.MONTH, months, Calendar.DECEMBER);		
+		if (daysOfWeek.isEmpty()) {
+			setLast(cal, Calendar.DAY_OF_MONTH, daysOfMonth, cal.getLeastMaximum(Calendar.DAY_OF_MONTH));
+		} else {
+			cal.set(Calendar.DAY_OF_WEEK, daysOfWeek.getLast());
+		}
+		setLast(cal, Calendar.HOUR_OF_DAY, hours, 23);
+		setLast(cal, Calendar.MINUTE, minutes, 59);
+		
+		return cal.getTime();
+	}
+	
+	private static void setFirst(GregorianCalendar cal, int calField, LinkedList<Integer> values, int minimum) {
+		if (values.isEmpty()) {
+			cal.set(calField, minimum);
+		} else {
+			cal.set(calField, values.getFirst());
+		}
+	}
+	
+	private static void setLast(GregorianCalendar cal, int calField, LinkedList<Integer> values, int maximum) {
+		if (values.isEmpty()) {
+			cal.set(calField, maximum);
+		} else {
+			cal.set(calField, values.getLast());
+		}
+	}
 	
 	private static JsonArray toJson(LinkedList<Integer> numbers) {
 		JsonArray ja = new JsonArray();

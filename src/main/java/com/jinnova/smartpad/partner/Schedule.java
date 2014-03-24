@@ -71,4 +71,36 @@ public class Schedule implements ISchedule {
 			scheduleSequences.add(ScheduleSequence.fromJson(ja.get(i).getAsJsonObject()));
 		}
 	}
+	
+	public Date getEarliestStart() {
+		
+		Date earliest = null;
+		for (IScheduleSequence ss : scheduleSequences) {
+			Date d = ((ScheduleSequence) ss).getEarliestStart();
+			if (d == null) {
+				//started already
+				return null;
+			}
+			if (earliest == null || earliest.after(d)) {
+				earliest = d;
+			}
+		}
+		return earliest;
+	}
+	
+	public Date getLatestEnd() {
+		
+		Date latest = null;
+		for (IScheduleSequence ss : scheduleSequences) {
+			Date d = ((ScheduleSequence) ss).getLatestEnd();
+			if (d == null) {
+				//started already
+				return null;
+			}
+			if (latest == null || latest.before(d)) {
+				latest = d;
+			}
+		}
+		return latest;
+	}
 }
