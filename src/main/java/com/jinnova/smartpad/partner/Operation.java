@@ -51,21 +51,21 @@ public class Operation implements IOperation {
 	 */
 	private final LinkedList<String> memberLevels = new LinkedList<String>();
 	
-	private Boolean memberNameRequired = false;
+	//private Boolean memberNameRequired = false;
 	
-	private Boolean memberAddressRequired = false;
+	//private Boolean memberAddressRequired = false;
 	
-	private Boolean memberPhoneRequired = false;
+	//private Boolean memberPhoneRequired = false;
 	
-	private Boolean memberEmailRequired = false;
+	//private Boolean memberEmailRequired = false;
 	
-	private Boolean memberOfferedFree = false;
+	//private Boolean memberOfferedFree = false;
 	
-	private Integer memberOfferedFreeLevel;
+	//private Integer memberOfferedFreeLevel;
 	
-	private String memberOfferedSurvey;
+	//private String memberOfferedSurvey;
 	
-	private Integer memberOfferedSurveyLevel;
+	//private Integer memberOfferedSurveyLevel;
 	
 	public Operation(String operId, String branchId) {
 		this.operationId = operId;
@@ -233,7 +233,7 @@ public class Operation implements IOperation {
 		StringArrayUtils.load(this.memberLevels, levels);
 	}
 
-	@Override
+	/*@Override
 	public Boolean isMemberNameRequired() {
 		return memberNameRequired;
 	}
@@ -311,6 +311,6 @@ public class Operation implements IOperation {
 	@Override
 	public void setMemberOfferedSurveyLevel(int memberOfferedSurveyLevel) {
 		this.memberOfferedSurveyLevel = memberOfferedSurveyLevel;
-	}
+	}*/
 
 }

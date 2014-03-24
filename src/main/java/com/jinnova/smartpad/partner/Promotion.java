@@ -5,9 +5,6 @@ import java.util.Date;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
-import com.jinnova.smartpad.member.CCardBranch;
-import com.jinnova.smartpad.member.CCardIssuer;
-import com.jinnova.smartpad.member.CCardType;
 import com.jinnova.smartpad.member.Consumer;
 
 public class Promotion implements IPromotion {
@@ -26,12 +23,10 @@ public class Promotion implements IPromotion {
 	
 	private int requiredMemberPoint;
 	
-	private CCardType requiredCreditType;
+	private CCardRequirement[] requiredCCardOptions;
 	
-	private CCardBranch requiredCreditBranch;
-	
-	private CCardIssuer requiredCreditIssuer;
-	
+	private final MCardOffer mcardOffer = new MCardOffer();
+
 	public Promotion(String promotionId, String operationId) {
 		this.promotionId = promotionId;
 		this.operationId = operationId;
@@ -55,8 +50,17 @@ public class Promotion implements IPromotion {
 				return false;
 			}
 		}
-		if (!consumer.qualify(requiredCreditType, requiredCreditBranch, requiredCreditIssuer)) {
-			return false;
+		
+		if (requiredCCardOptions != null) {
+			boolean ok = false;
+			for (CCardRequirement opt : requiredCCardOptions) {
+				if (!consumer.qualify(opt.requiredCreditType, opt.requiredCreditBranch, opt.requiredCreditIssuer)) {
+					ok = true;
+				}
+			}
+			if (!ok) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -69,5 +73,13 @@ public class Promotion implements IPromotion {
 	@Override
 	public IRecordInfo getRecordInfo() {
 		return recordInfo;
+	}
+	
+	public boolean isMemberCardOffered() {
+		return mcardOffer.memberOfferedLevel != null;
+	}
+	
+	public MCardOffer getMemberCardOffer() {
+		return mcardOffer;
 	}
 }
