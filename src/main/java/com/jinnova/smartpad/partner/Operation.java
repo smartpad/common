@@ -11,6 +11,7 @@ import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.PageMemberMate;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.PromotionDao;
+import com.jinnova.smartpad.member.IMember;
 
 public class Operation implements IOperation {
 	
@@ -51,6 +52,8 @@ public class Operation implements IOperation {
 	 */
 	private final LinkedList<String> memberLevels = new LinkedList<String>();
 	
+	private final CachedPagingList<IMember, IMemberSort> memberPagingList;
+	
 	//private Boolean memberNameRequired = false;
 	
 	//private Boolean memberAddressRequired = false;
@@ -73,27 +76,27 @@ public class Operation implements IOperation {
 		this.rootCatalog = new Catalog(this.branchId, this.branchId, Catalog.CATALOG_ID_ROOT);
 		
 		@SuppressWarnings({ "unchecked" })
-		final Comparator<IPromotion>[] comparators = new Comparator[IPromotionSort.values().length];
-		comparators[IPromotionSort.creation.ordinal()] = new Comparator<IPromotion>() {
+		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];
+		promoComparators[IPromotionSort.creation.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
 				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
 			}
 		};
-		comparators[IPromotionSort.lastUpdate.ordinal()] = new Comparator<IPromotion>() {
+		promoComparators[IPromotionSort.lastUpdate.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
 				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
 			}
 		};
-		comparators[IPromotionSort.name.ordinal()] = new Comparator<IPromotion>() {
+		promoComparators[IPromotionSort.name.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
 				return o1.getName().getName().compareTo(o2.getName().getName());
 			}
 		};
 		
-		PageMemberMate<IPromotion, IPromotionSort> mate = new PageMemberMate<IPromotion, IPromotionSort>() {
+		PageMemberMate<IPromotion, IPromotionSort> promoMate = new PageMemberMate<IPromotion, IPromotionSort>() {
 
 			@Override
 			public IPromotion newMemberInstance(IUser authorizedUser) {
@@ -133,7 +136,58 @@ public class Operation implements IOperation {
 			public void delete(IUser authorizedUser, IPromotion t) throws SQLException {
 				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
 			}};
-		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(mate, comparators, IPromotionSort.creation, new IPromotion[0]);
+		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(promoMate, promoComparators, IPromotionSort.creation, new IPromotion[0]);
+		
+		@SuppressWarnings("unchecked")
+		Comparator<IMember>[] memberComparators = new Comparator[IMemberSort.values().length];
+		PageMemberMate<IMember, IMemberSort> memberMate = new PageMemberMate<IMember, IMemberSort>() {
+			
+			@Override
+			public void update(IUser authorizedUser, IMember member) throws SQLException {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public IMember newMemberInstance(IUser authorizedUser) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public LinkedList<IMember> load(IUser authorizedUser, int offset,
+					int pageSize, IMemberSort sortField, boolean ascending) throws SQLException {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public boolean isPersisted(IMember member) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public void insert(IUser authorizedUser, IMember newMember)
+					throws SQLException {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void delete(IUser authorizedUser, IMember member)
+					throws SQLException {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public int count(IUser authorizedUser) throws SQLException {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+		};
+		this.memberPagingList = new CachedPagingList<IMember, IMemberSort>(memberMate, memberComparators, IMemberSort.Creation, new IMember[0]);
 	}
 	
 	@Override
@@ -231,6 +285,11 @@ public class Operation implements IOperation {
 	@Override
 	public void setMemberLevels(String[] levels) {
 		StringArrayUtils.load(this.memberLevels, levels);
+	}
+
+	@Override
+	public IPagingList<IMember, IMemberSort> getMemberPagingList() {
+		return memberPagingList;
 	}
 
 	/*@Override

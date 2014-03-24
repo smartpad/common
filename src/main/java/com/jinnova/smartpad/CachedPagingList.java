@@ -52,12 +52,12 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		if (defaultSort == null) {
 			throw new IllegalArgumentException("Default sort can't be null");
 		}
-		for (int i = 0; i < comparators.length; i++) {
+		/*for (int i = 0; i < comparators.length; i++) {
 			Comparator<T> c = comparators[i];
 			if (c == null) {
 				throw new IllegalArgumentException("Null comparator at " + i);
 			}
-		}
+		}*/
 		
 		this.memberMate = memberMate;
 		this.comparators = comparators;
