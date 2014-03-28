@@ -43,12 +43,29 @@ public class CatalogItemDao {
 
 	public LinkedList<ICatalogItem> loadCatalogItems(String catalogId, int offset,
 			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
+		
+		String fieldName;
+		if (sortField == ICatalogItemSort.createBy) {
+			fieldName = "create_by";
+		} else if (sortField == ICatalogItemSort.createDate) {
+			fieldName = "create_date";
+		} else if (sortField == ICatalogItemSort.name) {
+			fieldName = "name";
+		} else if (sortField == ICatalogItemSort.updateBy) {
+			fieldName = "update_by";
+		} else if (sortField == ICatalogItemSort.updateDate) {
+			fieldName = "update_date";
+		} else {
+			fieldName = null;
+		}
+		String orderLimitClause = DaoSupport.buildOrderLimit(fieldName, ascending, offset, pageSize);
+		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from catalog_items where catalog_id = ?"); //TODO order by
+			ps = conn.prepareStatement("select * from catalog_items where catalog_id = ? and " + orderLimitClause);
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();

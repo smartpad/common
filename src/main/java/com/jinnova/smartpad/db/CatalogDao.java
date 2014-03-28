@@ -8,6 +8,7 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.ICatalog;
+import com.jinnova.smartpad.partner.ICatalogSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class CatalogDao {
@@ -40,13 +41,31 @@ public class CatalogDao {
 		}
 	}
 
-	public LinkedList<ICatalog> loadSubCatalogs(String parentId) throws SQLException {
+	public LinkedList<ICatalog> loadSubCatalogs(String parentId, int offset,
+			int pageSize, ICatalogSort sortField, boolean ascending) throws SQLException {
+		
+		String fieldName;
+		if (sortField == ICatalogSort.createBy) {
+			fieldName = "create_by";
+		} else if (sortField == ICatalogSort.createDate) {
+			fieldName = "create_date";
+		} else if (sortField == ICatalogSort.name) {
+			fieldName = "name";
+		} else if (sortField == ICatalogSort.updateBy) {
+			fieldName = "update_by";
+		} else if (sortField == ICatalogSort.updateDate) {
+			fieldName = "update_date";
+		} else {
+			fieldName = null;
+		}
+		String orderLimitClause = DaoSupport.buildOrderLimit(fieldName, ascending, offset, pageSize);
+		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from catalogs where parent_id = ?"); //TODO order by
+			ps = conn.prepareStatement("select * from catalogs where parent_id = ? and " + orderLimitClause);
 			ps.setString(1, parentId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
