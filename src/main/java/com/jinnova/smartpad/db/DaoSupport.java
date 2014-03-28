@@ -63,6 +63,10 @@ class DaoSupport {
 		} else {
 			fieldName += " desc";
 		}
-		return "order by " + fieldName + " limit " + pageSize + " offset " + offset;
+		String clause = "order by " + fieldName;
+		if (pageSize > 0) {
+			clause +=  " limit " + pageSize;
+		}
+		return clause + " offset " + offset;
 	}
 }
