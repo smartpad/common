@@ -3,6 +3,7 @@ package com.jinnova.smartpad.partner;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
@@ -16,6 +17,10 @@ public class PartnerManager implements IPartnerManager {
 	public static PartnerManager instance;
 	
 	private final CachedPagingList<IUser, IUserSort> userPagingList;
+	
+	private final Catalog systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null);
+	
+	private final HashMap<String, Catalog> systemCatMap = new HashMap<>();
 	
 	private PartnerManager() {
 		@SuppressWarnings("unchecked")
@@ -134,5 +139,14 @@ public class PartnerManager implements IPartnerManager {
 	@Override
 	public IPagingList<IUser, IUserSort> getUserPagingList() throws SQLException {
 		return userPagingList;
+	}
+
+	@Override
+	public Catalog getSystemCatalog() {
+		return this.systemRootCatalog;
+	}
+
+	public ICatalog getSystemCatalog(String systemCatId) {
+		return systemCatMap.get(systemCatId);
 	}
 }
