@@ -31,7 +31,7 @@ public class Operation implements IOperation {
 	
 	//static final String CATALOG_ID_OPERROOT = "OPER_ROOT";
 	//private final Catalog rootCatalog = new Catalog(this.branchId, this.branchId, CATALOG_ID_OPERROOT);
-	private final Catalog rootCatalog = new Catalog(this.branchId, this.branchId, null);
+	private final Catalog rootCatalog;
 	
 	private final CachedPagingList<IPromotion, IPromotionSort> promotions;
 
@@ -75,6 +75,7 @@ public class Operation implements IOperation {
 	public Operation(String operId, String branchId) {
 		this.operationId = operId;
 		this.branchId = branchId;
+		this.rootCatalog = new Catalog(this.branchId, this.branchId, null);
 		
 		@SuppressWarnings({ "unchecked" })
 		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];

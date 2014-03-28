@@ -2,8 +2,10 @@ package com.jinnova.smartpad.partner;
 
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 
+import com.jinnova.smartpad.CachedPage;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
@@ -24,23 +26,29 @@ public class Catalog implements ICatalog {
 	private String systemParentId;
 	
 	private final Name name = new Name();
-
-	//private final LinkedList<ICatalog> subCatalogs = new LinkedList<>();
-
-	//private final LinkedList<ICatalogItem> catItems = new LinkedList<>();
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
 	private final CachedPagingList<ICatalog, ICatalogSort> subCatalogPagingList;
 	
 	private final CachedPagingList<ICatalogItem, ICatalogItemSort> catalogItemPagingList;
+
+	@SuppressWarnings("unchecked")
+	Comparator<ICatalog>[] catalogComparators = new Comparator[ICatalogSort.values().length];
+	
+	PageMemberMate<ICatalog, ICatalogSort> catalogMemberMate;
+	
+	@SuppressWarnings("unchecked")
+	Comparator<ICatalogItem>[] itemComparators = new Comparator[ICatalogItemSort.values().length];
+	
+	PageMemberMate<ICatalogItem, ICatalogItemSort> itemMemberMate;
 	
 	public Catalog(String branchId, String catalogId, String parentCatalogId) {
 		this.branchId = branchId;
 		this.catalogId = catalogId;
 		this.parentCatalogId = parentCatalogId;
 		
-		PageMemberMate<ICatalog, ICatalogSort> memberMate = new PageMemberMate<ICatalog, ICatalogSort>() {
+		catalogMemberMate = new PageMemberMate<ICatalog, ICatalogSort>() {
 			
 			@Override
 			public ICatalog newMemberInstance(IUser authorizedUser) {
@@ -87,84 +95,8 @@ public class Catalog implements ICatalog {
 				new CatalogDao().delete(subCat.catalogId);
 			}
 		};
-		@SuppressWarnings("unchecked")
-		Comparator<ICatalog>[] comparators = new Comparator[ICatalogSort.values().length];
-		comparators[ICatalogSort.createDate.ordinal()] = new Comparator<ICatalog>() {
-			
-			@Override
-			public int compare(ICatalog o1, ICatalog o2) {
-				return o1.getRecordInfo().getCreateDate().compareTo(o1.getRecordInfo().getCreateDate());
-			}
-		};
-		comparators[ICatalogSort.updateDate.ordinal()] = new Comparator<ICatalog>() {
-			
-			@Override
-			public int compare(ICatalog o1, ICatalog o2) {
-				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
-			}
-		};
-		comparators[ICatalogSort.createBy.ordinal()] = new Comparator<ICatalog>() {
-			
-			@Override
-			public int compare(ICatalog o1, ICatalog o2) {
-				return o1.getRecordInfo().getCreateBy().compareTo(o2.getRecordInfo().getCreateBy());
-			}
-		};
-		comparators[ICatalogSort.updateBy.ordinal()] = new Comparator<ICatalog>() {
-			
-			@Override
-			public int compare(ICatalog o1, ICatalog o2) {
-				return o1.getRecordInfo().getUpdateBy().compareTo(o2.getRecordInfo().getUpdateBy());
-			}
-		};
-		comparators[ICatalogSort.name.ordinal()] = new Comparator<ICatalog>() {
-			
-			@Override
-			public int compare(ICatalog o1, ICatalog o2) {
-				return o1.getName().getName().compareTo(o2.getName().getName());
-			}
-		};
-		subCatalogPagingList = new CachedPagingList<ICatalog, ICatalogSort>(
-				memberMate, comparators, ICatalogSort.createDate, new Catalog[0]);
 		
-		@SuppressWarnings("unchecked")
-		Comparator<ICatalogItem>[] itemComparators = new Comparator[ICatalogItemSort.values().length];
-		itemComparators[ICatalogItemSort.createDate.ordinal()] = new Comparator<ICatalogItem>() {
-			
-			@Override
-			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
-			}
-		};
-		itemComparators[ICatalogItemSort.updateDate.ordinal()] = new Comparator<ICatalogItem>() {
-			
-			@Override
-			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
-			}
-		};
-		itemComparators[ICatalogItemSort.createBy.ordinal()] = new Comparator<ICatalogItem>() {
-			
-			@Override
-			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return o1.getRecordInfo().getCreateBy().compareTo(o2.getRecordInfo().getCreateBy());
-			}
-		};
-		itemComparators[ICatalogItemSort.updateBy.ordinal()] = new Comparator<ICatalogItem>() {
-			
-			@Override
-			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return o1.getRecordInfo().getUpdateBy().compareTo(o2.getRecordInfo().getUpdateBy());
-			}
-		};
-		itemComparators[ICatalogItemSort.name.ordinal()] = new Comparator<ICatalogItem>() {
-			
-			@Override
-			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return o1.getName().getName().compareTo(o2.getName().getName());
-			}
-		};
-		PageMemberMate<ICatalogItem, ICatalogItemSort> itemMemberMate = new PageMemberMate<ICatalogItem, ICatalogItemSort>() {
+		itemMemberMate = new PageMemberMate<ICatalogItem, ICatalogItemSort>() {
 			
 			@Override
 			public ICatalogItem newMemberInstance(IUser authorizedUser) {
@@ -211,6 +143,82 @@ public class Catalog implements ICatalog {
 				new CatalogItemDao().delete(item.getItemId());
 			}
 		};
+
+		catalogComparators[ICatalogSort.createDate.ordinal()] = new Comparator<ICatalog>() {
+			
+			@Override
+			public int compare(ICatalog o1, ICatalog o2) {
+				return o1.getRecordInfo().getCreateDate().compareTo(o1.getRecordInfo().getCreateDate());
+			}
+		};
+		catalogComparators[ICatalogSort.updateDate.ordinal()] = new Comparator<ICatalog>() {
+			
+			@Override
+			public int compare(ICatalog o1, ICatalog o2) {
+				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
+			}
+		};
+		catalogComparators[ICatalogSort.createBy.ordinal()] = new Comparator<ICatalog>() {
+			
+			@Override
+			public int compare(ICatalog o1, ICatalog o2) {
+				return o1.getRecordInfo().getCreateBy().compareTo(o2.getRecordInfo().getCreateBy());
+			}
+		};
+		catalogComparators[ICatalogSort.updateBy.ordinal()] = new Comparator<ICatalog>() {
+			
+			@Override
+			public int compare(ICatalog o1, ICatalog o2) {
+				return o1.getRecordInfo().getUpdateBy().compareTo(o2.getRecordInfo().getUpdateBy());
+			}
+		};
+		catalogComparators[ICatalogSort.name.ordinal()] = new Comparator<ICatalog>() {
+			
+			@Override
+			public int compare(ICatalog o1, ICatalog o2) {
+				return o1.getName().getName().compareTo(o2.getName().getName());
+			}
+		};
+		
+		itemComparators[ICatalogItemSort.createDate.ordinal()] = new Comparator<ICatalogItem>() {
+			
+			@Override
+			public int compare(ICatalogItem o1, ICatalogItem o2) {
+				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
+			}
+		};
+		itemComparators[ICatalogItemSort.updateDate.ordinal()] = new Comparator<ICatalogItem>() {
+			
+			@Override
+			public int compare(ICatalogItem o1, ICatalogItem o2) {
+				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
+			}
+		};
+		itemComparators[ICatalogItemSort.createBy.ordinal()] = new Comparator<ICatalogItem>() {
+			
+			@Override
+			public int compare(ICatalogItem o1, ICatalogItem o2) {
+				return o1.getRecordInfo().getCreateBy().compareTo(o2.getRecordInfo().getCreateBy());
+			}
+		};
+		itemComparators[ICatalogItemSort.updateBy.ordinal()] = new Comparator<ICatalogItem>() {
+			
+			@Override
+			public int compare(ICatalogItem o1, ICatalogItem o2) {
+				return o1.getRecordInfo().getUpdateBy().compareTo(o2.getRecordInfo().getUpdateBy());
+			}
+		};
+		itemComparators[ICatalogItemSort.name.ordinal()] = new Comparator<ICatalogItem>() {
+			
+			@Override
+			public int compare(ICatalogItem o1, ICatalogItem o2) {
+				return o1.getName().getName().compareTo(o2.getName().getName());
+			}
+		};
+		
+		subCatalogPagingList = new CachedPagingList<ICatalog, ICatalogSort>(
+				catalogMemberMate, catalogComparators, ICatalogSort.createDate, new Catalog[0]);
+		
 		catalogItemPagingList = new CachedPagingList<ICatalogItem, ICatalogItemSort>(
 				itemMemberMate, itemComparators, ICatalogItemSort.createDate, new CatalogItem[0]);
 	}
@@ -238,5 +246,23 @@ public class Catalog implements ICatalog {
 	@Override
 	public IPagingList<ICatalogItem, ICatalogItemSort> getCatalogItemPagingList() {
 		return catalogItemPagingList;
+	}
+
+	void loadAllSubCatalogs(HashMap<String, Catalog> catMap) throws SQLException {
+		LinkedList<Catalog> catList = new LinkedList<Catalog>();
+		catList.add(this);
+		loadAllSubCatalogs(catMap, catList);
+	}
+
+	private static void loadAllSubCatalogs(HashMap<String, Catalog> catMap, LinkedList<Catalog> catList) throws SQLException {
+		while (!catList.isEmpty()) {
+			Catalog oneCat = catList.remove();
+			catMap.put(oneCat.catalogId, oneCat);
+			oneCat.subCatalogPagingList.setPageSize(-1); //load all
+			CachedPage<ICatalog> page = oneCat.subCatalogPagingList.loadPage(PartnerManager.instance.systemUser, 1);
+			for (ICatalog sub : page.getMembers()) {
+				catList.add((Catalog) sub);
+			}
+		}
 	}
 }

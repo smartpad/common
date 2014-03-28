@@ -65,7 +65,7 @@ public class CatalogItemDao {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from catalog_items where catalog_id = ? and " + orderLimitClause);
+			ps = conn.prepareStatement("select * from catalog_items where catalog_id = ? " + orderLimitClause);
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();

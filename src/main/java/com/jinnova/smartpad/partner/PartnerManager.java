@@ -16,13 +16,15 @@ public class PartnerManager implements IPartnerManager {
 	
 	public static PartnerManager instance;
 	
+	final User systemUser = new User(null, "SMARTPAD", null);
+	
 	private final CachedPagingList<IUser, IUserSort> userPagingList;
 	
-	private final Catalog systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null);
+	private final Catalog systemRootCatalog;
 	
 	private final HashMap<String, Catalog> systemCatMap = new HashMap<>();
 	
-	private PartnerManager() {
+	private PartnerManager() throws SQLException {
 		@SuppressWarnings("unchecked")
 		final Comparator<IUser>[] comparators = new Comparator[3];
 		comparators[IUserSort.creation.ordinal()] = new Comparator<IUser>() {
@@ -90,12 +92,15 @@ public class PartnerManager implements IPartnerManager {
 				return new UserDao().count(((User) authorizedUser).getBranchId());
 			}
 		};
+		
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
+		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null);
 	}
 	
-	public static void initialize() {
+	public static void initialize() throws SQLException {
 		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
 		instance = new PartnerManager();
+		instance.systemRootCatalog.loadAllSubCatalogs(instance.systemCatMap);
 	}
 
 	public void clearDatabaseForTests() throws SQLException {
