@@ -21,6 +21,8 @@ public class Catalog implements ICatalog {
 	
 	private String catalogId;
 	
+	private String catalogSpecId;
+	
 	private String parentCatalogId;
 	
 	private String systemParentId;

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IOperation;
@@ -198,6 +199,66 @@ public class OperationDao {
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+	
+	private class OperationIterator implements Iterator<IOperation> {
+		
+		private final ResultSet rs;
+		
+		private boolean hasNext = true;
+		
+		OperationIterator(ResultSet rs) {
+			this.rs = rs;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		@Override
+		public IOperation next() {
+			try {
+				Operation op = populateOperation(rs);
+				hasNext = rs.next();
+				return op;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+	}
+
+	public Iterator<IOperation> operationIterator() throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select * from operations");
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				return null;
+			}
+			return new OperationIterator(rs);
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
 			if (ps != null) {
 				ps.close();
 			}
