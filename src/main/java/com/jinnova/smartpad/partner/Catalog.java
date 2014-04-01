@@ -21,11 +21,11 @@ public class Catalog implements ICatalog {
 	
 	private String catalogId;
 	
-	private String catalogSpecId;
+	private final CatalogSpec catalogSpec;
 	
 	private String parentCatalogId;
 	
-	private String systemParentId;
+	private String systemCatalogId;
 	
 	private final Name name = new Name();
 	
@@ -45,16 +45,21 @@ public class Catalog implements ICatalog {
 	
 	PageMemberMate<ICatalogItem, ICatalogItemSort> itemMemberMate;
 	
-	public Catalog(String branchId, String catalogId, String parentCatalogId) {
+	public Catalog(String branchId, String catalogId, String parentCatalogId, boolean system) {
 		this.branchId = branchId;
 		this.catalogId = catalogId;
 		this.parentCatalogId = parentCatalogId;
+		if (system) {
+			this.catalogSpec = new CatalogSpec();
+		} else {
+			this.catalogSpec = null;
+		}
 		
 		catalogMemberMate = new PageMemberMate<ICatalog, ICatalogSort>() {
 			
 			@Override
 			public ICatalog newMemberInstance(IUser authorizedUser) {
-				return new Catalog(Catalog.this.branchId, null, Catalog.this.catalogId);
+				return new Catalog(Catalog.this.branchId, null, Catalog.this.catalogId, Catalog.this.catalogSpec != null);
 			}
 			
 			@Override
@@ -71,7 +76,7 @@ public class Catalog implements ICatalog {
 			public LinkedList<ICatalog> load(IUser authorizedUser, int offset,
 					int pageSize, ICatalogSort sortField, boolean ascending) throws SQLException {
 				
-				return new CatalogDao().loadSubCatalogs(Catalog.this.catalogId, offset, pageSize, sortField, ascending);
+				return new CatalogDao().loadSubCatalogs(Catalog.this.catalogId, offset, pageSize, sortField, ascending, Catalog.this.catalogSpec != null);
 			}
 			
 			@Override
@@ -79,6 +84,13 @@ public class Catalog implements ICatalog {
 				Catalog subCat = (Catalog) newMember;
 				if (subCat.name.getName() == null || "".equals(subCat.name.getName().trim())) {
 					throw new RuntimeException("Catalog's name unset");
+				}
+				if (subCat.catalogSpec != null && subCat.systemCatalogId != null) {
+					throw new RuntimeException("A system catalog must not linked to any other system catalog");
+				}
+				
+				if (subCat.catalogSpec == null && subCat.systemCatalogId == null) {
+					throw new RuntimeException("This catalog must be linked to a system catalog");
 				}
 				String newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
 				new CatalogDao().insert(subCat.branchId, newId, subCat.parentCatalogId, subCat);
@@ -125,10 +137,11 @@ public class Catalog implements ICatalog {
 			@Override
 			public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
 				CatalogItem item = (CatalogItem) newMember;
-				if (item.getName().getName() == null || "".equals(item.getName().getName().trim())) {
+				String name = item.getFieldValue(ICatalogField.ID_NAME);
+				if (name == null || "".equals(name.trim())) {
 					throw new RuntimeException("CatalogItem's name unset");
 				}
-				String newId = SmartpadCommon.md5(Catalog.this.branchId + Catalog.this.catalogId + item.getName().getName());
+				String newId = SmartpadCommon.md5(Catalog.this.branchId + Catalog.this.catalogId + name);
 				new CatalogItemDao().insert(Catalog.this.branchId, newId, Catalog.this.catalogId, item);
 				item.setItemId(newId);
 			}
@@ -214,7 +227,7 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return o1.getName().getName().compareTo(o2.getName().getName());
+				return StringArrayUtils.compare(o1, o2, ICatalogField.ID_NAME);
 			}
 		};
 		
@@ -226,8 +239,8 @@ public class Catalog implements ICatalog {
 	}
 
 	@Override
-	public ICatalog getSystemParent() {
-		return PartnerManager.instance.getSystemCatalog(this.systemParentId);
+	public ICatalog getSystemCatalog() {
+		return PartnerManager.instance.getSystemCatalog(this.systemCatalogId);
 	}
 
 	@Override
@@ -241,6 +254,11 @@ public class Catalog implements ICatalog {
 	}
 
 	@Override
+	public ICatalogSpec getCatalogSpec() {
+		return catalogSpec;
+	}
+
+	@Override
 	public IPagingList<ICatalog, ICatalogSort> getSubCatalogPagingList() {
 		return subCatalogPagingList;
 	}
@@ -250,13 +268,13 @@ public class Catalog implements ICatalog {
 		return catalogItemPagingList;
 	}
 
-	void loadAllSubCatalogs(HashMap<String, Catalog> catMap) throws SQLException {
+	void loadAllSubCatalogsRecursively(HashMap<String, Catalog> catMap) throws SQLException {
 		LinkedList<Catalog> catList = new LinkedList<Catalog>();
 		catList.add(this);
-		loadAllSubCatalogs(catMap, catList);
+		loadAllSubCatalogsRecursively(catMap, catList);
 	}
 
-	private static void loadAllSubCatalogs(HashMap<String, Catalog> catMap, LinkedList<Catalog> catList) throws SQLException {
+	private static void loadAllSubCatalogsRecursively(HashMap<String, Catalog> catMap, LinkedList<Catalog> catList) throws SQLException {
 		while (!catList.isEmpty()) {
 			Catalog oneCat = catList.remove();
 			catMap.put(oneCat.catalogId, oneCat);

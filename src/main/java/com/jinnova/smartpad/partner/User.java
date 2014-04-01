@@ -34,26 +34,26 @@ public class User implements IUser {
 		this.branchId = branchId;
 		this.passhash = passhash;
 		@SuppressWarnings("unchecked")
-		final Comparator<IOperation>[] comparators = new Comparator[IOperationSort.values().length];
-		comparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
+		final Comparator<IOperation>[] storeComparators = new Comparator[IOperationSort.values().length];
+		storeComparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
 				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
 			}
 		};
-		comparators[IOperationSort.lastUpdate.ordinal()] = new Comparator<IOperation>() {
+		storeComparators[IOperationSort.lastUpdate.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
 				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
 			}
 		};
-		comparators[IOperationSort.name.ordinal()] = new Comparator<IOperation>() {
+		storeComparators[IOperationSort.name.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
 				return o1.getName().getName().compareToIgnoreCase(o2.getName().getName());
 			}
 		};
-		PageMemberMate<IOperation, IOperationSort> memberMate = new PageMemberMate<IOperation, IOperationSort>() {
+		PageMemberMate<IOperation, IOperationSort> storeMate = new PageMemberMate<IOperation, IOperationSort>() {
 
 			@Override
 			public IOperation newMemberInstance(IUser authorizedUser) {
@@ -75,6 +75,9 @@ public class User implements IUser {
 			@Override
 			public void insert(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
+				if (op.getSystemCatalogId() == null) {
+					throw new RuntimeException("A system catalog must be assigned to a store");
+				}
 				String newId = SmartpadCommon.md5(User.this.branchId +  op.getName());
 				op.setOperationId(newId);
 				new OperationDao().createOperation(newId, User.this.branchId, op);
@@ -83,6 +86,9 @@ public class User implements IUser {
 			@Override
 			public void update(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
+				if (op.getSystemCatalogId() == null) {
+					throw new RuntimeException("A system catalog must be assigned to a store");
+				}
 				new OperationDao().updateOperation(op.getOperationId(), op);
 			}
 
@@ -98,7 +104,7 @@ public class User implements IUser {
 				return new OperationDao().countStores(User.this.branchId);
 			}
 		};
-		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(memberMate, comparators, IOperationSort.creation, new IOperation[0]);
+		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(storeMate, storeComparators, IOperationSort.creation, new IOperation[0]);
 	}
 	
 	@Override
@@ -143,6 +149,9 @@ public class User implements IUser {
 	public void updateBranch() throws SQLException {
 		if (!isPrimary()) {
 			return;
+		}
+		if (branch.getSystemCatalogId() == null) {
+			throw new RuntimeException("A system catalog must be assigned to a branch");
 		}
 		if (branch.getOperationId() != null) {
 			branch.getRecordInfo().setUpdateDate(new Date());

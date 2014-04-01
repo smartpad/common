@@ -20,6 +20,7 @@ CREATE TABLE `operations` (
 
   `oper_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  `syscat_id` varchar(32) NOT NULL,
   
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
@@ -58,6 +59,7 @@ CREATE TABLE `catalogs` (
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
+  `spec` text DEFAULT NULL,
   
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,

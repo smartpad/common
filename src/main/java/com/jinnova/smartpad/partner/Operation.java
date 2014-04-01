@@ -33,6 +33,8 @@ public class Operation implements IOperation {
 	//private final Catalog rootCatalog = new Catalog(this.branchId, this.branchId, CATALOG_ID_OPERROOT);
 	private final Catalog rootCatalog;
 	
+	private String systemCatalogId;
+	
 	private final CachedPagingList<IPromotion, IPromotionSort> promotions;
 
 	private long gpsLon;
@@ -75,7 +77,7 @@ public class Operation implements IOperation {
 	public Operation(String operId, String branchId) {
 		this.operationId = operId;
 		this.branchId = branchId;
-		this.rootCatalog = new Catalog(this.branchId, this.branchId, null);
+		this.rootCatalog = new Catalog(this.branchId, this.branchId, null, false);
 		
 		@SuppressWarnings({ "unchecked" })
 		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];
@@ -222,6 +224,16 @@ public class Operation implements IOperation {
 	@Override
 	public ICatalog getRootCatalog() {
 		return rootCatalog;
+	}
+
+	@Override
+	public String getSystemCatalogId() {
+		return this.systemCatalogId;
+	}
+
+	@Override
+	public void setSystemCatalogId(String systemCatalogId) {
+		this.systemCatalogId = systemCatalogId;
 	}
 
 	@Override

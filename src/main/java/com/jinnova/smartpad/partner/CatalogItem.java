@@ -1,22 +1,24 @@
 package com.jinnova.smartpad.partner;
 
-import java.math.BigDecimal;
+import java.util.HashMap;
 
-import com.jinnova.smartpad.IName;
-import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem {
 	
 	private String itemId;
 	
-	private final Name name = new Name();
+	//private final Name name = new Name();
 	
-	private String unit;
+	//private String unit;
 	
-	private BigDecimal unitPrice;
+	//private BigDecimal unitPrice;
 
 	private final RecordInfo recordInfo = new RecordInfo();
+	
+	private final HashMap<String, String> fieldValuesSingle = new HashMap<>();
+	
+	private final HashMap<String, String[]> fieldValuesMulti = new HashMap<>(); 
 	
 	public CatalogItem(String itemId) {
 		this.itemId = itemId;
@@ -29,15 +31,35 @@ public class CatalogItem implements ICatalogItem {
 	void setItemId(String s) {
 		this.itemId = s;
 	}
-	
-	@Override
-	public IName getName() {
-		return this.name;
-	}
 
 	@Override
 	public IRecordInfo getRecordInfo() {
 		return recordInfo;
+	}
+
+	@Override
+	public String getFieldValue(String fieldId) {
+		return fieldValuesSingle.get(fieldId);
+	}
+
+	@Override
+	public String[] getFieldValues(String fieldId) {
+		return fieldValuesMulti.get(fieldId);
+	}
+
+	@Override
+	public void setField(String fieldId, String value) {
+		fieldValuesSingle.put(fieldId, value);
+	}
+
+	@Override
+	public void setField(String fieldId, String[] values) {
+		fieldValuesMulti.put(fieldId, values);
+	}
+	
+	/*@Override
+	public IName getName() {
+		return this.name;
 	}
 
 	@Override
@@ -58,6 +80,6 @@ public class CatalogItem implements ICatalogItem {
 	@Override
 	public void setUnitPrice(BigDecimal price) {
 		this.unitPrice = price;
-	}
+	}*/
 	
 }

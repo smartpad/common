@@ -72,7 +72,7 @@ public class CatalogItemDao {
 			LinkedList<ICatalogItem> catalogItems = new LinkedList<ICatalogItem>();
 			while (rs.next()) {
 				CatalogItem item = new CatalogItem(rs.getString("item_id"));
-				DaoSupport.populateName(rs, item.getName());
+				//DaoSupport.populateName(rs, item.getName());
 				DaoSupport.populateRecinfo(rs, item.getRecordInfo());
 				catalogItems.add(item);
 			}
@@ -103,7 +103,7 @@ public class CatalogItemDao {
 			ps.setString(i++, catalogId);
 			ps.setString(i++, branchId);
 			i = DaoSupport.setRecinfoFields(ps, item.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, item.getName(), i);
+			//i = DaoSupport.setNameFields(ps, item.getName(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
@@ -125,7 +125,7 @@ public class CatalogItemDao {
 					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS + " where item_id=?");
 			int i = 1;
 			i = DaoSupport.setRecinfoFields(ps, item.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, item.getName(), i);
+			//i = DaoSupport.setNameFields(ps, item.getName(), i);
 			ps.setString(i++, itemId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

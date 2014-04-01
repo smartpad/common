@@ -19,6 +19,7 @@ public class OperationDao {
 		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"));
 		DaoSupport.populateName(rs, oper.getName());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
+		oper.setSystemCatalogId(rs.getString("syscat_id"));
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));
 		oper.setMemberLevels(StringArrayUtils.stringArrayFromJson(rs.getString("member_levels")));
@@ -129,7 +130,7 @@ public class OperationDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into operations set branch_id = ?, oper_id = ?, " + 
+			ps = conn.prepareStatement("insert into operations set branch_id=?, oper_id=?, " + 
 					DaoSupport.NAME_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
@@ -177,9 +178,10 @@ public class OperationDao {
 		}
 	}
 	
-	private static final String OP_FIELDS = "open_text=?, open_hours=?, member_levels=?";
+	private static final String OP_FIELDS = "syscat_id=?, open_text=?, open_hours=?, member_levels=?";
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
+		ps.setString(i++, op.getSystemCatalogId());
 		ps.setString(i++, op.getOpenHours().getText());
 		ps.setString(i++, op.getOpenHours().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));

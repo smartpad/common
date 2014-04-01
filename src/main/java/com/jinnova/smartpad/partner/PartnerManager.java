@@ -16,13 +16,15 @@ public class PartnerManager implements IPartnerManager {
 	
 	public static PartnerManager instance;
 	
-	final User systemUser = new User(null, "SMARTPAD", null);
+	final User systemUser = new User("SMARTPAD", "SMARTPAD", null);
 	
 	private final CachedPagingList<IUser, IUserSort> userPagingList;
 	
 	private final Catalog systemRootCatalog;
 	
 	private final HashMap<String, Catalog> systemCatMap = new HashMap<>();
+	
+	private final HashMap<String, ICatalogSpec> catalogSpecMap = new HashMap<>();
 	
 	private PartnerManager() throws SQLException {
 		@SuppressWarnings("unchecked")
@@ -94,13 +96,13 @@ public class PartnerManager implements IPartnerManager {
 		};
 		
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
-		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null);
+		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null, true);
 	}
 	
 	public static void initialize() throws SQLException {
 		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
 		instance = new PartnerManager();
-		instance.systemRootCatalog.loadAllSubCatalogs(instance.systemCatMap);
+		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 	}
 
 	public void clearDatabaseForTests() throws SQLException {
@@ -114,6 +116,11 @@ public class PartnerManager implements IPartnerManager {
 	public Iterator<Promotion> promotionIterator() {
 		return null;
 	}*/
+	
+	@Override
+	public IUser getSystemUser() {
+		return this.systemUser;
+	}
 	
 	@Override
 	public IUser createPrimaryUser(String login, String password) throws SQLException {
@@ -147,11 +154,17 @@ public class PartnerManager implements IPartnerManager {
 	}
 
 	@Override
-	public Catalog getSystemCatalog() {
+	public Catalog getSystemRootCatalog() {
 		return this.systemRootCatalog;
 	}
 
+	@Override
 	public ICatalog getSystemCatalog(String systemCatId) {
 		return systemCatMap.get(systemCatId);
+	}
+	
+	@Override
+	public ICatalogSpec getCatalogSpec(String specId) {
+		return catalogSpecMap.get(specId);
 	}
 }
