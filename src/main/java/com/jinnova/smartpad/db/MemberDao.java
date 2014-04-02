@@ -114,13 +114,44 @@ public class MemberDao {
 	}
 
 	public void update(String memberId, IMember t) throws SQLException {
-		// TODO Auto-generated method stub
-		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update members set " + DaoSupport.RECINFO_FIELDS + ", " + 
+					DaoSupport.NAME_FIELDS + " where member_id=?");
+			int i = 1;
+			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
+			ps.setString(i++, memberId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
 	}
 
 	public void delete(String memberId, IMember t) throws SQLException {
-		// TODO Auto-generated method stub
-		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("delete members where member_id=?");
+			ps.setString(1, memberId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
 	}
 
 }

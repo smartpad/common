@@ -10,8 +10,10 @@ import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.PageMemberMate;
 import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.db.MemberDao;
 import com.jinnova.smartpad.db.PromotionDao;
 import com.jinnova.smartpad.member.IMember;
+import com.jinnova.smartpad.member.Member;
 
 public class Operation implements IOperation {
 	
@@ -148,47 +150,45 @@ public class Operation implements IOperation {
 			
 			@Override
 			public void update(IUser authorizedUser, IMember member) throws SQLException {
-				// TODO Auto-generated method stub
-				
+				new MemberDao().update(((Member) member).getId(), member);
 			}
 			
 			@Override
 			public IMember newMemberInstance(IUser authorizedUser) {
-				// TODO Auto-generated method stub
-				return null;
+				return new Member(null);
+			}
+			
+			@Override
+			public int count(IUser authorizedUser) throws SQLException {
+				return new MemberDao().count(Operation.this.branchId, Operation.this.operationId);
 			}
 			
 			@Override
 			public LinkedList<IMember> load(IUser authorizedUser, int offset,
 					int pageSize, IMemberSort sortField, boolean ascending) throws SQLException {
-				// TODO Auto-generated method stub
-				return null;
+				
+				return new MemberDao().load(Operation.this.branchId, Operation.this.operationId, offset, pageSize, sortField, ascending);
 			}
 			
 			@Override
 			public boolean isPersisted(IMember member) {
-				// TODO Auto-generated method stub
-				return false;
+				return ((Member) member).getId() != null;
 			}
 			
 			@Override
-			public void insert(IUser authorizedUser, IMember newMember)
-					throws SQLException {
-				// TODO Auto-generated method stub
-				
+			public void insert(IUser authorizedUser, IMember newMember) throws SQLException {
+				String name = newMember.getName();
+				if (name == null || "".equals(name.trim())) {
+					throw new RuntimeException("Member name is not set");
+				}
+				String id = ((Member) newMember).generateId();
+				new MemberDao().insert(id, Operation.this.operationId, Operation.this.branchId, newMember);
+				((Member) newMember).setId(id);
 			}
 			
 			@Override
-			public void delete(IUser authorizedUser, IMember member)
-					throws SQLException {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public int count(IUser authorizedUser) throws SQLException {
-				// TODO Auto-generated method stub
-				return 0;
+			public void delete(IUser authorizedUser, IMember member) throws SQLException {
+				new MemberDao().delete(((Member) member).getId(), member);
 			}
 		};
 		this.memberPagingList = new CachedPagingList<IMember, IMemberSort>(memberMate, memberComparators, IMemberSort.Creation, new IMember[0]);

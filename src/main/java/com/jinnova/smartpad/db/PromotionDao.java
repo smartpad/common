@@ -116,13 +116,45 @@ public class PromotionDao {
 	}
 
 	public void update(String promotionId, IPromotion t) throws SQLException {
-		// TODO Auto-generated method stub
-		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update promos set " + DaoSupport.RECINFO_FIELDS + ", " + 
+					DaoSupport.NAME_FIELDS + " where promo_id=?");
+			int i = 1;
+			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
+			i = DaoSupport.setNameFields(ps, t.getName(), i);
+			ps.setString(i++, promotionId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
 	}
 
 	public void delete(String promotionId, IPromotion t) throws SQLException {
-		// TODO Auto-generated method stub
-		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("delete promos where promo_id=?");
+			ps.setString(1, promotionId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
 	}
 
 }
