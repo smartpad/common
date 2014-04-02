@@ -93,9 +93,22 @@ public class Catalog implements ICatalog {
 				if (subCat.catalogSpec == null && subCat.systemCatalogId == null) {
 					throw new RuntimeException("This catalog must be linked to a system catalog");
 				}
-				String newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
+				
+				String newId;
+				if (subCat.catalogSpec == null) {
+					newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
+				} else {
+					newId = subCat.catalogSpec.getSpecId();
+					if (newId.contains(" ")) {
+						throw new RuntimeException("CatalogSpec id can't contains special charaters");
+					}
+				}
 				new CatalogDao().insert(subCat.branchId, newId, subCat.parentCatalogId, subCat);
 				subCat.catalogId = newId;
+				
+				if (subCat.catalogSpec != null) {
+					PartnerManager.instance.putSystemCatalog(subCat);
+				}
 			}
 			
 			@Override
@@ -115,7 +128,7 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public ICatalogItem newMemberInstance(IUser authorizedUser) {
-				return new CatalogItem(null);
+				return new CatalogItem(Catalog.this, null);
 			}
 			
 			@Override
@@ -125,14 +138,14 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogItemDao().countCatalogItems(Catalog.this.catalogId);
+				return new CatalogItemDao().countCatalogItems(Catalog.this);
 			}
 			
 			@Override
 			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
 					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 				
-				return new CatalogItemDao().loadCatalogItems(Catalog.this.catalogId, offset, pageSize, sortField, ascending);
+				return new CatalogItemDao().loadCatalogItems(Catalog.this, offset, pageSize, sortField, ascending);
 			}
 			
 			@Override
@@ -237,6 +250,11 @@ public class Catalog implements ICatalog {
 		
 		catalogItemPagingList = new CachedPagingList<ICatalogItem, ICatalogItemSort>(
 				itemMemberMate, itemComparators, ICatalogItemSort.createDate, new CatalogItem[0]);
+	}
+	
+	@Override
+	public String getId() {
+		return this.catalogId;
 	}
 
 	@Override

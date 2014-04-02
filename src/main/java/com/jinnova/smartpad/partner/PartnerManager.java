@@ -109,6 +109,7 @@ public class PartnerManager implements IPartnerManager {
 		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
 		instance = new PartnerManager();
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
+		instance.systemCatMap.remove("SMARTPAD");
 	}
 
 	public void clearDatabaseForTests() throws SQLException {
@@ -165,6 +166,10 @@ public class PartnerManager implements IPartnerManager {
 	@Override
 	public Catalog getSystemRootCatalog() {
 		return this.systemRootCatalog;
+	}
+
+	void putSystemCatalog(Catalog cat) {
+		systemCatMap.put(cat.getId(), cat);
 	}
 
 	@Override

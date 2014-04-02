@@ -130,7 +130,7 @@ public class CatalogDao {
 				throw new RuntimeException("Missing tableName for CatalogSpec");
 			}
 			StringBuffer tableSql = new StringBuffer();
-			tableSql.append("create table cs_" + tableName + " (item_id varchar(32) not null, " +
+			tableSql.append("create table " + CatalogItemDao.CS + tableName + " (item_id varchar(32) not null, " +
 					"catalog_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL");
 			for (ICatalogField f : cat.getCatalogSpec().getAllFields()) {
 				tableSql.append(", ");

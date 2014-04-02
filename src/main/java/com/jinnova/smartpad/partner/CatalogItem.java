@@ -6,6 +6,8 @@ import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem {
 	
+	public final Catalog catalog;
+	
 	private String itemId;
 	
 	//private final Name name = new Name();
@@ -20,7 +22,8 @@ public class CatalogItem implements ICatalogItem {
 	
 	private final HashMap<String, String[]> fieldValuesMulti = new HashMap<>(); 
 	
-	public CatalogItem(String itemId) {
+	public CatalogItem(Catalog catalog, String itemId) {
+		this.catalog = catalog;
 		this.itemId = itemId;
 	}
 	
