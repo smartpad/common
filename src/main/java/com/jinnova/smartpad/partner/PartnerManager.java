@@ -114,6 +114,7 @@ public class PartnerManager implements IPartnerManager {
 
 	public void clearDatabaseForTests() throws SQLException {
 		new UserDao().clearDatabaseForTests();
+		SystemCatalogGenrator.generate();
 	}
 	
 	/*public Iterator<CatalogItem> storeItemIterator() {
