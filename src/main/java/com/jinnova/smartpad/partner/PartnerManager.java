@@ -16,7 +16,7 @@ public class PartnerManager implements IPartnerManager {
 	
 	public static PartnerManager instance;
 	
-	final User systemUser = new User("SMARTPAD", "SMARTPAD", null);
+	final User systemUser;
 	
 	private final CachedPagingList<IUser, IUserSort> userPagingList;
 	
@@ -27,6 +27,10 @@ public class PartnerManager implements IPartnerManager {
 	private final HashMap<String, ICatalogSpec> catalogSpecMap = new HashMap<>();
 	
 	private PartnerManager() throws SQLException {
+		
+		systemUser = new User("SMARTPAD", /*"SMARTPAD",*/ null);
+		systemUser.loadBranch("SMARTPAD");
+		
 		@SuppressWarnings("unchecked")
 		final Comparator<IUser>[] comparators = new Comparator[3];
 		comparators[IUserSort.creation.ordinal()] = new Comparator<IUser>() {
@@ -54,7 +58,9 @@ public class PartnerManager implements IPartnerManager {
 
 			@Override
 			public IUser newMemberInstance(IUser authorizedUser) {
-				return new User(null, ((User) authorizedUser).getBranchId(), null);
+				User u = new User(null, /*((User) authorizedUser).getBranch().getBranchId(),*/ null);
+				u.setBranch((Operation) ((User) authorizedUser).getBranch());
+				return u;
 			}
 
 			@Override
@@ -124,11 +130,12 @@ public class PartnerManager implements IPartnerManager {
 	
 	@Override
 	public IUser createPrimaryUser(String login, String password) throws SQLException {
-		User u = new User(login, login, SmartpadCommon.md5(password));
+		User u = new User(login, /*login,*/ SmartpadCommon.md5(password));
 		((RecordInfo) u.getRecordInfo()).setCreateBy(login);
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
 		
+		u.setBranch(new Operation(null, login, null));
 		//new OperationDao().createOperation(login);
 		return u;
 	}
@@ -138,13 +145,15 @@ public class PartnerManager implements IPartnerManager {
 		if (password == null || login == null) {
 			return null;
 		}
-		User u = (User) new UserDao().loadUser(login);
+		String[] branchId = new String[1];
+		User u = (User) new UserDao().loadUser(login, branchId);
 		if (u == null) {
 			return null;
 		}
 		if (!SmartpadCommon.md5(password).equals(u.getPasshash())) {
 			return null;
 		}
+		u.loadBranch(branchId[0]);
 		return u;
 	}
 

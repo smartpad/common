@@ -20,7 +20,7 @@ public class User implements IUser {
 	
 	private String passhash;
 
-	private final String branchId;
+	//private final String branchId;
 	
 	private Operation branch;
 	
@@ -28,10 +28,10 @@ public class User implements IUser {
 	
 	private final CachedPagingList<IOperation, IOperationSort> storePagingList;
 
-	public User(String login, String branchId, String passhash) {
+	public User(String login, /*String branchId,*/ String passhash) {
 		super();
 		this.login = login;
-		this.branchId = branchId;
+		//this.branchId = branchId;
 		this.passhash = passhash;
 		@SuppressWarnings("unchecked")
 		final Comparator<IOperation>[] storeComparators = new Comparator[IOperationSort.values().length];
@@ -57,7 +57,7 @@ public class User implements IUser {
 
 			@Override
 			public IOperation newMemberInstance(IUser authorizedUser) {
-				return new Operation(null, User.this.branchId, ((Catalog) User.this.branch.getRootCatalog()).getSystemCatalogId());
+				return new Operation(null, User.this.branch.getBranchId(), ((Catalog) User.this.branch.getRootCatalog()).getSystemCatalogId());
 			}
 
 			@Override
@@ -69,7 +69,7 @@ public class User implements IUser {
 			public LinkedList<IOperation> load(IUser authorizedUser, 
 					int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
 				
-				return new OperationDao().loadStores(User.this.branchId, offset, pageSize, sortField, ascending);
+				return new OperationDao().loadStores(User.this.branch.getBranchId(), offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -78,9 +78,9 @@ public class User implements IUser {
 				if (((Catalog) op.getRootCatalog()).getSystemCatalogId() == null) {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
-				String newId = SmartpadCommon.md5(User.this.branchId +  op.getName());
+				String newId = SmartpadCommon.md5(User.this.branch.getBranchId() +  op.getName());
 				op.setOperationId(newId);
-				new OperationDao().createOperation(newId, User.this.branchId, op);
+				new OperationDao().createOperation(newId, User.this.branch.getBranchId(), op);
 			}
 
 			@Override
@@ -101,7 +101,7 @@ public class User implements IUser {
 
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new OperationDao().countStores(User.this.branchId);
+				return new OperationDao().countStores(User.this.branch.getBranchId());
 			}
 		};
 		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(storeMate, storeComparators, IOperationSort.creation, new IOperation[0]);
@@ -109,7 +109,7 @@ public class User implements IUser {
 	
 	@Override
 	public boolean isPrimary() {
-		return this.login.equals(branchId);
+		return this.login.equals(branch.getBranchId());
 	}
 	
 	/* (non-Javadoc)
@@ -136,9 +136,9 @@ public class User implements IUser {
 		return passhash;
 	}
 	
-	String getBranchId() {
+	/*String getBranchId() {
 		return this.branchId;
-	}
+	}*/
 
 	@Override
 	public void setPassword(String password) {
@@ -158,23 +158,34 @@ public class User implements IUser {
 			branch.getRecordInfo().setUpdateBy(this.login);
 			new OperationDao().updateOperation(branch.getOperationId(), branch);
 		} else {
-			branch.setOperationId(this.branchId);
+			branch.setOperationId(this.branch.getBranchId());
 			branch.getRecordInfo().setCreateDate(new Date());
 			branch.getRecordInfo().setCreateBy(this.login);
-			new OperationDao().createOperation(this.branchId, branch.getOperationId(), branch);
+			new OperationDao().createOperation(this.branch.getBranchId(), branch.getOperationId(), branch);
 		}
 	}
-
-	@Override
-	public IOperation loadBranch() throws SQLException {
-		if (branch != null) {
+	
+	void loadBranch(String branchId) throws SQLException {
+		/*if (branch != null) {
 			return branch;
-		}
+		}*/
 		branch = (Operation) new OperationDao().loadBranch(branchId);
 		if (branch == null) {
-			branch = new Operation(null, this.branchId, null);
+			branch = new Operation(null, branchId, null);
 		}
-		return branch;
+	}
+	
+	void setBranch(Operation branch) {
+		this.branch = branch;
+	}
+	
+	@Override
+	public IOperation getBranch() {
+		return this.branch;
+	}
+	
+	String getBranchId() {
+		return this.branch.getBranchId();
 	}
 
 	@Override

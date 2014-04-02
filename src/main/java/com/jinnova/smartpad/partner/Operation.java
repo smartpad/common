@@ -194,6 +194,10 @@ public class Operation implements IOperation {
 		this.memberPagingList = new CachedPagingList<IMember, IMemberSort>(memberMate, memberComparators, IMemberSort.Creation, new IMember[0]);
 	}
 	
+	String getBranchId() {
+		return this.branchId;
+	}
+	
 	@Override
 	public RecordInfo getRecordInfo() {
 		return this.recordInfo;
