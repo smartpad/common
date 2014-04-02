@@ -57,7 +57,7 @@ public class User implements IUser {
 
 			@Override
 			public IOperation newMemberInstance(IUser authorizedUser) {
-				return new Operation(null, User.this.branchId);
+				return new Operation(null, User.this.branchId, ((Catalog) User.this.branch.getRootCatalog()).getSystemCatalogId());
 			}
 
 			@Override
@@ -75,7 +75,7 @@ public class User implements IUser {
 			@Override
 			public void insert(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
-				if (op.getSystemCatalogId() == null) {
+				if (((Catalog) op.getRootCatalog()).getSystemCatalogId() == null) {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
 				String newId = SmartpadCommon.md5(User.this.branchId +  op.getName());
@@ -86,7 +86,7 @@ public class User implements IUser {
 			@Override
 			public void update(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
-				if (op.getSystemCatalogId() == null) {
+				if (((Catalog) op.getRootCatalog()).getSystemCatalogId() == null) {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
 				new OperationDao().updateOperation(op.getOperationId(), op);
@@ -150,7 +150,7 @@ public class User implements IUser {
 		if (!isPrimary()) {
 			return;
 		}
-		if (branch.getSystemCatalogId() == null) {
+		if (((Catalog) branch.getRootCatalog()).getSystemCatalogId() == null) {
 			throw new RuntimeException("A system catalog must be assigned to a branch");
 		}
 		if (branch.getOperationId() != null) {
@@ -172,7 +172,7 @@ public class User implements IUser {
 		}
 		branch = (Operation) new OperationDao().loadBranch(branchId);
 		if (branch == null) {
-			branch = new Operation(null, this.branchId);
+			branch = new Operation(null, this.branchId, null);
 		}
 		return branch;
 	}

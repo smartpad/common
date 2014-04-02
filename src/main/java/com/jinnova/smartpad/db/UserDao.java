@@ -23,7 +23,7 @@ public class UserDao {
 		stmt.executeUpdate("delete from catalogs");
 		stmt.executeUpdate("delete from catalog_items");
 		stmt.executeUpdate("delete from promos");
-		stmt.executeUpdate("drop table cs_foods");
+		stmt.executeUpdate("drop table if exists cs_foods");
 		stmt.close();
 		conn.close();
 	}

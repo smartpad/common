@@ -33,7 +33,7 @@ public class Operation implements IOperation {
 	//private final Catalog rootCatalog = new Catalog(this.branchId, this.branchId, CATALOG_ID_OPERROOT);
 	private final Catalog rootCatalog;
 	
-	private String systemCatalogId;
+	//private String systemCatalogId;
 	
 	private final CachedPagingList<IPromotion, IPromotionSort> promotions;
 
@@ -74,10 +74,10 @@ public class Operation implements IOperation {
 	
 	//private Integer memberOfferedSurveyLevel;
 	
-	public Operation(String operId, String branchId) {
+	public Operation(String operId, String branchId, String systemCatalogId) {
 		this.operationId = operId;
 		this.branchId = branchId;
-		this.rootCatalog = new Catalog(this.branchId, this.branchId, null, false);
+		this.rootCatalog = new Catalog(this.branchId, this.branchId, null, systemCatalogId);
 		
 		@SuppressWarnings({ "unchecked" })
 		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];
@@ -226,15 +226,15 @@ public class Operation implements IOperation {
 		return rootCatalog;
 	}
 
-	@Override
+	/*@Override
 	public String getSystemCatalogId() {
-		return this.systemCatalogId;
-	}
+		return this.rootCatalog.getSystemCatalogId();
+	}*/
 
-	@Override
+	/*@Override
 	public void setSystemCatalogId(String systemCatalogId) {
-		this.systemCatalogId = systemCatalogId;
-	}
+		this.rootCatalog.setSystemCatalogId(systemCatalogId);
+	}*/
 
 	@Override
 	public Schedule getOpenHours() {

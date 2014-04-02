@@ -45,21 +45,22 @@ public class Catalog implements ICatalog {
 	
 	PageMemberMate<ICatalogItem, ICatalogItemSort> itemMemberMate;
 	
-	public Catalog(String branchId, String catalogId, String parentCatalogId, boolean system) {
+	public Catalog(String branchId, String catalogId, String parentCatalogId, String systemCatalogId) {
 		this.branchId = branchId;
 		this.catalogId = catalogId;
 		this.parentCatalogId = parentCatalogId;
-		if (system) {
+		if (systemCatalogId == null) {
 			this.catalogSpec = new CatalogSpec();
 		} else {
 			this.catalogSpec = null;
+			this.systemCatalogId = systemCatalogId;
 		}
 		
 		catalogMemberMate = new PageMemberMate<ICatalog, ICatalogSort>() {
 			
 			@Override
 			public ICatalog newMemberInstance(IUser authorizedUser) {
-				return new Catalog(Catalog.this.branchId, null, Catalog.this.catalogId, Catalog.this.catalogSpec != null);
+				return new Catalog(Catalog.this.branchId, null, Catalog.this.catalogId, Catalog.this.systemCatalogId);
 			}
 			
 			@Override
@@ -241,6 +242,15 @@ public class Catalog implements ICatalog {
 	@Override
 	public ICatalog getSystemCatalog() {
 		return PartnerManager.instance.getSystemCatalog(this.systemCatalogId);
+	}
+	
+	public String getSystemCatalogId() {
+		return this.systemCatalogId;
+	}
+	
+	@Override
+	public void setSystemCatalogId(String systemCatalogId) {
+		this.systemCatalogId = systemCatalogId;
 	}
 
 	@Override

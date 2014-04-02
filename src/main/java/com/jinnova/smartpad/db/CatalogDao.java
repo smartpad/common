@@ -77,7 +77,7 @@ public class CatalogDao {
 			LinkedList<ICatalog> subCatalogs = new LinkedList<ICatalog>();
 			JsonParser parser = new JsonParser();
 			while (rs.next()) {
-				Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("catalog_id"), parentId, system);
+				Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("catalog_id"), parentId, rs.getString("syscat_id"));
 				DaoSupport.populateName(rs, cat.getName());
 				DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
 				String spec = rs.getString("spec");
@@ -108,12 +108,13 @@ public class CatalogDao {
 		Statement stmt = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, parent_id=?, branch_id=?, spec=?, " + 
+			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, parent_id=?, branch_id=?, syscat_id=?, spec=?, " + 
 					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, catalogId);
 			ps.setString(i++, parentCatalogId);
 			ps.setString(i++, branchId);
+			ps.setString(i++, cat.getSystemCatalogId());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
@@ -162,10 +163,12 @@ public class CatalogDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update catalogs set spec=?, " + DaoSupport.RECINFO_FIELDS + ", " + 
+			ps = conn.prepareStatement("update catalogs set syscat_id=?, spec=?, " + DaoSupport.RECINFO_FIELDS + ", " + 
 					DaoSupport.NAME_FIELDS + " where catalog_id=?");
 			int i = 1;
-			ps.setString(i++, ((CatalogSpec) cat.getCatalogSpec()).toJson().toString());
+			ps.setString(i++, cat.getSystemCatalogId());
+			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
+			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, cat.getName(), i);
 			ps.setString(i++, catalogId);

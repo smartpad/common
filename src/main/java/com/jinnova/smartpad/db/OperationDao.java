@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.IOperation;
 import com.jinnova.smartpad.partner.IOperationSort;
 import com.jinnova.smartpad.partner.Operation;
@@ -16,10 +17,9 @@ import com.jinnova.smartpad.partner.StringArrayUtils;
 public class OperationDao {
 	
 	private Operation populateOperation(ResultSet rs) throws SQLException {
-		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"));
+		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"), rs.getString("syscat_id"));
 		DaoSupport.populateName(rs, oper.getName());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
-		oper.setSystemCatalogId(rs.getString("syscat_id"));
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));
 		oper.setMemberLevels(StringArrayUtils.stringArrayFromJson(rs.getString("member_levels")));
@@ -181,7 +181,7 @@ public class OperationDao {
 	private static final String OP_FIELDS = "syscat_id=?, open_text=?, open_hours=?, member_levels=?";
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
-		ps.setString(i++, op.getSystemCatalogId());
+		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
 		ps.setString(i++, op.getOpenHours().getText());
 		ps.setString(i++, op.getOpenHours().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));

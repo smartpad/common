@@ -55,6 +55,7 @@ CREATE TABLE `catalogs` (
   `catalog_id` varchar(32) NOT NULL,
   `parent_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  `syscat_id` varchar(32) DEFAULT NULL,
   
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,

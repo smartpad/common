@@ -96,7 +96,7 @@ public class PartnerManager implements IPartnerManager {
 		};
 		
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
-		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null, true);
+		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null, null);
 	}
 	
 	public static void initialize() throws SQLException {
