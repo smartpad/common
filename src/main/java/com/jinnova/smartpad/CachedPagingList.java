@@ -96,26 +96,30 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 	@Override
 	public CachedPage<T> loadPage(IUser authorizedUser, int pageNumber) throws SQLException {
 		
-		if (pageSize <= 0) {
+		/*if (pageSize <= 0) {
 			//throw new RuntimeException("Negative pageSize");
 			//return null;
 			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, new LinkedList<T>(), array);
-		}
+		}*/
 		if (pageNumber < 0) {
 			//return null;
-			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, new LinkedList<T>(), array);
+			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, this.pageSize, new LinkedList<T>(), array);
 		}
 		
 		if (totalCount < 0) {
 			totalCount = memberMate.count(authorizedUser);
-			pageCount = totalCount / pageSize;
-			if (totalCount > 0 && totalCount % pageSize != 0) {
+			if (pageSize > 0) {
+				pageCount = totalCount / pageSize;
+			} else {
+				pageCount = 1;
+			}
+			if (pageSize > 0 && totalCount > 0 && totalCount % pageSize != 0) {
 				pageCount++;
 			}
 		}
 		
 		if (pageNumber > pageCount) {
-			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, new LinkedList<T>(), array);
+			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, this.pageSize, new LinkedList<T>(), array);
 		}
 		
 		for (CachedPage<T> onePage : pages) {
@@ -126,7 +130,7 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		
 		int offset = (pageNumber - 1) * pageSize;
 		LinkedList<T> members = memberMate.load(authorizedUser, offset, pageSize, sortField, ascending);
-		CachedPage<T> newPage = new CachedPage<>(totalCount, pageCount, pageNumber, offset, members, array);
+		CachedPage<T> newPage = new CachedPage<>(totalCount, pageCount, pageNumber, offset, this.pageSize, members, array);
 		pages.add(newPage);
 		Collections.sort(pages, pageComparator);
 		if (pages.size() > 3) {

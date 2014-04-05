@@ -80,7 +80,9 @@ public class CatalogItemDao {
 			LinkedList<ICatalogItem> catalogItems = new LinkedList<ICatalogItem>();
 			while (rs.next()) {
 				CatalogItem item = new CatalogItem(catalog, rs.getString("item_id"));
-				//DaoSupport.populateName(rs, item.getName());
+				for (ICatalogField field : spec.getAllFields()) {
+					item.setField(field.getId(), rs.getString(field.getId()));
+				}
 				DaoSupport.populateRecinfo(rs, item.getRecordInfo());
 				catalogItems.add(item);
 			}

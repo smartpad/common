@@ -308,7 +308,7 @@ public class Catalog implements ICatalog {
 			catMap.put(oneCat.catalogId, oneCat);
 			oneCat.subCatalogPagingList.setPageSize(-1); //load all
 			CachedPage<ICatalog> page = oneCat.subCatalogPagingList.loadPage(PartnerManager.instance.systemUser, 1);
-			for (ICatalog sub : page.getMembers()) {
+			for (ICatalog sub : page.getPageItems()) {
 				catList.add((Catalog) sub);
 			}
 		}

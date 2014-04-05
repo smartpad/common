@@ -13,17 +13,21 @@ public class CachedPage<T> implements IPage<T> {
 	private final int pageNumber;
 	
 	private final int offset;
+	
+	private final int pageSize;
 
 	private final LinkedList<T> members;
 	
 	//must be zero-lenght
 	private final T[] array;
 
-	public CachedPage(int totalCount, int pageCount, int pageNumber, int offset, LinkedList<T> members, T[] array) {
+	public CachedPage(int totalCount, int pageCount, int pageNumber, 
+			int offset, int pageSize, LinkedList<T> members, T[] array) {
 		this.totalCount = totalCount;
 		this.pageCount = pageCount;
 		this.pageNumber = pageNumber;
 		this.offset = offset;
+		this.pageSize = pageSize;
 		this.members = members;
 		this.array = array;
 	}
@@ -49,7 +53,7 @@ public class CachedPage<T> implements IPage<T> {
 	}
 	
 	@Override
-	public T[] getMembers() {
+	public T[] getPageItems() {
 		return members.toArray(array);
 	}
 	
@@ -60,12 +64,14 @@ public class CachedPage<T> implements IPage<T> {
 	}
 	
 	boolean put(T newMember, Comparator<T> comparator) {
-		if (!isInPage(newMember, comparator)) {
+		if (!members.isEmpty() && !isInPage(newMember, comparator)) {
 			return false;
 		}
 		members.add(newMember);
 		Collections.sort(members, comparator);
-		members.removeLast();
+		if (members.size() > pageSize) {
+			members.removeLast();
+		}
 		return true;
 	}
 

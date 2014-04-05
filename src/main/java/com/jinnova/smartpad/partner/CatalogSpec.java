@@ -15,6 +15,10 @@ public class CatalogSpec implements ICatalogSpec {
 	private final LinkedList<String> sectionNames = new LinkedList<>();
 	
 	private final LinkedList<String> groupNames = new LinkedList<>();
+	
+	public CatalogSpec() {
+		
+	}
 
 	@Override
 	public String getSpecId() {
@@ -49,10 +53,14 @@ public class CatalogSpec implements ICatalogSpec {
 	}
 	
 	public JsonObject toJson() {
+		
 		if (allFields.isEmpty()) {
 			return null;
 		}
+		
 		JsonObject json = new JsonObject();
+		json.add("sid", new JsonPrimitive(specId));
+		
 		JsonArray ja = new JsonArray();
 		for (String s : sectionNames) {
 			ja.add(new JsonPrimitive(s));
@@ -74,6 +82,9 @@ public class CatalogSpec implements ICatalogSpec {
 	}
 	
 	public void populate(JsonObject json) {
+		
+		specId = json.get("sid").getAsString();
+		
 		JsonArray ja = json.get("sNames").getAsJsonArray();
 		for (int i = 0; i < ja.size(); i++) {
 			sectionNames.add(ja.get(i).getAsString());

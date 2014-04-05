@@ -65,8 +65,9 @@ class DaoSupport {
 		}
 		String clause = "order by " + fieldName;
 		if (pageSize > 0) {
-			clause +=  " limit " + pageSize;
+			return clause +=  " limit " + pageSize + " offset " + offset;
+		} else {
+			return clause;
 		}
-		return clause + " offset " + offset;
 	}
 }
