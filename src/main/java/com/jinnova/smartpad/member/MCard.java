@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.member;
 
+@SuppressWarnings("unused")
 public class MCard {
 	
 	private String operationId;
