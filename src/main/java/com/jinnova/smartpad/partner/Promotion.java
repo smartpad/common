@@ -32,7 +32,8 @@ public class Promotion implements IPromotion {
 		this.operationId = operationId;
 	}
 
-	String getPromotionId() {
+	@Override
+	public String getId() {
 		return this.promotionId;
 	}
 

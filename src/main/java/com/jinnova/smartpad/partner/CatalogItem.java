@@ -27,11 +27,12 @@ public class CatalogItem implements ICatalogItem {
 		this.itemId = itemId;
 	}
 	
-	String getItemId() {
+	@Override
+	public String getId() {
 		return this.itemId;
 	}
 	
-	void setItemId(String s) {
+	void setId(String s) {
 		this.itemId = s;
 	}
 

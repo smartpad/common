@@ -133,7 +133,7 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public boolean isPersisted(ICatalogItem member) {
-				return ((CatalogItem) member).getItemId() != null;
+				return ((CatalogItem) member).getId() != null;
 			}
 			
 			@Override
@@ -157,19 +157,19 @@ public class Catalog implements ICatalog {
 				}
 				String newId = SmartpadCommon.md5(Catalog.this.branchId + Catalog.this.catalogId + name);
 				new CatalogItemDao().insert(Catalog.this.branchId, newId, Catalog.this.catalogId, item);
-				item.setItemId(newId);
+				item.setId(newId);
 			}
 			
 			@Override
 			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().update(item.getItemId(), item);
+				new CatalogItemDao().update(item.getId(), item);
 			}
 			
 			@Override
 			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().delete(item.getItemId());
+				new CatalogItemDao().delete(item.getId());
 			}
 		};
 

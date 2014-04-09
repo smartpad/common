@@ -62,7 +62,7 @@ public class User implements IUser {
 
 			@Override
 			public boolean isPersisted(IOperation member) {
-				return ((Operation) member).getOperationId() != null;
+				return ((Operation) member).getId() != null;
 			}
 
 			@Override
@@ -79,7 +79,7 @@ public class User implements IUser {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
 				String newId = SmartpadCommon.md5(User.this.branch.getBranchId() +  op.getName());
-				op.setOperationId(newId);
+				op.setId(newId);
 				new OperationDao().createOperation(newId, User.this.branch.getBranchId(), op);
 			}
 
@@ -89,14 +89,14 @@ public class User implements IUser {
 				if (((Catalog) op.getRootCatalog()).getSystemCatalogId() == null) {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
-				new OperationDao().updateOperation(op.getOperationId(), op);
+				new OperationDao().updateOperation(op.getId(), op);
 			}
 
 			@Override
 			public void delete(IUser authorizedUser, IOperation t) throws SQLException {
 				Operation op = (Operation) t;
-				new OperationDao().deleteOperation(op.getOperationId());
-				op.setOperationId(null);
+				new OperationDao().deleteOperation(op.getId());
+				op.setId(null);
 			}
 
 			@Override
@@ -153,15 +153,15 @@ public class User implements IUser {
 		if (((Catalog) branch.getRootCatalog()).getSystemCatalogId() == null) {
 			throw new RuntimeException("A system catalog must be assigned to a branch");
 		}
-		if (branch.getOperationId() != null) {
+		if (branch.getId() != null) {
 			branch.getRecordInfo().setUpdateDate(new Date());
 			branch.getRecordInfo().setUpdateBy(this.login);
-			new OperationDao().updateOperation(branch.getOperationId(), branch);
+			new OperationDao().updateOperation(branch.getId(), branch);
 		} else {
-			branch.setOperationId(this.branch.getBranchId());
+			branch.setId(this.branch.getBranchId());
 			branch.getRecordInfo().setCreateDate(new Date());
 			branch.getRecordInfo().setCreateBy(this.login);
-			new OperationDao().createOperation(this.branch.getBranchId(), branch.getOperationId(), branch);
+			new OperationDao().createOperation(this.branch.getBranchId(), branch.getId(), branch);
 		}
 	}
 	

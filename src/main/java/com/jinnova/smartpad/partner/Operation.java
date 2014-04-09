@@ -135,12 +135,12 @@ public class Operation implements IOperation {
 
 			@Override
 			public void update(IUser authorizedUser, IPromotion t) throws SQLException {
-				new PromotionDao().update(((Promotion) t).getPromotionId(), t);
+				new PromotionDao().update(((Promotion) t).getId(), t);
 			}
 
 			@Override
 			public void delete(IUser authorizedUser, IPromotion t) throws SQLException {
-				new PromotionDao().delete(((Promotion) t).getPromotionId(), t);
+				new PromotionDao().delete(((Promotion) t).getId(), t);
 			}};
 		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(promoMate, promoComparators, IPromotionSort.creation, new IPromotion[0]);
 		
@@ -207,11 +207,12 @@ public class Operation implements IOperation {
 		return this.branchId.equals(branchId);
 	}
 	
-	String getOperationId() {
+	@Override
+	public String getId() {
 		return this.operationId;
 	}
 	
-	public void setOperationId(String operationId) {
+	public void setId(String operationId) {
 		this.operationId = operationId;
 	}
 
