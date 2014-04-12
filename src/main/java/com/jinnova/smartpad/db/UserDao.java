@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 
-import com.jinnova.smartpad.partner.DbIterator;
 import com.jinnova.smartpad.partner.IUser;
 import com.jinnova.smartpad.partner.IUserSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
@@ -215,7 +214,7 @@ public class UserDao {
 		}
 	}
 	
-	class UserIterator implements DbIterator<User> {
+	/*class UserIterator implements DbIterator<User> {
 		
 		private final Statement stmt;
 		private final ResultSet rs;
@@ -233,7 +232,7 @@ public class UserDao {
 				if (!rs.next()) {
 					return false;
 				}
-				next = new User(rs.getString("login"), /*rs.getString("branch_id"),*/ rs.getString("passhash"));
+				next = new User(rs.getString("login"), rs.getString("passhash"));
 				next.branchId = rs.getString("branch_id");
 				return true;
 			} catch (SQLException e) {
@@ -257,13 +256,13 @@ public class UserDao {
 			stmt.close();
 		}
 
-	}
+	}*/
 
-	public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
+	/*public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
 
 		Statement stmt = conn.createStatement();
 		ResultSet rs = stmt.executeQuery("select * from sp_users where branch_id = login");
 		return new UserIterator(stmt, rs);
-	}
+	}*/
 
 }

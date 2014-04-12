@@ -1,6 +1,5 @@
 package com.jinnova.smartpad.partner;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
@@ -186,7 +185,7 @@ public class PartnerManager implements IPartnerManager {
 		return catalogSpecMap.get(specId);
 	}
 	
-	public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
+	/*public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
 		return new UserDao().iterateAllPrimaryUsers(conn);
-	}
+	}*/
 }

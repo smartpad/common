@@ -21,7 +21,7 @@ public class DetailManager implements IDetailManager {
     	if (cached != null) {
     		return cached;
     	}
-    	cached = drillers[targetType].generate(null, targetId, gpsZone, page);
+    	cached = drillers[targetType].generate(targetId, gpsZone, page);
     	CacheDao.put(cached, targetType, targetId, gpsZone, page);
     	return cached;
     }

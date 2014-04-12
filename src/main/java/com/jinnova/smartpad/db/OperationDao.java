@@ -13,9 +13,10 @@ import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.StringArrayUtils;
 
-public class OperationDao {
+public class OperationDao implements DbPopulator<Operation> {
 	
-	private Operation populateOperation(ResultSet rs) throws SQLException {
+	@Override
+	public Operation populate(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"), rs.getString("syscat_id"));
 		DaoSupport.populateName(rs, oper.getName());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
@@ -39,7 +40,7 @@ public class OperationDao {
 			if (!rs.next()) {
 				return null;
 			}
-			return populateOperation(rs);
+			return populate(rs);
 		} finally {
 			if (rs != null) {
 				rs.close();
@@ -79,7 +80,7 @@ public class OperationDao {
 			rs = ps.executeQuery();
 			LinkedList<IOperation> opList = new LinkedList<IOperation>();
 			while (rs.next()) {
-				opList.add(populateOperation(rs));
+				opList.add(populate(rs));
 			}
 			return opList;
 		} finally {
@@ -121,6 +122,16 @@ public class OperationDao {
 				conn.close();
 			}
 		}
+	}
+
+	public DbIterator<Operation> iterateStores(String branchId) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id");
+		ps.setString(1, branchId);
+		System.out.println("SQL: " + ps);
+		ResultSet rs = ps.executeQuery();
+		return new DbIterator<Operation>(conn, ps, rs, this);
 	}
 
 	public void createOperation(String operId, String branchId, Operation operation) throws SQLException {

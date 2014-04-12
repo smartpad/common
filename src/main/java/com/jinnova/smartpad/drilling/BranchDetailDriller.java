@@ -1,24 +1,22 @@
 package com.jinnova.smartpad.drilling;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.jinnova.smartpad.db.DbIterator;
+import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.IOperation;
-import com.jinnova.smartpad.partner.PartnerManager;
-import com.jinnova.smartpad.partner.User;
+import com.jinnova.smartpad.partner.Operation;
 
 class BranchDetailDriller implements DetailDriller {
 
 	@Override
-	public String generate(Connection conn, String targetId, String gpsZone, int page) throws SQLException {
-
-		User user = (User) PartnerManager.instance.getSystemUser();
-		user.getStorePagingList().setPageSize(-1);
-		IOperation[] stores = user.getStorePagingList().loadPage(user, 1).getPageItems();
+	public String generate(String targetId, String gpsZone, int page) throws SQLException {
+		DbIterator<Operation> it = new OperationDao().iterateStores(targetId);
 		JsonArray ja = new JsonArray();
-		for (IOperation one : stores) {
+		while (it.hasNext()) {
+			IOperation one = it.next();
 			JsonObject json = new JsonObject();
 			json.addProperty("id", one.getId());
 			json.addProperty("type", "store");
