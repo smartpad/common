@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.Catalog;
@@ -26,7 +27,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		return oper;
 	}
 
-	public IOperation loadBranch(String operationId) throws SQLException {
+	public IOperation loadBranch(String branchId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -34,7 +35,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("select * from operations where oper_id = ?");
-			ps.setString(1, operationId);
+			ps.setString(1, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
@@ -52,6 +53,11 @@ public class OperationDao implements DbPopulator<Operation> {
 				conn.close();
 			}
 		}
+	}
+
+	public IOperation loadStore(String storeId) throws SQLException {
+		
+		return loadBranch(storeId);
 	}
 
 	public LinkedList<IOperation> loadStores(String branchId, int offset, int pageSize, 
@@ -122,16 +128,6 @@ public class OperationDao implements DbPopulator<Operation> {
 				conn.close();
 			}
 		}
-	}
-
-	public DbIterator<Operation> iterateStores(String branchId) throws SQLException {
-		
-		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id");
-		ps.setString(1, branchId);
-		System.out.println("SQL: " + ps);
-		ResultSet rs = ps.executeQuery();
-		return new DbIterator<Operation>(conn, ps, rs, this);
 	}
 
 	public void createOperation(String operId, String branchId, Operation operation) throws SQLException {
@@ -218,6 +214,27 @@ public class OperationDao implements DbPopulator<Operation> {
 				conn.close();
 			}
 		}
+	}
+
+	public DbIterator<Operation> iterateStores(String branchId) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id");
+		ps.setString(1, branchId);
+		System.out.println("SQL: " + ps);
+		ResultSet rs = ps.executeQuery();
+		return new DbIterator<Operation>(conn, ps, rs, this);
+	}
+
+	public DbIterator<Operation> iterateSimilarBranches(String targetBranchId, String targetSyscatId) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "select * from operations where oper_id = branch_id and branch_id != '" + targetBranchId + 
+				"' and syscat_id = '" + targetSyscatId + "'";
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
 }

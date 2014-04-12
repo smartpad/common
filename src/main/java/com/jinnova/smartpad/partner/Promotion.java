@@ -2,6 +2,7 @@ package com.jinnova.smartpad.partner;
 
 import java.util.Date;
 
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
@@ -82,5 +83,13 @@ public class Promotion implements IPromotion {
 	
 	public MCardOffer getMemberCardOffer() {
 		return mcardOffer;
+	}
+
+	public JsonObject generateFeedJson() {
+		JsonObject json = new JsonObject();
+		json.addProperty("id", this.promotionId);
+		json.addProperty("type", IDetailManager.TYPENAME_PROMO);
+		json.addProperty("name", name.getName());
+		return json;
 	}
 }

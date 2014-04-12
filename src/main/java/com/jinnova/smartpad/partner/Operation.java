@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.LinkedList;
 
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
@@ -194,7 +195,7 @@ public class Operation implements IOperation {
 		this.memberPagingList = new CachedPagingList<IMember, IMemberSort>(memberMate, memberComparators, IMemberSort.Creation, new IMember[0]);
 	}
 	
-	String getBranchId() {
+	public String getBranchId() {
 		return this.branchId;
 	}
 	
@@ -309,6 +310,18 @@ public class Operation implements IOperation {
 	@Override
 	public IPagingList<IMember, IMemberSort> getMemberPagingList() {
 		return memberPagingList;
+	}
+	
+	public JsonObject generateFeedJson() {
+		JsonObject json = new JsonObject();
+		json.addProperty("id", this.operationId);
+		if (this.operationId.equals(this.branchId)) {
+			json.addProperty("type", IDetailManager.TYPENAME_BRANCH);
+		} else {
+			json.addProperty("type", IDetailManager.TYPENAME_STORE);
+		}
+		json.addProperty("name", this.name.getName());
+		return json;
 	}
 
 	/*@Override

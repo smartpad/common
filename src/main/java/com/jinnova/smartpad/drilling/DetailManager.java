@@ -11,6 +11,7 @@ public class DetailManager implements IDetailManager {
 	
 	public static void initialize() {
 		drillers[TYPE_BRANCH] = new BranchDetailDriller();
+		drillers[TYPE_STORE] = new StoreDetailDriller();
 	}
     
 	@Override

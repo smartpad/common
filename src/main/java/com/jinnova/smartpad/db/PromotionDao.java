@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IPromotion;
@@ -11,7 +12,7 @@ import com.jinnova.smartpad.partner.IPromotionSort;
 import com.jinnova.smartpad.partner.Promotion;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
-public class PromotionDao {
+public class PromotionDao implements DbPopulator<Promotion> {
 
 	public int count(String operationId) throws SQLException {
 		Connection conn = null;
@@ -83,7 +84,8 @@ public class PromotionDao {
 		}
 	}
 	
-	private static Promotion populate(ResultSet rs) throws SQLException {
+	@Override
+	public Promotion populate(ResultSet rs) throws SQLException {
 		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("oper_id"));
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
 		DaoSupport.populateName(rs, promo.getName());
@@ -155,6 +157,16 @@ public class PromotionDao {
 				conn.close();
 			}
 		}
+	}
+
+	public DbIterator<Promotion> iteratePromos(String branchId) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "select * from promos where oper_id = '" + branchId + "'";
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		return new DbIterator<Promotion>(conn, stmt, rs, this);
 	}
 
 }

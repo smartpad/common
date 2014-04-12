@@ -22,7 +22,7 @@ public class DbIterator<T> {
 		this.populator = populator;
 	}
 
-	void close() throws SQLException {
+	public void close() throws SQLException {
 		if (rs != null) {
 			rs.close();
 		}

@@ -54,17 +54,6 @@ class BranchSimilar {
     	
     }*/
 
-	/**
-     * Returns in order the following:
-     * 
-     * 	- All stores belong to this branch in one compound
-     * 	- Some similar branches in one compound
-     * 	- Some active promotions from this branch in one compound
-     * 	- All sub categories of this branch's root category in one compound
-     * 	- Some posts from this branch 
-     * 	- Feature catelog items from this branch's root category
-     *
-     */
 	/*private static void generate(Operation store) {
 		
 	}*/
