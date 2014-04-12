@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 
+import com.jinnova.smartpad.partner.DbIterator;
 import com.jinnova.smartpad.partner.IUser;
 import com.jinnova.smartpad.partner.IUserSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
@@ -212,6 +213,57 @@ public class UserDao {
 				conn.close();
 			}
 		}
+	}
+	
+	class UserIterator implements DbIterator<User> {
+		
+		private final Statement stmt;
+		private final ResultSet rs;
+		
+		private User next;
+		
+		UserIterator(Statement stmt, ResultSet rs) {
+			this.stmt = stmt;
+			this.rs = rs;
+		}
+
+		@Override
+		public boolean hasNext() {
+			try {
+				if (!rs.next()) {
+					return false;
+				}
+				next = new User(rs.getString("login"), /*rs.getString("branch_id"),*/ rs.getString("passhash"));
+				next.branchId = rs.getString("branch_id");
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+
+		@Override
+		public User next() {
+			return next;
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+		public void close() throws SQLException {
+			rs.close();
+			stmt.close();
+		}
+
+	}
+
+	public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
+
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery("select * from sp_users where branch_id = login");
+		return new UserIterator(stmt, rs);
 	}
 
 }

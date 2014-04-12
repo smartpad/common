@@ -85,3 +85,15 @@ CREATE TABLE `promos` (
   `images` text DEFAULT NULL,
   PRIMARY KEY (`promo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `similars_ver` (
+  `type_id` varchar(8) NOT NULL,
+  `version` varchar(2) NOT NULL,
+  PRIMARY KEY (`type_id`, `version`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `similars` (
+  `target` varchar(42) NOT NULL,
+  `json` text NOT NULL,
+  PRIMARY KEY (`target`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

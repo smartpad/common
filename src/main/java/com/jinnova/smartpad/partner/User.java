@@ -20,7 +20,7 @@ public class User implements IUser {
 	
 	private String passhash;
 
-	//private final String branchId;
+	public String branchId;
 	
 	private Operation branch;
 	
@@ -69,7 +69,7 @@ public class User implements IUser {
 			public LinkedList<IOperation> load(IUser authorizedUser, 
 					int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
 				
-				return new OperationDao().loadStores(User.this.branch.getBranchId(), offset, pageSize, sortField, ascending);
+				return new OperationDao().loadStores(User.this.branchId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -173,10 +173,12 @@ public class User implements IUser {
 		if (branch == null) {
 			branch = new Operation(null, branchId, null);
 		}
+		this.branchId = branch.getId();
 	}
 	
 	void setBranch(Operation branch) {
 		this.branch = branch;
+		branchId = branch.getId();
 	}
 	
 	@Override

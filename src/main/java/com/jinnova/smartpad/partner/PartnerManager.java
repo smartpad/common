@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.partner;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
@@ -11,6 +12,7 @@ import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.PageMemberMate;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.UserDao;
+import com.jinnova.smartpad.drilling.DetailManager;
 
 public class PartnerManager implements IPartnerManager {
 	
@@ -110,6 +112,7 @@ public class PartnerManager implements IPartnerManager {
 		instance = new PartnerManager();
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 		instance.systemCatMap.remove("SMARTPAD");
+		DetailManager.initialize();
 	}
 
 	public void clearDatabaseForTests() throws SQLException {
@@ -181,5 +184,9 @@ public class PartnerManager implements IPartnerManager {
 	@Override
 	public ICatalogSpec getCatalogSpec(String specId) {
 		return catalogSpecMap.get(specId);
+	}
+	
+	public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
+		return new UserDao().iterateAllPrimaryUsers(conn);
 	}
 }

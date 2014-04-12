@@ -2,7 +2,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import com.jinnova.smartpad.batch.IBatchManager;
-import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.ICatalogItem;
 import com.jinnova.smartpad.partner.IOperation;
@@ -13,7 +12,7 @@ public class BatchManager implements IBatchManager {
 
 	@Override
 	public Iterator<IOperation> operationIterator() throws SQLException {
-		return new OperationDao().operationIterator();
+		return null; //new OperationDao().operationIterator();
 	}
 
 	@Override

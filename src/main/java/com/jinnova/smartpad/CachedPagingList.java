@@ -106,16 +106,21 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 			return new CachedPage<>(totalCount, pageCount, pageNumber, -1, this.pageSize, new LinkedList<T>(), array);
 		}
 		
-		if (totalCount < 0) {
-			totalCount = memberMate.count(authorizedUser);
-			if (pageSize > 0) {
+		if (pageSize > 0) {
+			if (totalCount < 0) {
+				totalCount = memberMate.count(authorizedUser);
+				/*if (pageSize > 0) {
+					pageCount = totalCount / pageSize;
+				} else {
+					pageCount = 1;
+				}*/
 				pageCount = totalCount / pageSize;
-			} else {
-				pageCount = 1;
+				if (pageSize > 0 && totalCount > 0 && totalCount % pageSize != 0) {
+					pageCount++;
+				}
 			}
-			if (pageSize > 0 && totalCount > 0 && totalCount % pageSize != 0) {
-				pageCount++;
-			}
+		} else {
+			pageCount = 1;
 		}
 		
 		if (pageNumber > pageCount) {
