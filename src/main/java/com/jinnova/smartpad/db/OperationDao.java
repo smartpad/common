@@ -184,10 +184,13 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 	
-	private static final String OP_FIELDS = "syscat_id=?, open_text=?, open_hours=?, member_levels=?";
+	private static final String OP_FIELDS = "syscat_id=?, gps_lon=?, gps_lat=?, gps_inherit=?, open_text=?, open_hours=?, member_levels=?";
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
 		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
+		ps.setFloat(i++, op.getGps().getLontitue());
+		ps.setFloat(i++, op.getGps().getLatitude());
+		ps.setBoolean(i++, op.getGps().isInherited());
 		ps.setString(i++, op.getOpenHours().getText());
 		ps.setString(i++, op.getOpenHours().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));

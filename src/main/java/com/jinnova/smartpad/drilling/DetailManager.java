@@ -10,8 +10,8 @@ public class DetailManager implements IDetailManager {
 	private static DetailDriller[] drillers = new DetailDriller[TYPE_COUNT];
 	
 	public static void initialize() {
-		drillers[TYPE_BRANCH] = new BranchDetailDriller();
-		drillers[TYPE_STORE] = new StoreDetailDriller();
+		drillers[TYPE_BRANCH] = new BranchDriller();
+		drillers[TYPE_STORE] = new StoreDriller();
 	}
     
 	@Override

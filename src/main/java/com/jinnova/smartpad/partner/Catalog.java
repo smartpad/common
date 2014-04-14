@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPage;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IName;
@@ -138,14 +140,14 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogItemDao().countCatalogItems(Catalog.this);
+				return new CatalogItemDao(Catalog.this).countCatalogItems();
 			}
 			
 			@Override
 			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
 					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 				
-				return new CatalogItemDao().loadCatalogItems(Catalog.this, offset, pageSize, sortField, ascending);
+				return new CatalogItemDao(Catalog.this).loadCatalogItems(offset, pageSize, sortField, ascending);
 			}
 			
 			@Override
@@ -156,20 +158,20 @@ public class Catalog implements ICatalog {
 					throw new RuntimeException("CatalogItem's name unset");
 				}
 				String newId = SmartpadCommon.md5(Catalog.this.branchId + Catalog.this.catalogId + name);
-				new CatalogItemDao().insert(Catalog.this.branchId, newId, Catalog.this.catalogId, item);
+				new CatalogItemDao(Catalog.this).insert(Catalog.this.branchId, newId, Catalog.this.catalogId, item);
 				item.setId(newId);
 			}
 			
 			@Override
 			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().update(item.getId(), item);
+				new CatalogItemDao(Catalog.this).update(item.getId(), item);
 			}
 			
 			@Override
 			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().delete(item.getId());
+				new CatalogItemDao(Catalog.this).delete(item.getId());
 			}
 		};
 
@@ -312,5 +314,13 @@ public class Catalog implements ICatalog {
 				catList.add((Catalog) sub);
 			}
 		}
+	}
+
+	public JsonElement generateFeedJson() {
+		JsonObject json = new JsonObject();
+		json.addProperty("id", this.catalogId);
+		json.addProperty("type", IDetailManager.TYPENAME_CAT);
+		json.addProperty("name", this.name.getName());
+		return json;
 	}
 }

@@ -2,6 +2,8 @@ package com.jinnova.smartpad.partner;
 
 import java.util.HashMap;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem {
@@ -41,6 +43,8 @@ public class CatalogItem implements ICatalogItem {
 		return recordInfo;
 	}
 
+	/* fieldId from ICatalogField
+	 */
 	@Override
 	public String getFieldValue(String fieldId) {
 		return fieldValuesSingle.get(fieldId);
@@ -59,6 +63,14 @@ public class CatalogItem implements ICatalogItem {
 	@Override
 	public void setField(String fieldId, String[] values) {
 		fieldValuesMulti.put(fieldId, values);
+	}
+
+	public JsonElement generateFeedJson() {
+		JsonObject json = new JsonObject();
+		json.addProperty("id", this.itemId);
+		json.addProperty("type", IDetailManager.TYPENAME_CATITEM);
+		json.addProperty("name", this.getFieldValue(ICatalogField.ID_NAME));
+		return json;
 	}
 	
 	/*@Override

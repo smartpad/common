@@ -16,6 +16,8 @@ public class Promotion implements IPromotion {
 	
 	private final Name name = new Name();
 	
+	public final GPSInfo gps = new GPSInfo();
+	
 	private final RecordInfo recordInfo = new RecordInfo();
 
 	private Schedule schedule;
@@ -70,6 +72,11 @@ public class Promotion implements IPromotion {
 	@Override
 	public IName getName() {
 		return name;
+	}
+
+	@Override
+	public GPSInfo getGps() {
+		return gps;
 	}
 	
 	@Override

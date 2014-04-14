@@ -25,6 +25,8 @@ public class Operation implements IOperation {
 	private final RecordInfo recordInfo = new RecordInfo();
 	
 	private final Name name = new Name();
+	
+	public final GPSInfo gps = new GPSInfo();
 
 	private final Schedule openHours = new Schedule();
 	
@@ -39,10 +41,6 @@ public class Operation implements IOperation {
 	//private String systemCatalogId;
 	
 	private final CachedPagingList<IPromotion, IPromotionSort> promotions;
-
-	private long gpsLon;
-
-	private long gpsLat;
 	
 	/*private String numberStreet;
 	
@@ -203,6 +201,11 @@ public class Operation implements IOperation {
 	public RecordInfo getRecordInfo() {
 		return this.recordInfo;
 	}
+
+	@Override
+	public GPSInfo getGps() {
+		return gps;
+	}
 	
 	boolean checkBranch(String branchId) {
 		return this.branchId.equals(branchId);
@@ -245,26 +248,6 @@ public class Operation implements IOperation {
 	@Override
 	public Schedule getOpenHours() {
 		return openHours;
-	}
-
-	@Override
-	public long getGpsLon() {
-		return gpsLon;
-	}
-
-	@Override
-	public void setGpsLon(long gpsLon) {
-		this.gpsLon = gpsLon;
-	}
-
-	@Override
-	public long getGpsLat() {
-		return gpsLat;
-	}
-
-	@Override
-	public void setGpsLat(long gpsLat) {
-		this.gpsLat = gpsLat;
 	}
 
 	@Override

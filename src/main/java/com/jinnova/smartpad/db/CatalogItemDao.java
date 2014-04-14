@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.Catalog;
@@ -14,11 +15,20 @@ import com.jinnova.smartpad.partner.ICatalogItemSort;
 import com.jinnova.smartpad.partner.ICatalogSpec;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
-public class CatalogItemDao {
+public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	
 	static final String CS = "cs_";
+	
+	private Catalog catalog;
+	
+	private ICatalogSpec spec;
+	
+	public CatalogItemDao(Catalog catalog) {
+		this.catalog = catalog;
+		this.spec = catalog.getSystemCatalog().getCatalogSpec();
+	}
 
-	public int countCatalogItems(Catalog catalog) throws SQLException {
+	public int countCatalogItems() throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -47,7 +57,7 @@ public class CatalogItemDao {
 		}
 	}
 
-	public LinkedList<ICatalogItem> loadCatalogItems(Catalog catalog, int offset,
+	public LinkedList<ICatalogItem> loadCatalogItems(int offset,
 			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 		
 		String fieldName;
@@ -79,11 +89,7 @@ public class CatalogItemDao {
 			rs = ps.executeQuery();
 			LinkedList<ICatalogItem> catalogItems = new LinkedList<ICatalogItem>();
 			while (rs.next()) {
-				CatalogItem item = new CatalogItem(catalog, rs.getString("item_id"));
-				for (ICatalogField field : spec.getAllFields()) {
-					item.setField(field.getId(), rs.getString(field.getId()));
-				}
-				DaoSupport.populateRecinfo(rs, item.getRecordInfo());
+				CatalogItem item = populate(rs);
 				catalogItems.add(item);
 			}
 			return catalogItems;
@@ -98,6 +104,16 @@ public class CatalogItemDao {
 				conn.close();
 			}
 		}
+	}
+	
+	@Override
+	public CatalogItem populate(ResultSet rs) throws SQLException {
+		CatalogItem item = new CatalogItem(catalog, rs.getString("item_id"));
+		for (ICatalogField field : spec.getAllFields()) {
+			item.setField(field.getId(), rs.getString(field.getId()));
+		}
+		DaoSupport.populateRecinfo(rs, item.getRecordInfo());
+		return item;
 	}
 
 	public void insert(String branchId, String itemId, String catalogId, CatalogItem item) throws SQLException {
@@ -188,6 +204,15 @@ public class CatalogItemDao {
 				conn.close();
 			}
 		}
+	}
+
+	public DbIterator<CatalogItem> iterateCatalogItems() throws SQLException {
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "select * from " + CS + catalog.getSystemCatalogId() + " where catalog_id = '" + catalog.getId() + "'";
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
 }

@@ -26,6 +26,8 @@ public class User implements IUser {
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
+	public final GPSInfo gps = new GPSInfo();
+	
 	private final CachedPagingList<IOperation, IOperationSort> storePagingList;
 
 	public User(String login, /*String branchId,*/ String passhash) {
@@ -198,5 +200,10 @@ public class User implements IUser {
 	@Override
 	public IRecordInfo getRecordInfo() {
 		return recordInfo;
+	}
+
+	@Override
+	public GPSInfo getGps() {
+		return gps;
 	}
 }

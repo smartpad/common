@@ -7,6 +7,9 @@ CREATE TABLE `sp_users` (
   `passhash` varchar(32) DEFAULT NULL,
   `branch_id` varchar(32) DEFAULT NULL,
   
+  `gps_lon` float DEFAULT NULL,
+  `gps_lat` float DEFAULT NULL,
+  
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,
   `create_by` varchar(32) NOT NULL,
@@ -31,10 +34,13 @@ CREATE TABLE `operations` (
   `create_by` varchar(32) NOT NULL,
   `update_by` varchar(32) DEFAULT NULL,
   
-  `schedule` varchar(1024) DEFAULT NULL,
-  `address` varchar(1024) DEFAULT NULL,
   `gps_lon` float DEFAULT NULL,
   `gps_lat` float DEFAULT NULL,
+  `gps_inherit` boolean not null,
+  
+  `schedule` varchar(1024) DEFAULT NULL,
+  `address` varchar(1024) DEFAULT NULL,
+  
   `phone` varchar(128) DEFAULT NULL,
   `email` varchar(256) DEFAULT NULL,
   `mname_req` tinyint(4) DEFAULT NULL,
@@ -74,6 +80,10 @@ CREATE TABLE `promos` (
   `promo_id` varchar(32) NOT NULL,
   `oper_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  
+  `gps_lon` float DEFAULT NULL,
+  `gps_lat` float DEFAULT NULL,
+  `gps_inherit` boolean not null,
   
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,

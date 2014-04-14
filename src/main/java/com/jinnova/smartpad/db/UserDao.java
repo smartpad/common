@@ -33,11 +33,12 @@ public class UserDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into sp_users set login=?, passhash=?, branch_id=?, " + DaoSupport.RECINFO_FIELDS);
+			ps = conn.prepareStatement("insert into sp_users set login=?, branch_id=?, " +
+					"passhash=?, gps_lon=?, gps_lat=?, " + DaoSupport.RECINFO_FIELDS);
 			int i = 1;
 			ps.setString(i++, u.getLogin());
-			ps.setString(i++, u.getPasshash());
 			ps.setString(i++, branchId);
+			i = setFields(i, u, ps);
 			i = DaoSupport.setRecinfoFields(ps, u.getRecordInfo(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -49,6 +50,13 @@ public class UserDao {
 				conn.close();
 			}
 		}
+	}
+	
+	private int setFields(int i, User u, PreparedStatement ps) throws SQLException {
+		ps.setString(i++, u.getPasshash());
+		ps.setFloat(i++, u.getGps().getLontitue());
+		ps.setFloat(i++, u.getGps().getLatitude());
+		return i;
 	}
 	
 	/**
@@ -63,10 +71,10 @@ public class UserDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update sp_users set passhash=?, " + DaoSupport.RECINFO_FIELDS + " where login=?");
+			ps = conn.prepareStatement("update sp_users set passhash=?, gps_lon=?, gps_lat=?, " + DaoSupport.RECINFO_FIELDS + " where login=?");
 			User u = (User) user;
 			int i = 1;
-			ps.setString(i++, u.getPasshash());
+			i = setFields(i, u, ps);
 			i = DaoSupport.setRecinfoFields(ps, user.getRecordInfo(), i);
 			ps.setString(i++, u.getLogin());
 			System.out.println("SQL: " + ps);

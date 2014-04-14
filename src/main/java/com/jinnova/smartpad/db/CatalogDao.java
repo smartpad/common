@@ -16,7 +16,22 @@ import com.jinnova.smartpad.partner.ICatalogField;
 import com.jinnova.smartpad.partner.ICatalogSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
-public class CatalogDao {
+public class CatalogDao implements DbPopulator<Catalog> {
+	
+	private JsonParser parser;
+	
+	private boolean parseSpec = true;
+	
+	public CatalogDao() {
+		this(true);
+	}
+	
+	public CatalogDao(boolean parseSpec) {
+		this.parseSpec = parseSpec;
+		if (parseSpec) {
+			parser = new JsonParser();
+		}
+	}
 
 	public int countSubCatalogs(String parentId) throws SQLException {
 		Connection conn = null;
@@ -75,16 +90,8 @@ public class CatalogDao {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<ICatalog> subCatalogs = new LinkedList<ICatalog>();
-			JsonParser parser = new JsonParser();
 			while (rs.next()) {
-				Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("catalog_id"), parentId, rs.getString("syscat_id"));
-				DaoSupport.populateName(rs, cat.getName());
-				DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
-				String spec = rs.getString("spec");
-				if (spec != null) {
-					JsonObject json = parser.parse(spec).getAsJsonObject();
-					((CatalogSpec) cat.getCatalogSpec()).populate(json);
-				}
+				Catalog cat = populate(rs);
 				subCatalogs.add(cat);
 			}
 			return subCatalogs;
@@ -99,6 +106,19 @@ public class CatalogDao {
 				conn.close();
 			}
 		}
+	}
+	
+	@Override
+	public Catalog populate(ResultSet rs) throws SQLException {
+		Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
+		DaoSupport.populateName(rs, cat.getName());
+		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
+		String spec = rs.getString("spec");
+		if (parseSpec && spec != null) {
+			JsonObject json = parser.parse(spec).getAsJsonObject();
+			((CatalogSpec) cat.getCatalogSpec()).populate(json);
+		}
+		return cat;
 	}
 
 	public void insert(String branchId, String catalogId, String parentCatalogId, Catalog cat) throws SQLException {
@@ -201,6 +221,16 @@ public class CatalogDao {
 				conn.close();
 			}
 		}
+	}
+
+	public DbIterator<Catalog> iterateSubCatalogs(String parentCatalogId) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "select * from catalogs where parent_id = '" + parentCatalogId + "'";
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		return new DbIterator<Catalog>(conn, stmt, rs, this);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.DbIterator;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.db.PromotionDao;
@@ -11,18 +12,17 @@ import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.Promotion;
 
-class BranchDetailDriller implements DetailDriller {
+class CatalogDriller implements DetailDriller {
 
 	/**
      * Returns in order the following:
      * 
-     *  - Extra details of this branch
+     * 	- All sub categories of this category in one compound 
+     * 	- Feature catelog items from this branch's root category
      * 	- All stores belong to this branch in one compound
      * 	- Some similar branches in one compound
      * 	- Some active promotions from this branch in one compound
-     * 	- All sub categories of this branch's root category in one compound
-     * 	- 2 posts from this branch 
-     * 	- Feature catelog items from this branch's root category
+     * 	- 2 posts from this branch
      *
      */
 	@Override
@@ -52,7 +52,7 @@ class BranchDetailDriller implements DetailDriller {
 		branchJson.add("branches", ja);
 		
 		//Some active promotions from this branch in one compound
-		DbIterator<Promotion> promos = new PromotionDao().iteratePromos(targetId);
+		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(new String[] {targetId});
 		ja = new JsonArray();
 		while (promos.hasNext()) {
 			Promotion one = promos.next();
@@ -62,5 +62,16 @@ class BranchDetailDriller implements DetailDriller {
 		branchJson.add("promos", ja);
 		
 		return branchJson.toString();
+	}
+	
+	static JsonArray findSubCataogs(String targetCatalogId) throws SQLException {
+		DbIterator<Catalog> catalogs = new CatalogDao(false).iterateSubCatalogs(targetCatalogId);
+		JsonArray ja = new JsonArray();
+		while (catalogs.hasNext()) {
+			Catalog one = catalogs.next();
+			ja.add(one.generateFeedJson());
+		}
+		catalogs.close();
+		return ja;
 	}
 }

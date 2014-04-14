@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IPromotion;
@@ -98,11 +97,13 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("insert into promos set promo_id=?, oper_id=?, branch_id=?, " +
+					"gps_lon=?, gps_lat=?, gps_inherit=?, " +
 					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, promotionId);
 			ps.setString(i++, operationId);
 			ps.setString(i++, branchId);
+			i = setFields(i, t, ps);
 			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, t.getName(), i);
 			System.out.println("SQL: " + ps);
@@ -116,15 +117,23 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			}
 		}
 	}
+	
+	private int setFields(int i, IPromotion p, PreparedStatement ps) throws SQLException {
+		ps.setFloat(i++, p.getGps().getLontitue());
+		ps.setFloat(i++, p.getGps().getLatitude());
+		ps.setBoolean(i++, p.getGps().isInherited());
+		return i;
+	}
 
 	public void update(String promotionId, IPromotion t) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update promos set " + DaoSupport.RECINFO_FIELDS + ", " + 
+			ps = conn.prepareStatement("update promos set pgs_lon=?, pgs_lat=?, pgs_inherit=?, " + DaoSupport.RECINFO_FIELDS + ", " + 
 					DaoSupport.NAME_FIELDS + " where promo_id=?");
 			int i = 1;
+			i = setFields(i, t, ps);
 			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, t.getName(), i);
 			ps.setString(i++, promotionId);
@@ -159,14 +168,24 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 
-	public DbIterator<Promotion> iteratePromos(String branchId) throws SQLException {
+	public DbIterator<Promotion> iterateOperationPromos(String[] branchIds) throws SQLException {
 		
+		String questionMarks = null;
+		for (int i = 0; i < branchIds.length; i++) {
+			if (questionMarks == null) {
+				questionMarks = "?";
+			} else {
+				questionMarks += ", ?";
+			}
+		}
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		Statement stmt = conn.createStatement();
-		String sql = "select * from promos where oper_id = '" + branchId + "'";
-		System.out.println("SQL: " + sql);
-		ResultSet rs = stmt.executeQuery(sql);
-		return new DbIterator<Promotion>(conn, stmt, rs, this);
+		PreparedStatement ps = conn.prepareStatement("select * from promos where branch_id in (" + questionMarks + ")");
+		for (int i = 0; i < branchIds.length; i++) {
+			ps.setString(i + 1, branchIds[i]);
+		}
+		System.out.println("SQL: " + ps);
+		ResultSet rs = ps.executeQuery();
+		return new DbIterator<Promotion>(conn, ps, rs, this);
 	}
 
 }
