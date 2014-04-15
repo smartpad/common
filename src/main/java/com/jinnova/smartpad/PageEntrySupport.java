@@ -5,9 +5,9 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IUser;
 
-public interface PageMemberMate<T, E> {
+public interface PageEntrySupport<T, E> {
 
-	T newMemberInstance(IUser authorizedUser);
+	T newEntryInstance(IUser authorizedUser);
 	
 	boolean isPersisted(T member);
 

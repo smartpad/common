@@ -8,8 +8,9 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IPagingList;
-import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.db.UserDao;
 import com.jinnova.smartpad.drilling.DetailManager;
 
@@ -55,10 +56,10 @@ public class PartnerManager implements IPartnerManager {
 				return o1.getLogin().compareTo(o2.getLogin());
 			}
 		};
-		PageMemberMate<IUser, IUserSort> memberMate = new PageMemberMate<IUser, IUserSort>() {
+		PageEntrySupport<IUser, IUserSort> memberMate = new PageEntrySupport<IUser, IUserSort>() {
 
 			@Override
-			public IUser newMemberInstance(IUser authorizedUser) {
+			public IUser newEntryInstance(IUser authorizedUser) {
 				User u = new User(null, /*((User) authorizedUser).getBranch().getBranchId(),*/ null);
 				u.setBranch((Operation) ((User) authorizedUser).getBranch());
 				return u;
@@ -103,7 +104,7 @@ public class PartnerManager implements IPartnerManager {
 		};
 		
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
-		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", null, null);
+		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", "SMARTPAD", null, null);
 	}
 	
 	public static void initialize() throws SQLException {
@@ -139,8 +140,14 @@ public class PartnerManager implements IPartnerManager {
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
 		
-		u.setBranch(new Operation(null, login, null));
-		//new OperationDao().createOperation(login);
+		Operation branch = new Operation(null, login, null, 0, 0, null, true);
+		branch.getName().setName("");
+		branch.getRootCatalog().setSystemCatalogId("foods"); //TODO default place for new branch?
+		branch.getRecordInfo().setCreateBy(login);
+		branch.getRecordInfo().setCreateDate(new Date());
+		new OperationDao().createOperation(login, login, branch);
+		branch.setId(login);
+		u.setBranch(branch);
 		return u;
 	}
 

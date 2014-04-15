@@ -8,6 +8,7 @@ import java.util.Date;
 
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IRecordInfo;
 import com.jinnova.smartpad.partner.StringArrayUtils;
 
@@ -69,5 +70,24 @@ class DaoSupport {
 		} else {
 			return clause;
 		}
+	}
+	
+	static final String GPS_FIELDS = "gps_lon=?, gps_lat=?, gps_inherit=?";
+
+	static void populateGps(ResultSet rs, GPSInfo gps) throws SQLException {
+		gps.setLongitude(rs.getFloat("gps_lon"));
+		gps.setLatitude(rs.getFloat("gps_lat"));
+		
+		//must be after setting gps longitude/latitude
+		gps.setInheritFrom(rs.getString("gps_inherit"));
+		gps.clearModifiedFlag();
+	}
+
+	static int setGpsFields(PreparedStatement ps, GPSInfo gps, int i) throws SQLException {
+		ps.setFloat(i++, gps.getLongitude());
+		ps.setFloat(i++, gps.getLatitude());
+		ps.setString(i++, gps.getInheritFrom());
+		gps.clearModifiedFlag();
+		return i;
 	}
 }

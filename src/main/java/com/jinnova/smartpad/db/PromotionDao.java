@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
+import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IPromotion;
 import com.jinnova.smartpad.partner.IPromotionSort;
 import com.jinnova.smartpad.partner.Promotion;
@@ -19,7 +20,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select count(*) from promos where oper_id = ?");
+			ps = conn.prepareStatement("select count(*) from promos where store_id = ?");
 			ps.setString(1, operationId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -60,7 +61,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from promos where oper_id = ? " + orderLimitClause);
+			ps = conn.prepareStatement("select * from promos where store_id = ? " + orderLimitClause);
 			ps.setString(1, operationId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -85,27 +86,25 @@ public class PromotionDao implements DbPopulator<Promotion> {
 	
 	@Override
 	public Promotion populate(ResultSet rs) throws SQLException {
-		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("oper_id"));
+		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("store_id"));
+		DaoSupport.populateGps(rs, promo.gps);
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
 		DaoSupport.populateName(rs, promo.getName());
 		return promo;
 	}
 
-	public void insert(String promotionId, String operationId, String branchId, IPromotion t) throws SQLException {
+	public void insert(String promotionId, String operationId, String branchId, Promotion t) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into promos set promo_id=?, oper_id=?, branch_id=?, " +
-					"gps_lon=?, gps_lat=?, gps_inherit=?, " +
-					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+			ps = conn.prepareStatement("insert into promos set promo_id=?, store_id=?, branch_id=?, " +
+					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, promotionId);
 			ps.setString(i++, operationId);
 			ps.setString(i++, branchId);
 			i = setFields(i, t, ps);
-			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, t.getName(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {
@@ -118,24 +117,22 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 	
-	private int setFields(int i, IPromotion p, PreparedStatement ps) throws SQLException {
-		ps.setFloat(i++, p.getGps().getLontitue());
-		ps.setFloat(i++, p.getGps().getLatitude());
-		ps.setBoolean(i++, p.getGps().isInherited());
+	private int setFields(int i, Promotion p, PreparedStatement ps) throws SQLException {
+		i = DaoSupport.setGpsFields(ps, p.gps, i);
+		i = DaoSupport.setRecinfoFields(ps, p.getRecordInfo(), i);
+		i = DaoSupport.setNameFields(ps, p.getName(), i);
 		return i;
 	}
 
-	public void update(String promotionId, IPromotion t) throws SQLException {
+	public void update(String promotionId, Promotion t) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update promos set pgs_lon=?, pgs_lat=?, pgs_inherit=?, " + DaoSupport.RECINFO_FIELDS + ", " + 
-					DaoSupport.NAME_FIELDS + " where promo_id=?");
+			ps = conn.prepareStatement("update promos set " + DaoSupport.GPS_FIELDS + ", " + 
+					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS + " where promo_id=?");
 			int i = 1;
 			i = setFields(i, t, ps);
-			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, t.getName(), i);
 			ps.setString(i++, promotionId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -188,4 +185,33 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		return new DbIterator<Promotion>(conn, ps, rs, this);
 	}
 
+	public void updateBranchGps(String branchId, float gpsLon, float gpsLat) throws SQLException {
+		updateGps(branchId, gpsLon, gpsLat, GPSInfo.INHERIT_BRANCH, "branch_id");
+	}
+
+	public void updateStoreGps(String storeId, float gpsLon, float gpsLat) throws SQLException {
+		updateGps(storeId, gpsLon, gpsLat, GPSInfo.INHERIT_BRANCH, "store_id");
+	}
+
+	private void updateGps(String targetFieldValue, float gpsLon, float gpsLat, String inherit, String targetField) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update promos set gps_lon=?, gps_lat=? where gps_inherit='" + inherit + "' and " + targetField + "=?");
+			int i = 1;
+			ps.setFloat(i++, gpsLon);
+			ps.setFloat(i++, gpsLat);
+			ps.setString(i++, targetFieldValue);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
 }

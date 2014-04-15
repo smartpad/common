@@ -32,7 +32,7 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 	//must be zero-lenght
 	private final T[] array;
 	
-	private final PageMemberMate<T, E> memberMate;
+	private final PageEntrySupport<T, E> memberMate;
 	
 	private final Comparator<CachedPage<T>> pageComparator = new Comparator<CachedPage<T>>() {
 
@@ -42,11 +42,11 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		}
 	};
 	
-	public CachedPagingList(PageMemberMate<T, E> memberMate, Comparator<T>[] comparators, E defaultSort, T[] array) {
+	public CachedPagingList(PageEntrySupport<T, E> memberMate, Comparator<T>[] comparators, E defaultSort, T[] array) {
 		this(memberMate, comparators, defaultSort, true, 100, array);
 	}
 	
-	public CachedPagingList(PageMemberMate<T, E> memberMate, Comparator<T>[] comparators, 
+	public CachedPagingList(PageEntrySupport<T, E> memberMate, Comparator<T>[] comparators, 
 			E defaultSort, boolean defaultAscending, int defaultPageSize, T[] array) {
 		
 		if (defaultSort == null) {
@@ -89,8 +89,8 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 	}
 	
 	@Override
-	public T newMemberInstance(IUser authorizedUser) {
-		return memberMate.newMemberInstance(authorizedUser);
+	public T newEntryInstance(IUser authorizedUser) {
+		return memberMate.newEntryInstance(authorizedUser);
 	}
 	
 	@Override

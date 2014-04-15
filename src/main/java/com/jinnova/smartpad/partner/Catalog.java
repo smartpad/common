@@ -12,7 +12,7 @@ import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
-import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.CatalogItemDao;
@@ -21,6 +21,8 @@ public class Catalog implements ICatalog {
 	
 	private final String branchId;
 	
+	private final String storeId;
+	
 	private String catalogId;
 	
 	private final CatalogSpec catalogSpec;
@@ -28,6 +30,8 @@ public class Catalog implements ICatalog {
 	private String parentCatalogId;
 	
 	private String systemCatalogId;
+	
+	public final GPSInfo gps = new GPSInfo();
 	
 	private final Name name = new Name();
 	
@@ -38,17 +42,21 @@ public class Catalog implements ICatalog {
 	private final CachedPagingList<ICatalogItem, ICatalogItemSort> catalogItemPagingList;
 
 	@SuppressWarnings("unchecked")
-	Comparator<ICatalog>[] catalogComparators = new Comparator[ICatalogSort.values().length];
+	Comparator<ICatalog>[] subCatalogComparators = new Comparator[ICatalogSort.values().length];
 	
-	PageMemberMate<ICatalog, ICatalogSort> catalogMemberMate;
+	PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport;
 	
 	@SuppressWarnings("unchecked")
-	Comparator<ICatalogItem>[] itemComparators = new Comparator[ICatalogItemSort.values().length];
+	Comparator<ICatalogItem>[] catalogItemComparators = new Comparator[ICatalogItemSort.values().length];
 	
-	PageMemberMate<ICatalogItem, ICatalogItemSort> itemMemberMate;
+	PageEntrySupport<ICatalogItem, ICatalogItemSort> catalogItemSupport;
 	
-	public Catalog(String branchId, String catalogId, String parentCatalogId, String systemCatalogId) {
+	public Catalog(String branchId, String storeId, String catalogId, String parentCatalogId, String systemCatalogId) {
+		/*if (storeId == null) {
+			throw new NullPointerException();
+		}*/
 		this.branchId = branchId;
+		this.storeId = storeId;
 		this.catalogId = catalogId;
 		this.parentCatalogId = parentCatalogId;
 		if (systemCatalogId == null) {
@@ -58,11 +66,13 @@ public class Catalog implements ICatalog {
 			this.systemCatalogId = systemCatalogId;
 		}
 		
-		catalogMemberMate = new PageMemberMate<ICatalog, ICatalogSort>() {
+		subCatalogSupport = new PageEntrySupport<ICatalog, ICatalogSort>() {
 			
 			@Override
-			public ICatalog newMemberInstance(IUser authorizedUser) {
-				return new Catalog(Catalog.this.branchId, null, Catalog.this.catalogId, Catalog.this.systemCatalogId);
+			public ICatalog newEntryInstance(IUser authorizedUser) {
+				Catalog subCat = new Catalog(Catalog.this.branchId, Catalog.this.storeId, null, Catalog.this.catalogId, Catalog.this.systemCatalogId);
+				subCat.gps.inherit(Catalog.this.gps, null);
+				return subCat;
 			}
 			
 			@Override
@@ -105,7 +115,7 @@ public class Catalog implements ICatalog {
 						throw new RuntimeException("CatalogSpec id can't contains special charaters");
 					}
 				}
-				new CatalogDao().insert(subCat.branchId, newId, subCat.parentCatalogId, subCat);
+				new CatalogDao().insert(subCat.branchId, subCat.storeId, newId, subCat.parentCatalogId, subCat);
 				subCat.catalogId = newId;
 				
 				if (subCat.catalogSpec != null) {
@@ -126,11 +136,13 @@ public class Catalog implements ICatalog {
 			}
 		};
 		
-		itemMemberMate = new PageMemberMate<ICatalogItem, ICatalogItemSort>() {
+		catalogItemSupport = new PageEntrySupport<ICatalogItem, ICatalogItemSort>() {
 			
 			@Override
-			public ICatalogItem newMemberInstance(IUser authorizedUser) {
-				return new CatalogItem(Catalog.this, null);
+			public ICatalogItem newEntryInstance(IUser authorizedUser) {
+				CatalogItem ci = new CatalogItem(Catalog.this.branchId, Catalog.this.storeId, Catalog.this.getId(), Catalog.this.getSystemCatalogId(), null);
+				ci.gps.inherit(Catalog.this.gps, Catalog.this.gps.getInheritFrom());
+				return ci;
 			}
 			
 			@Override
@@ -140,14 +152,15 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogItemDao(Catalog.this).countCatalogItems();
+				return new CatalogItemDao().countCatalogItems(Catalog.this.catalogId, Catalog.this.getSystemCatalog().getCatalogSpec());
 			}
 			
 			@Override
 			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
 					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 				
-				return new CatalogItemDao(Catalog.this).loadCatalogItems(offset, pageSize, sortField, ascending);
+				return new CatalogItemDao().loadCatalogItems(
+						Catalog.this.catalogId, Catalog.this.getSystemCatalog().getCatalogSpec(), offset, pageSize, sortField, ascending);
 			}
 			
 			@Override
@@ -158,52 +171,52 @@ public class Catalog implements ICatalog {
 					throw new RuntimeException("CatalogItem's name unset");
 				}
 				String newId = SmartpadCommon.md5(Catalog.this.branchId + Catalog.this.catalogId + name);
-				new CatalogItemDao(Catalog.this).insert(Catalog.this.branchId, newId, Catalog.this.catalogId, item);
+				new CatalogItemDao().insert(newId, Catalog.this.getSystemCatalog().getCatalogSpec(), item);
 				item.setId(newId);
 			}
 			
 			@Override
 			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao(Catalog.this).update(item.getId(), item);
+				new CatalogItemDao().update(item.getId(), Catalog.this.getSystemCatalog().getCatalogSpec(), item);
 			}
 			
 			@Override
 			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao(Catalog.this).delete(item.getId());
+				new CatalogItemDao().delete(item.getId());
 			}
 		};
 
-		catalogComparators[ICatalogSort.createDate.ordinal()] = new Comparator<ICatalog>() {
+		subCatalogComparators[ICatalogSort.createDate.ordinal()] = new Comparator<ICatalog>() {
 			
 			@Override
 			public int compare(ICatalog o1, ICatalog o2) {
 				return o1.getRecordInfo().getCreateDate().compareTo(o1.getRecordInfo().getCreateDate());
 			}
 		};
-		catalogComparators[ICatalogSort.updateDate.ordinal()] = new Comparator<ICatalog>() {
+		subCatalogComparators[ICatalogSort.updateDate.ordinal()] = new Comparator<ICatalog>() {
 			
 			@Override
 			public int compare(ICatalog o1, ICatalog o2) {
 				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
 			}
 		};
-		catalogComparators[ICatalogSort.createBy.ordinal()] = new Comparator<ICatalog>() {
+		subCatalogComparators[ICatalogSort.createBy.ordinal()] = new Comparator<ICatalog>() {
 			
 			@Override
 			public int compare(ICatalog o1, ICatalog o2) {
 				return o1.getRecordInfo().getCreateBy().compareTo(o2.getRecordInfo().getCreateBy());
 			}
 		};
-		catalogComparators[ICatalogSort.updateBy.ordinal()] = new Comparator<ICatalog>() {
+		subCatalogComparators[ICatalogSort.updateBy.ordinal()] = new Comparator<ICatalog>() {
 			
 			@Override
 			public int compare(ICatalog o1, ICatalog o2) {
 				return o1.getRecordInfo().getUpdateBy().compareTo(o2.getRecordInfo().getUpdateBy());
 			}
 		};
-		catalogComparators[ICatalogSort.name.ordinal()] = new Comparator<ICatalog>() {
+		subCatalogComparators[ICatalogSort.name.ordinal()] = new Comparator<ICatalog>() {
 			
 			@Override
 			public int compare(ICatalog o1, ICatalog o2) {
@@ -211,35 +224,35 @@ public class Catalog implements ICatalog {
 			}
 		};
 		
-		itemComparators[ICatalogItemSort.createDate.ordinal()] = new Comparator<ICatalogItem>() {
+		catalogItemComparators[ICatalogItemSort.createDate.ordinal()] = new Comparator<ICatalogItem>() {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
 				return o1.getRecordInfo().getCreateDate().compareTo(o2.getRecordInfo().getCreateDate());
 			}
 		};
-		itemComparators[ICatalogItemSort.updateDate.ordinal()] = new Comparator<ICatalogItem>() {
+		catalogItemComparators[ICatalogItemSort.updateDate.ordinal()] = new Comparator<ICatalogItem>() {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
 				return o1.getRecordInfo().getUpdateDate().compareTo(o2.getRecordInfo().getUpdateDate());
 			}
 		};
-		itemComparators[ICatalogItemSort.createBy.ordinal()] = new Comparator<ICatalogItem>() {
+		catalogItemComparators[ICatalogItemSort.createBy.ordinal()] = new Comparator<ICatalogItem>() {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
 				return o1.getRecordInfo().getCreateBy().compareTo(o2.getRecordInfo().getCreateBy());
 			}
 		};
-		itemComparators[ICatalogItemSort.updateBy.ordinal()] = new Comparator<ICatalogItem>() {
+		catalogItemComparators[ICatalogItemSort.updateBy.ordinal()] = new Comparator<ICatalogItem>() {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
 				return o1.getRecordInfo().getUpdateBy().compareTo(o2.getRecordInfo().getUpdateBy());
 			}
 		};
-		itemComparators[ICatalogItemSort.name.ordinal()] = new Comparator<ICatalogItem>() {
+		catalogItemComparators[ICatalogItemSort.name.ordinal()] = new Comparator<ICatalogItem>() {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
@@ -248,10 +261,10 @@ public class Catalog implements ICatalog {
 		};
 		
 		subCatalogPagingList = new CachedPagingList<ICatalog, ICatalogSort>(
-				catalogMemberMate, catalogComparators, ICatalogSort.createDate, new Catalog[0]);
+				subCatalogSupport, subCatalogComparators, ICatalogSort.createDate, new Catalog[0]);
 		
 		catalogItemPagingList = new CachedPagingList<ICatalogItem, ICatalogItemSort>(
-				itemMemberMate, itemComparators, ICatalogItemSort.createDate, new CatalogItem[0]);
+				catalogItemSupport, catalogItemComparators, ICatalogItemSort.createDate, new CatalogItem[0]);
 	}
 	
 	@Override
@@ -310,7 +323,7 @@ public class Catalog implements ICatalog {
 			catMap.put(oneCat.catalogId, oneCat);
 			oneCat.subCatalogPagingList.setPageSize(-1); //load all
 			CachedPage<ICatalog> page = oneCat.subCatalogPagingList.loadPage(PartnerManager.instance.systemUser, 1);
-			for (ICatalog sub : page.getPageItems()) {
+			for (ICatalog sub : page.getPageEntries()) {
 				catList.add((Catalog) sub);
 			}
 		}

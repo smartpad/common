@@ -53,7 +53,7 @@ public class CachedPage<T> implements IPage<T> {
 	}
 	
 	@Override
-	public T[] getPageItems() {
+	public T[] getPageEntries() {
 		return members.toArray(array);
 	}
 	

@@ -75,7 +75,7 @@ public class Promotion implements IPromotion {
 	}
 
 	@Override
-	public GPSInfo getGps() {
+	public IGPSInfo getGps() {
 		return gps;
 	}
 	

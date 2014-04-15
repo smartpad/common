@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.Catalog;
+import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IOperation;
 import com.jinnova.smartpad.partner.IOperationSort;
 import com.jinnova.smartpad.partner.Operation;
@@ -16,11 +17,15 @@ import com.jinnova.smartpad.partner.StringArrayUtils;
 
 public class OperationDao implements DbPopulator<Operation> {
 	
+	private boolean populateBranch;
+	
 	@Override
 	public Operation populate(ResultSet rs) throws SQLException {
-		Operation oper = new Operation(rs.getString("oper_id"), rs.getString("branch_id"), rs.getString("syscat_id"));
+		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
+				rs.getFloat("gps_lon"), rs.getFloat("gps_lat"), rs.getString("gps_inherit"), populateBranch);
 		DaoSupport.populateName(rs, oper.getName());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
+		//DaoSupport.populateGps(rs, oper.gps);
 		oper.getOpenHours().setText(rs.getString("open_text"));
 		oper.getOpenHours().fromString(rs.getString("open_hours"));
 		oper.setMemberLevels(StringArrayUtils.stringArrayFromJson(rs.getString("member_levels")));
@@ -34,13 +39,14 @@ public class OperationDao implements DbPopulator<Operation> {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from operations where oper_id = ?");
+			ps = conn.prepareStatement("select * from operations where store_id = ?");
 			ps.setString(1, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
 				return null;
 			}
+			populateBranch = true;
 			return populate(rs);
 		} finally {
 			if (rs != null) {
@@ -80,11 +86,12 @@ public class OperationDao implements DbPopulator<Operation> {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id " + orderLimitClause);
+			ps = conn.prepareStatement("select * from operations where branch_id = ? and store_id != branch_id " + orderLimitClause);
 			ps.setString(1, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IOperation> opList = new LinkedList<IOperation>();
+			populateBranch = false;
 			while (rs.next()) {
 				opList.add(populate(rs));
 			}
@@ -108,7 +115,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select count(*) from operations where branch_id = ? and oper_id != branch_id");
+			ps = conn.prepareStatement("select count(*) from operations where branch_id = ? and store_id != branch_id");
 			ps.setString(1, branchId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -136,7 +143,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into operations set branch_id=?, oper_id=?, " + 
+			ps = conn.prepareStatement("insert into operations set branch_id=?, store_id=?, " + 
 					DaoSupport.NAME_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
@@ -164,7 +171,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("update operations set " + DaoSupport.NAME_FIELDS + ", " + 
-					DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS + " where oper_id = ?");
+					DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS + " where store_id = ?");
 			Operation op = (Operation) operation;
 			int i = 1;
 			i = DaoSupport.setNameFields(ps, operation.getName(), i);
@@ -184,16 +191,14 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 	
-	private static final String OP_FIELDS = "syscat_id=?, gps_lon=?, gps_lat=?, gps_inherit=?, open_text=?, open_hours=?, member_levels=?";
+	private static final String OP_FIELDS = "syscat_id=?, open_text=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
 		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
-		ps.setFloat(i++, op.getGps().getLontitue());
-		ps.setFloat(i++, op.getGps().getLatitude());
-		ps.setBoolean(i++, op.getGps().isInherited());
 		ps.setString(i++, op.getOpenHours().getText());
 		ps.setString(i++, op.getOpenHours().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));
+		i = DaoSupport.setGpsFields(ps, op.gps, i);
 		return i;
 	}
 
@@ -203,7 +208,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("delete operations where where oper_id = ?");
+			ps = conn.prepareStatement("delete operations where where store_id = ?");
 			int i = 1;
 			ps.setString(i, operId);
 			i++;
@@ -222,7 +227,7 @@ public class OperationDao implements DbPopulator<Operation> {
 	public DbIterator<Operation> iterateStores(String branchId) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and oper_id != branch_id");
+		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and store_id != branch_id");
 		ps.setString(1, branchId);
 		System.out.println("SQL: " + ps);
 		ResultSet rs = ps.executeQuery();
@@ -233,11 +238,33 @@ public class OperationDao implements DbPopulator<Operation> {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String sql = "select * from operations where oper_id = branch_id and branch_id != '" + targetBranchId + 
+		String sql = "select * from operations where store_id = branch_id and branch_id != '" + targetBranchId + 
 				"' and syscat_id = '" + targetSyscatId + "'";
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
 		return new DbIterator<Operation>(conn, stmt, rs, this);
+	}
+
+	public void updateBranchGps(String branchId, float gpsLon, float gpsLat) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update operations set gps_lon=?, gps_lat=? where gps_inherit='" + GPSInfo.INHERIT_BRANCH + "' and branch_id=?");
+			int i = 1;
+			ps.setFloat(i++, gpsLon);
+			ps.setFloat(i++, gpsLat);
+			ps.setString(i++, branchId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
 	}
 
 }

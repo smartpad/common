@@ -8,7 +8,7 @@ class SystemCatalogGenrator {
 		
 		//system catalog
 		PartnerManager pm = PartnerManager.instance;
-		ICatalog sysCatFoods = pm.getSystemRootCatalog().getSubCatalogPagingList().newMemberInstance(pm.getSystemUser());
+		ICatalog sysCatFoods = pm.getSystemRootCatalog().getSubCatalogPagingList().newEntryInstance(pm.getSystemUser());
 		sysCatFoods.getName().setName("Foods");
 		sysCatFoods.getCatalogSpec().setSpecId("foods"); //table name
 		ICatalogField field = sysCatFoods.getCatalogSpec().createField();

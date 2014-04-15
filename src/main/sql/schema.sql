@@ -7,9 +7,6 @@ CREATE TABLE `sp_users` (
   `passhash` varchar(32) DEFAULT NULL,
   `branch_id` varchar(32) DEFAULT NULL,
   
-  `gps_lon` float DEFAULT NULL,
-  `gps_lat` float DEFAULT NULL,
-  
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,
   `create_by` varchar(32) NOT NULL,
@@ -21,7 +18,7 @@ CREATE TABLE `sp_users` (
 
 CREATE TABLE `operations` (
 
-  `oper_id` varchar(32) NOT NULL,
+  `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
   
@@ -36,7 +33,7 @@ CREATE TABLE `operations` (
   
   `gps_lon` float DEFAULT NULL,
   `gps_lat` float DEFAULT NULL,
-  `gps_inherit` boolean not null,
+  `gps_inherit` varchar(8) default null,
   
   `schedule` varchar(1024) DEFAULT NULL,
   `address` varchar(1024) DEFAULT NULL,
@@ -54,14 +51,19 @@ CREATE TABLE `operations` (
   `member_levels` varchar(2048) DEFAULT NULL,
   `open_text` varchar(1024) DEFAULT NULL,
   `open_hours` varchar(2048) DEFAULT NULL,
-  PRIMARY KEY (`oper_id`)
+  PRIMARY KEY (`store_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `catalogs` (
   `catalog_id` varchar(32) NOT NULL,
   `parent_id` varchar(32) NOT NULL,
+  `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) DEFAULT NULL,
+  
+  `gps_lon` float DEFAULT NULL,
+  `gps_lat` float DEFAULT NULL,
+  `gps_inherit` varchar(8) default null,
   
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
@@ -78,12 +80,12 @@ CREATE TABLE `catalogs` (
 
 CREATE TABLE `promos` (
   `promo_id` varchar(32) NOT NULL,
-  `oper_id` varchar(32) NOT NULL,
+  `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   
   `gps_lon` float DEFAULT NULL,
   `gps_lat` float DEFAULT NULL,
-  `gps_inherit` boolean not null,
+  `gps_inherit` varchar(8) default null,
   
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,

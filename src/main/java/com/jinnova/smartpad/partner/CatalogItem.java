@@ -8,7 +8,14 @@ import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem {
 	
-	public final Catalog catalog;
+	public final String branchId;
+	
+	public final String storeId;
+	
+	//public final Catalog catalog;
+	private String catalogId;
+	
+	private String syscatId;
 	
 	private String itemId;
 	
@@ -20,12 +27,17 @@ public class CatalogItem implements ICatalogItem {
 
 	private final RecordInfo recordInfo = new RecordInfo();
 	
+	public final GPSInfo gps = new GPSInfo();
+	
 	private final HashMap<String, String> fieldValuesSingle = new HashMap<>();
 	
 	private final HashMap<String, String[]> fieldValuesMulti = new HashMap<>(); 
 	
-	public CatalogItem(Catalog catalog, String itemId) {
-		this.catalog = catalog;
+	public CatalogItem(String branchId, String storeId, String catalogId, String syscatId, String itemId) {
+		this.branchId = branchId;
+		this.storeId = storeId;
+		this.catalogId = catalogId;
+		this.syscatId = syscatId;
 		this.itemId = itemId;
 	}
 	
@@ -36,6 +48,19 @@ public class CatalogItem implements ICatalogItem {
 	
 	void setId(String s) {
 		this.itemId = s;
+	}
+	
+	public String getCatalogId() {
+		return this.catalogId;
+	}
+	
+	public String getSyscatId() {
+		return this.syscatId;
+	}
+	
+	@Override
+	public IGPSInfo getGps() {
+		return this.gps;
 	}
 
 	@Override

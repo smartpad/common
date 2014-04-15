@@ -9,7 +9,7 @@ import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
-import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.MemberDao;
 import com.jinnova.smartpad.db.PromotionDao;
@@ -74,11 +74,25 @@ public class Operation implements IOperation {
 	//private String memberOfferedSurvey;
 	
 	//private Integer memberOfferedSurveyLevel;
-	
-	public Operation(String operId, String branchId, String systemCatalogId) {
+
+	public Operation(String operId, String branchId, String systemCatalogId, float gpsLon, float gpsLat, String gpsInherit, boolean branch) {
 		this.operationId = operId;
 		this.branchId = branchId;
-		this.rootCatalog = new Catalog(this.branchId, this.branchId, null, systemCatalogId);
+		this.gps.setLongitude(gpsLon);
+		this.gps.setLatitude(gpsLat);
+		this.gps.setInheritFrom(gpsInherit);
+		
+		String rootCatInherit;
+		if (branch) {
+			rootCatInherit = GPSInfo.INHERIT_BRANCH;
+		} else {
+			rootCatInherit = GPSInfo.INHERIT_STORE;
+		}
+		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, null, systemCatalogId);
+		this.rootCatalog.gps.inherit(this.gps, rootCatInherit);
+		/*this.rootCatalog.gps.setLongitude(gpsLon);
+		this.rootCatalog.gps.setLatitude(gpsLat);
+		this.rootCatalog.gps.setInheritFrom(gpsInherit);*/
 		
 		@SuppressWarnings({ "unchecked" })
 		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];
@@ -101,11 +115,19 @@ public class Operation implements IOperation {
 			}
 		};
 		
-		PageMemberMate<IPromotion, IPromotionSort> promoMate = new PageMemberMate<IPromotion, IPromotionSort>() {
+		PageEntrySupport<IPromotion, IPromotionSort> promoMate = new PageEntrySupport<IPromotion, IPromotionSort>() {
 
 			@Override
-			public IPromotion newMemberInstance(IUser authorizedUser) {
-				return new Promotion(null, Operation.this.operationId);
+			public IPromotion newEntryInstance(IUser authorizedUser) {
+				String gpsInherit;
+				if (Operation.this.branchId.equals(operationId)) {
+					gpsInherit = GPSInfo.INHERIT_BRANCH;
+				} else {
+					gpsInherit = GPSInfo.INHERIT_STORE;
+				}
+				Promotion promo = new Promotion(null, Operation.this.operationId);
+				promo.gps.inherit(Operation.this.gps, gpsInherit);
+				return promo;
 			}
 
 			@Override
@@ -129,12 +151,12 @@ public class Operation implements IOperation {
 					throw new RuntimeException("Promotion name is missing");
 				}
 				String newId = SmartpadCommon.md5(Operation.this.branchId + Operation.this.operationId + t.getName().getName()); 
-				new PromotionDao().insert(newId, operationId, Operation.this.branchId, t);
+				new PromotionDao().insert(newId, operationId, Operation.this.branchId, (Promotion) t);
 			}
 
 			@Override
 			public void update(IUser authorizedUser, IPromotion t) throws SQLException {
-				new PromotionDao().update(((Promotion) t).getId(), t);
+				new PromotionDao().update(((Promotion) t).getId(), (Promotion) t);
 			}
 
 			@Override
@@ -145,7 +167,7 @@ public class Operation implements IOperation {
 		
 		@SuppressWarnings("unchecked")
 		Comparator<IMember>[] memberComparators = new Comparator[IMemberSort.values().length];
-		PageMemberMate<IMember, IMemberSort> memberMate = new PageMemberMate<IMember, IMemberSort>() {
+		PageEntrySupport<IMember, IMemberSort> memberMate = new PageEntrySupport<IMember, IMemberSort>() {
 			
 			@Override
 			public void update(IUser authorizedUser, IMember member) throws SQLException {
@@ -153,7 +175,7 @@ public class Operation implements IOperation {
 			}
 			
 			@Override
-			public IMember newMemberInstance(IUser authorizedUser) {
+			public IMember newEntryInstance(IUser authorizedUser) {
 				return new Member(null);
 			}
 			
@@ -203,7 +225,7 @@ public class Operation implements IOperation {
 	}
 
 	@Override
-	public GPSInfo getGps() {
+	public IGPSInfo getGps() {
 		return gps;
 	}
 	

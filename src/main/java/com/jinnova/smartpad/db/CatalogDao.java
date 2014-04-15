@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.CatalogSpec;
+import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.ICatalogField;
 import com.jinnova.smartpad.partner.ICatalogSort;
@@ -110,7 +111,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 	
 	@Override
 	public Catalog populate(ResultSet rs) throws SQLException {
-		Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
+		Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("store_id"), 
+				rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
+		DaoSupport.populateGps(rs, cat.gps);
 		DaoSupport.populateName(rs, cat.getName());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
 		String spec = rs.getString("spec");
@@ -121,22 +124,24 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		return cat;
 	}
 
-	public void insert(String branchId, String catalogId, String parentCatalogId, Catalog cat) throws SQLException {
+	public void insert(String branchId, String storeId, String catalogId, String parentCatalogId, Catalog cat) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		Statement stmt = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, parent_id=?, branch_id=?, syscat_id=?, spec=?, " + 
-					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, spec=?, " + 
+					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, catalogId);
 			ps.setString(i++, parentCatalogId);
 			ps.setString(i++, branchId);
+			ps.setString(i++, storeId);
 			ps.setString(i++, cat.getSystemCatalogId());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
+			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, cat.getName(), i);
 			System.out.println("SQL: " + ps);
@@ -150,8 +155,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				throw new RuntimeException("Missing tableName for CatalogSpec");
 			}
 			StringBuffer tableSql = new StringBuffer();
-			tableSql.append("create table " + CatalogItemDao.CS + tableName + " (item_id varchar(32) not null, " +
-					"catalog_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL");
+			tableSql.append("create table " + CatalogItemDao.CS + tableName + 
+					" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL," +
+					"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 			for (ICatalogField f : cat.getCatalogSpec().getAllFields()) {
 				tableSql.append(", ");
 				if (f.getId() == null) {
@@ -183,12 +189,13 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update catalogs set syscat_id=?, spec=?, " + DaoSupport.RECINFO_FIELDS + ", " + 
-					DaoSupport.NAME_FIELDS + " where catalog_id=?");
+			ps = conn.prepareStatement("update catalogs set syscat_id=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " +
+					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS + " where catalog_id=?");
 			int i = 1;
 			ps.setString(i++, cat.getSystemCatalogId());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
+			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, cat.getName(), i);
 			ps.setString(i++, catalogId);
@@ -231,6 +238,36 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
 		return new DbIterator<Catalog>(conn, stmt, rs, this);
+	}
+
+	public void updateBranchGps(String branchId, float gpsLon, float gpsLat) throws SQLException {
+		updateGps(branchId, gpsLon, gpsLat, GPSInfo.INHERIT_STORE, "branch_id");
+	}
+
+	public void updateStoreGps(String storeId, float gpsLon, float gpsLat) throws SQLException {
+		updateGps(storeId, gpsLon, gpsLat, GPSInfo.INHERIT_STORE, "store_id");
+	}
+
+	private void updateGps(String targetFieldValue, float gpsLon, float gpsLat, String inherit, String targetField) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update catalogs set gps_lon=?, gps_lat=? where gps_inherit='" + inherit + "' and " + targetField + "=?");
+			int i = 1;
+			ps.setFloat(i++, gpsLon);
+			ps.setFloat(i++, gpsLat);
+			ps.setString(i++, targetFieldValue);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
 	}
 
 }

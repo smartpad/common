@@ -7,9 +7,12 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IPagingList;
-import com.jinnova.smartpad.PageMemberMate;
+import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.db.CatalogDao;
+import com.jinnova.smartpad.db.CatalogItemDao;
 import com.jinnova.smartpad.db.OperationDao;
+import com.jinnova.smartpad.db.PromotionDao;
 import com.jinnova.smartpad.partner.IUser;
 
 public class User implements IUser {
@@ -25,8 +28,6 @@ public class User implements IUser {
 	private Operation branch;
 	
 	private final RecordInfo recordInfo = new RecordInfo();
-	
-	public final GPSInfo gps = new GPSInfo();
 	
 	private final CachedPagingList<IOperation, IOperationSort> storePagingList;
 
@@ -55,11 +56,17 @@ public class User implements IUser {
 				return o1.getName().getName().compareToIgnoreCase(o2.getName().getName());
 			}
 		};
-		PageMemberMate<IOperation, IOperationSort> storeMate = new PageMemberMate<IOperation, IOperationSort>() {
+		PageEntrySupport<IOperation, IOperationSort> storeMate = new PageEntrySupport<IOperation, IOperationSort>() {
 
 			@Override
-			public IOperation newMemberInstance(IUser authorizedUser) {
-				return new Operation(null, User.this.branch.getBranchId(), ((Catalog) User.this.branch.getRootCatalog()).getSystemCatalogId());
+			public IOperation newEntryInstance(IUser authorizedUser) {
+				Operation op = new Operation(null, User.this.branch.getBranchId(), 
+						((Catalog) User.this.branch.getRootCatalog()).getSystemCatalogId(),
+						branch.gps.getLongitude(),
+						branch.gps.getLatitude(),
+						GPSInfo.INHERIT_BRANCH, false);
+				//op.gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);
+				return op;
 			}
 
 			@Override
@@ -91,7 +98,13 @@ public class User implements IUser {
 				if (((Catalog) op.getRootCatalog()).getSystemCatalogId() == null) {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
+				boolean gpsModified = op.gps.isModified();
 				new OperationDao().updateOperation(op.getId(), op);
+				if (gpsModified) {
+					new CatalogDao().updateStoreGps(op.getId(), op.gps.getLongitude(), op.gps.getLatitude());
+					new CatalogItemDao().updateStoreGps(op, op.gps.getLongitude(), op.gps.getLatitude());
+					new PromotionDao().updateStoreGps(op.getId(), op.gps.getLongitude(), branch.gps.getLatitude());
+				}
 			}
 
 			@Override
@@ -149,16 +162,25 @@ public class User implements IUser {
 
 	@Override
 	public void updateBranch() throws SQLException {
+		
 		if (!isPrimary()) {
 			return;
 		}
 		if (((Catalog) branch.getRootCatalog()).getSystemCatalogId() == null) {
 			throw new RuntimeException("A system catalog must be assigned to a branch");
 		}
+		
 		if (branch.getId() != null) {
+			boolean gpsModified = branch.gps.isModified();
 			branch.getRecordInfo().setUpdateDate(new Date());
 			branch.getRecordInfo().setUpdateBy(this.login);
 			new OperationDao().updateOperation(branch.getId(), branch);
+			if (gpsModified) {
+				new OperationDao().updateBranchGps(branch.getId(), branch.gps.getLongitude(), branch.gps.getLatitude());
+				new CatalogDao().updateBranchGps(branch.getId(), branch.gps.getLongitude(), branch.gps.getLatitude());
+				new CatalogItemDao().updateBranchGps(this, branch.gps.getLongitude(), branch.gps.getLatitude());
+				new PromotionDao().updateBranchGps(branch.getId(), branch.gps.getLongitude(), branch.gps.getLatitude());
+			}
 		} else {
 			branch.setId(this.branch.getBranchId());
 			branch.getRecordInfo().setCreateDate(new Date());
@@ -173,8 +195,9 @@ public class User implements IUser {
 		}*/
 		branch = (Operation) new OperationDao().loadBranch(branchId);
 		if (branch == null) {
-			branch = new Operation(null, branchId, null);
+			branch = new Operation(branchId, branchId, null, 0, 0, null, true);
 		}
+		//((Catalog) branch.getRootCatalog()).gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);
 		this.branchId = branch.getId();
 	}
 	
@@ -200,10 +223,5 @@ public class User implements IUser {
 	@Override
 	public IRecordInfo getRecordInfo() {
 		return recordInfo;
-	}
-
-	@Override
-	public GPSInfo getGps() {
-		return gps;
 	}
 }
