@@ -7,11 +7,13 @@ import com.jinnova.smartpad.db.CatalogItemDao;
 import com.jinnova.smartpad.db.DbIterator;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.CatalogItem;
+import com.jinnova.smartpad.partner.ICatalogSpec;
 
 public class CatalogItemDriller {
 	
 	static JsonArray findCatalogItems(Catalog targetCatalog) throws SQLException {
-		DbIterator<CatalogItem> catalogs = new CatalogItemDao().iterateCatalogItems(targetCatalog.getId(), targetCatalog.getSystemCatalogId());
+		ICatalogSpec spec = targetCatalog.getSystemCatalog().getCatalogSpec();
+		DbIterator<CatalogItem> catalogs = new CatalogItemDao().iterateCatalogItems(targetCatalog.getId(), targetCatalog.getSystemCatalogId(), spec);
 		JsonArray ja = new JsonArray();
 		while (catalogs.hasNext()) {
 			CatalogItem one = catalogs.next();

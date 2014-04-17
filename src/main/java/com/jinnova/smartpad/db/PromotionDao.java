@@ -165,7 +165,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 
-	public DbIterator<Promotion> iterateOperationPromos(String[] branchIds) throws SQLException {
+	public DbIterator<Promotion> iterateOperationPromos(String[] branchIds, int count) throws SQLException { //TODO count
 		
 		String questionMarks = null;
 		for (int i = 0; i < branchIds.length; i++) {

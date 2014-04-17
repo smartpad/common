@@ -16,6 +16,15 @@ import com.jinnova.smartpad.db.PromotionDao;
 import com.jinnova.smartpad.member.IMember;
 import com.jinnova.smartpad.member.Member;
 
+/**
+ * An operation could be a branch or a store
+ * 
+ * NOTE: For a business that has a single store, we have to represent a branch with zero store. Otherwise, when searching similar branches,
+ * we can't find these businesses.
+ * 
+ * @author HuyBA
+ *
+ */
 public class Operation implements IOperation {
 	
 	private final String branchId;

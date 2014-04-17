@@ -3,7 +3,6 @@ package com.jinnova.smartpad.drilling;
 import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.jinnova.smartpad.db.DbIterator;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.Operation;
@@ -24,24 +23,22 @@ class StoreDriller implements DetailDriller {
 	@Override
 	public String generate(String targetId, String gpsZone, int page) throws SQLException {
 
-		//All stores belong in same branch with this store
-		JsonObject storeJson = new JsonObject();
 		Operation targetStore = (Operation) new OperationDao().loadStore(targetId);
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(targetStore.getBranchId());
-		JsonArray ja = findStores(targetBranch.getId(), targetId);
-		storeJson.add("stores", ja);
-		
-		//Some similar branches in one compound
-		ja = BranchDriller.findBranches(targetBranch.getId());
-		storeJson.add("branches", ja);
+		DrillResult dr = new DrillResult();
+
+		//5 stores belong in same branch with this store, and 3 similar branches
+		JsonArray ja = findStoresOfBranch(targetBranch.getId(), targetId, 5);
+		JsonArray ja2 = BranchDriller.findBranchesSimilar(targetBranch.getId(), 5);
+		dr.add("branches", ja, 5, ja2, 3);
 		
 		//Some active promotions from this branch in one compound
-		ja = PromotionDriller.findOperationPromotions(new String[] {targetBranch.getId()});
-		storeJson.add("promos", ja);
-		return storeJson.toString();
+		ja = PromotionDriller.findOperationPromotions(new String[] {targetBranch.getId()}, 10);
+		dr.add("promos", ja, 5);
+		return dr.toString();
 	}
 
-	static JsonArray findStores(String targetBranchId, String targetStoreId) throws SQLException {
+	static JsonArray findStoresOfBranch(String targetBranchId, String targetStoreId, int count) throws SQLException { //TODO count
 
 		DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId);
 		JsonArray ja = new JsonArray();

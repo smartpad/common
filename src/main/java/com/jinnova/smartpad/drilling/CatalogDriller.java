@@ -52,7 +52,7 @@ class CatalogDriller implements DetailDriller {
 		branchJson.add("branches", ja);
 		
 		//Some active promotions from this branch in one compound
-		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(new String[] {targetId});
+		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(new String[] {targetId}, 10); //TODO which number
 		ja = new JsonArray();
 		while (promos.hasNext()) {
 			Promotion one = promos.next();

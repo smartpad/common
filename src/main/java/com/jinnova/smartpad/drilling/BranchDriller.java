@@ -25,32 +25,31 @@ class BranchDriller implements DetailDriller {
 	@Override
 	public String generate(String branchId, String gpsZone, int page) throws SQLException {
 		
-		//All stores belong to this branch in one compound
-		JsonArray branchJson = new JsonArray();
-		JsonArray ja = StoreDriller.findStores(branchId, null);
-		branchJson.add(CompoundFeed.generateFeedJson(IDetailManager.TYPENAME_COMPOUND, ja));
+		//At most 5 stores belong to this branch and 3 similar branches
+		DrillResult dr = new DrillResult();
+		JsonArray ja = StoreDriller.findStoresOfBranch(branchId, null, 8);
+		JsonArray ja2 = findBranchesSimilar(branchId, 8);
+		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
 		
-		//Some similar branches in one compound
-		ja = findBranches(branchId);
-		branchJson.add(CompoundFeed.generateFeedJson(IDetailManager.TYPENAME_COMPOUND, ja));
+		//5 active promotions from this branch in one compound
+		ja = PromotionDriller.findOperationPromotions(new String[] {branchId}, 5);
+		dr.add(IDetailManager.TYPENAME_COMPOUND_PROMOS, ja, 5);
 		
-		//Some active promotions from this branch in one compound
-		ja = PromotionDriller.findOperationPromotions(new String[] {branchId});
-		branchJson.add(CompoundFeed.generateFeedJson(IDetailManager.TYPENAME_COMPOUND, ja));
-		
-		//All sub categories of this branch's root category in one compound
+		//10 sub categories of this branch's root category in one compound
 		ja = CatalogDriller.findSubCataogs(branchId);
-		branchJson.add(CompoundFeed.generateFeedJson(IDetailManager.TYPENAME_COMPOUND, ja));
+		dr.add(IDetailManager.TYPENAME_COMPOUND_CAT, ja, 10);
 		
 		//Feature catelog items from this branch's root category
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(branchId);
 		ja = CatalogItemDriller.findCatalogItems((Catalog) targetBranch.getRootCatalog());
-		branchJson.add(CompoundFeed.generateFeedJson(IDetailManager.TYPENAME_COMPOUND, ja));
+		dr.add(IDetailManager.TYPENAME_COMPOUND_CITEM, ja, 20);
 		
-		return branchJson.toString();
+		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		//return gson.toJson(dr);
+		return dr.toString();
 	}
 	
-	static JsonArray findBranches(String targetBranchId) throws SQLException {
+	static JsonArray findBranchesSimilar(String targetBranchId, int count) throws SQLException { //TODO count
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(targetBranchId);
 		String syscatId = ((Catalog) targetBranch.getRootCatalog()).getSystemCatalogId();
 		DbIterator<Operation> similarBranches = new OperationDao().iterateSimilarBranches(targetBranchId, syscatId);

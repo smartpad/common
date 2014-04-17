@@ -9,8 +9,8 @@ import com.jinnova.smartpad.partner.Promotion;
 
 class PromotionDriller {
 
-	static JsonArray findOperationPromotions(String[] branchIds) throws SQLException {
-		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(branchIds);
+	static JsonArray findOperationPromotions(String[] branchIds, int count) throws SQLException {
+		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(branchIds, count);
 		JsonArray ja = new JsonArray();
 		while (promos.hasNext()) {
 			Promotion one = promos.next();

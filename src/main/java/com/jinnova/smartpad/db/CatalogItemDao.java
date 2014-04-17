@@ -29,9 +29,9 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	
 	private String syscatId;
 	
-	public CatalogItemDao() {
-		//this.spec = catalog.getSystemCatalog().getCatalogSpec();
-	}
+	/*public CatalogItemDao(ICatalogSpec spec) {
+		this.spec = spec;
+	}*/
 
 	public int countCatalogItems(String catalogId, ICatalogSpec spec) throws SQLException {
 		Connection conn = null;
@@ -216,12 +216,13 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public DbIterator<CatalogItem> iterateCatalogItems(String catalogId, String syscatId) throws SQLException {
+	public DbIterator<CatalogItem> iterateCatalogItems(String catalogId, String syscatId, ICatalogSpec spec) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		String sql = "select * from " + CS + syscatId + " where catalog_id = '" + catalogId + "'";
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
+		this.spec = spec;
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
