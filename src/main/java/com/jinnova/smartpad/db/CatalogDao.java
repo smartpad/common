@@ -19,7 +19,7 @@ import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class CatalogDao implements DbPopulator<Catalog> {
 	
-	private JsonParser parser;
+	private JsonParser specParser;
 	
 	/*public CatalogDao() {
 		this(true);
@@ -59,7 +59,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		}
 	}
 
-	public ICatalog loadCatalog(String catId, boolean parseSpec) throws SQLException {
+	public ICatalog loadCatalog(String catId, boolean loadSpec) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -70,8 +70,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(1, catId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
-			if (parseSpec) {
-				parser = new JsonParser();
+			if (loadSpec) {
+				specParser = new JsonParser();
 			}
 			return populate(rs);
 		} finally {
@@ -88,7 +88,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 	}
 
 	public LinkedList<ICatalog> loadSubCatalogs(String parentId, int offset,
-			int pageSize, ICatalogSort sortField, boolean ascending, boolean system) throws SQLException {
+			int pageSize, ICatalogSort sortField, boolean ascending, boolean parseSpec) throws SQLException {
 		
 		String fieldName;
 		if (sortField == ICatalogSort.createBy) {
@@ -116,7 +116,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			
-			parser = new JsonParser();
+			if (parseSpec) {
+				specParser = new JsonParser();
+			}
 			LinkedList<ICatalog> subCatalogs = new LinkedList<ICatalog>();
 			while (rs.next()) {
 				Catalog cat = populate(rs);
@@ -144,8 +146,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		DaoSupport.populateName(rs, cat.getName());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
 		String spec = rs.getString("spec");
-		if (parser != null && spec != null) {
-			JsonObject json = parser.parse(spec).getAsJsonObject();
+		if (specParser != null && spec != null) {
+			JsonObject json = specParser.parse(spec).getAsJsonObject();
 			((CatalogSpec) cat.getCatalogSpec()).populate(json);
 		}
 		return cat;

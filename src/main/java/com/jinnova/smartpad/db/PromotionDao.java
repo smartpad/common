@@ -42,6 +42,31 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 
+	public Promotion load(String promoId) throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select * from promos where promo_id = ?");
+			ps.setString(1, promoId);
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			return populate(rs);
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
 	public LinkedList<IPromotion> load(String operationId, int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
 		
 		String fieldName;

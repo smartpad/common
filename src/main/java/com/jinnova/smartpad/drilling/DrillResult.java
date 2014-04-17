@@ -150,8 +150,7 @@ class DrillResult {
 				new SimpleSection(sectionType, ja2, expectedSize2)));
 	}
 	
-	@Override
-	public String toString() {
+	public JsonArray toJson() {
 		
 		boolean flatten = false;
 		LinkedList<JsonObject> jsonList = new LinkedList<>();
@@ -172,6 +171,6 @@ class DrillResult {
 			ja.add(jsonList.get(i));
 		}
 		
-		return ja.toString();
+		return ja;
 	}
 }

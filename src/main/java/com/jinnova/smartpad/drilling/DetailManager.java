@@ -2,6 +2,8 @@ package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.db.CacheDao;
 import com.jinnova.smartpad.partner.IDetailManager;
 
@@ -22,7 +24,11 @@ public class DetailManager implements IDetailManager {
     	if (cached != null) {
     		return cached;
     	}
-    	cached = drillers[targetType].generate(targetId, gpsZone, page);
+    	JsonArray ja = drillers[targetType].generate(targetId, gpsZone, page);
+    	JsonObject json = new JsonObject();
+    	json.addProperty("v", "a");
+    	json.add("t", ja);
+    	cached = json.toString();
     	CacheDao.put(cached, targetType, targetId, gpsZone, page);
     	return cached;
     }

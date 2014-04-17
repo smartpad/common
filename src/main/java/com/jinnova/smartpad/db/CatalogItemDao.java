@@ -62,6 +62,34 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
+	public ICatalogItem loadCatalogItem(String catItemId, ICatalogSpec spec) throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			
+			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			syscatId = spec.getSpecId();
+			ps = conn.prepareStatement("select * from " + CS + syscatId + " where item_id = ?");
+			ps.setString(1, catItemId);
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			return populate(rs);
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
 	public LinkedList<ICatalogItem> loadCatalogItems(String catalogId, ICatalogSpec spec, int offset,
 			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 		

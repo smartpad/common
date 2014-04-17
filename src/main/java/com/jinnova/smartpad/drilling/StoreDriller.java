@@ -21,7 +21,7 @@ class StoreDriller implements DetailDriller {
      *
      */
 	@Override
-	public String generate(String targetId, String gpsZone, int page) throws SQLException {
+	public JsonArray generate(String targetId, String gpsZone, int page) throws SQLException {
 
 		Operation targetStore = (Operation) new OperationDao().loadStore(targetId);
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(targetStore.getBranchId());
@@ -35,7 +35,7 @@ class StoreDriller implements DetailDriller {
 		//Some active promotions from this branch in one compound
 		ja = PromotionDriller.findOperationPromotions(new String[] {targetBranch.getId()}, 10);
 		dr.add("promos", ja, 5);
-		return dr.toString();
+		return dr.toJson();
 	}
 
 	static JsonArray findStoresOfBranch(String targetBranchId, String excludeStoreId, int offset, int count) throws SQLException { //TODO count

@@ -23,7 +23,7 @@ class BranchDriller implements DetailDriller {
      *
      */
 	@Override
-	public String generate(String branchId, String gpsZone, int page) throws SQLException {
+	public JsonArray generate(String branchId, String gpsZone, int page) throws SQLException {
 		
 		//At most 5 stores belong to this branch and 3 similar branches
 		DrillResult dr = new DrillResult();
@@ -46,7 +46,7 @@ class BranchDriller implements DetailDriller {
 		
 		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		//return gson.toJson(dr);
-		return dr.toString();
+		return dr.toJson();
 	}
 	
 	static JsonArray findBranchesSimilar(String targetBranchId, int count) throws SQLException { //TODO count

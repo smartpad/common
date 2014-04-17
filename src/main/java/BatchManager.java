@@ -17,19 +17,16 @@ public class BatchManager implements IBatchManager {
 
 	@Override
 	public Iterator<ICatalog> catalogIterator() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Iterator<ICatalogItem> catalogItemIterator() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Iterator<IPromotion> promotionIterator() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

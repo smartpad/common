@@ -37,19 +37,9 @@ public class Catalog implements ICatalog {
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
-	private final CachedPagingList<ICatalog, ICatalogSort> subCatalogPagingList;
+	private CachedPagingList<ICatalog, ICatalogSort> subCatalogPagingList;
 	
-	private final CachedPagingList<ICatalogItem, ICatalogItemSort> catalogItemPagingList;
-
-	@SuppressWarnings("unchecked")
-	Comparator<ICatalog>[] subCatalogComparators = new Comparator[ICatalogSort.values().length];
-	
-	PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport;
-	
-	@SuppressWarnings("unchecked")
-	Comparator<ICatalogItem>[] catalogItemComparators = new Comparator[ICatalogItemSort.values().length];
-	
-	PageEntrySupport<ICatalogItem, ICatalogItemSort> catalogItemSupport;
+	private CachedPagingList<ICatalogItem, ICatalogItemSort> catalogItemPagingList;
 	
 	public Catalog(String branchId, String storeId, String catalogId, String parentCatalogId, String systemCatalogId) {
 		/*if (storeId == null) {
@@ -65,13 +55,23 @@ public class Catalog implements ICatalog {
 			this.catalogSpec = null;
 			this.systemCatalogId = systemCatalogId;
 		}
+		createPagingLists();
+	}
+	
+	private void createPagingLists() {
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, gps);
+		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, systemCatalogId, gps);
+	}
+	
+	public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(
+			final String branchId, final String storeId, final String catalogId, final String systemCatalogId, final GPSInfo gps) {
 		
-		subCatalogSupport = new PageEntrySupport<ICatalog, ICatalogSort>() {
+		PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport = new PageEntrySupport<ICatalog, ICatalogSort>() {
 			
 			@Override
 			public ICatalog newEntryInstance(IUser authorizedUser) {
-				Catalog subCat = new Catalog(Catalog.this.branchId, Catalog.this.storeId, null, Catalog.this.catalogId, Catalog.this.systemCatalogId);
-				subCat.gps.inherit(Catalog.this.gps, null);
+				Catalog subCat = new Catalog(branchId, storeId, null, catalogId, systemCatalogId);
+				subCat.gps.inherit(gps, null);
 				return subCat;
 			}
 			
@@ -82,14 +82,15 @@ public class Catalog implements ICatalog {
 			
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogDao().countSubCatalogs(Catalog.this.catalogId);
+				return new CatalogDao().countSubCatalogs(catalogId);
 			}
 			
 			@Override
 			public LinkedList<ICatalog> load(IUser authorizedUser, int offset,
 					int pageSize, ICatalogSort sortField, boolean ascending) throws SQLException {
 				
-				return new CatalogDao().loadSubCatalogs(Catalog.this.catalogId, offset, pageSize, sortField, ascending, Catalog.this.catalogSpec != null);
+				boolean parseSpec = systemCatalogId == null;
+				return new CatalogDao().loadSubCatalogs(catalogId, offset, pageSize, sortField, ascending, parseSpec);
 			}
 			
 			@Override
@@ -117,6 +118,7 @@ public class Catalog implements ICatalog {
 				}
 				new CatalogDao().insert(subCat.branchId, subCat.storeId, newId, subCat.parentCatalogId, subCat);
 				subCat.catalogId = newId;
+				subCat.createPagingLists();
 				
 				if (subCat.catalogSpec != null) {
 					PartnerManager.instance.putSystemCatalog(subCat);
@@ -135,59 +137,9 @@ public class Catalog implements ICatalog {
 				new CatalogDao().delete(subCat.catalogId);
 			}
 		};
-		
-		catalogItemSupport = new PageEntrySupport<ICatalogItem, ICatalogItemSort>() {
-			
-			@Override
-			public ICatalogItem newEntryInstance(IUser authorizedUser) {
-				CatalogItem ci = new CatalogItem(Catalog.this.branchId, Catalog.this.storeId, Catalog.this.getId(), Catalog.this.getSystemCatalogId(), null);
-				ci.gps.inherit(Catalog.this.gps, Catalog.this.gps.getInheritFrom());
-				return ci;
-			}
-			
-			@Override
-			public boolean isPersisted(ICatalogItem member) {
-				return ((CatalogItem) member).getId() != null;
-			}
-			
-			@Override
-			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogItemDao().countCatalogItems(Catalog.this.catalogId, Catalog.this.getSystemCatalog().getCatalogSpec());
-			}
-			
-			@Override
-			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
-					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
-				
-				return new CatalogItemDao().loadCatalogItems(
-						Catalog.this.catalogId, Catalog.this.getSystemCatalog().getCatalogSpec(), offset, pageSize, sortField, ascending);
-			}
-			
-			@Override
-			public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
-				CatalogItem item = (CatalogItem) newMember;
-				String name = item.getFieldValue(ICatalogField.ID_NAME);
-				if (name == null || "".equals(name.trim())) {
-					throw new RuntimeException("CatalogItem's name unset");
-				}
-				String newId = SmartpadCommon.md5(Catalog.this.branchId + Catalog.this.catalogId + name);
-				new CatalogItemDao().insert(newId, Catalog.this.getSystemCatalog().getCatalogSpec(), item);
-				item.setId(newId);
-			}
-			
-			@Override
-			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
-				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().update(item.getId(), Catalog.this.getSystemCatalog().getCatalogSpec(), item);
-			}
-			
-			@Override
-			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
-				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().delete(item.getId());
-			}
-		};
 
+		@SuppressWarnings("unchecked")
+		Comparator<ICatalog>[] subCatalogComparators = new Comparator[ICatalogSort.values().length];
 		subCatalogComparators[ICatalogSort.createDate.ordinal()] = new Comparator<ICatalog>() {
 			
 			@Override
@@ -224,6 +176,71 @@ public class Catalog implements ICatalog {
 			}
 		};
 		
+		return new CachedPagingList<ICatalog, ICatalogSort>(
+				subCatalogSupport, subCatalogComparators, ICatalogSort.createDate, new Catalog[0]);
+	}
+	
+	public static CachedPagingList<ICatalogItem, ICatalogItemSort> createCatalogItemPagingList(
+			final String branchId, final String storeId, final String catalogId, final String systemCatalogId, final GPSInfo gps) {
+		PageEntrySupport<ICatalogItem, ICatalogItemSort> catalogItemSupport = new PageEntrySupport<ICatalogItem, ICatalogItemSort>() {
+			
+
+			@Override
+			public ICatalogItem newEntryInstance(IUser authorizedUser) {
+				CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, null);
+				ci.gps.inherit(gps, gps.getInheritFrom());
+				return ci;
+			}
+			
+			@Override
+			public boolean isPersisted(ICatalogItem member) {
+				return ((CatalogItem) member).getId() != null;
+			}
+			
+			@Override
+			public int count(IUser authorizedUser) throws SQLException {
+				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				return new CatalogItemDao().countCatalogItems(catalogId, syscat.getCatalogSpec());
+			}
+			
+			@Override
+			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
+					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
+
+				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				return new CatalogItemDao().loadCatalogItems(
+						catalogId, syscat.getCatalogSpec(), offset, pageSize, sortField, ascending);
+			}
+			
+			@Override
+			public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
+				CatalogItem item = (CatalogItem) newMember;
+				String name = item.getFieldValue(ICatalogField.ID_NAME);
+				if (name == null || "".equals(name.trim())) {
+					throw new RuntimeException("CatalogItem's name unset");
+				}
+				String newId = SmartpadCommon.md5(branchId + catalogId + name);
+				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				new CatalogItemDao().insert(newId, syscat.getCatalogSpec(), item);
+				item.setId(newId);
+			}
+			
+			@Override
+			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
+				CatalogItem item = (CatalogItem) member;
+				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				new CatalogItemDao().update(item.getId(), syscat.getCatalogSpec(), item);
+			}
+			
+			@Override
+			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
+				CatalogItem item = (CatalogItem) member;
+				new CatalogItemDao().delete(item.getId());
+			}
+		};
+		
+		@SuppressWarnings("unchecked")
+		Comparator<ICatalogItem>[] catalogItemComparators = new Comparator[ICatalogItemSort.values().length];		
 		catalogItemComparators[ICatalogItemSort.createDate.ordinal()] = new Comparator<ICatalogItem>() {
 			
 			@Override
@@ -260,10 +277,7 @@ public class Catalog implements ICatalog {
 			}
 		};
 		
-		subCatalogPagingList = new CachedPagingList<ICatalog, ICatalogSort>(
-				subCatalogSupport, subCatalogComparators, ICatalogSort.createDate, new Catalog[0]);
-		
-		catalogItemPagingList = new CachedPagingList<ICatalogItem, ICatalogItemSort>(
+		return new CachedPagingList<ICatalogItem, ICatalogItemSort>(
 				catalogItemSupport, catalogItemComparators, ICatalogItemSort.createDate, new CatalogItem[0]);
 	}
 	
