@@ -224,11 +224,13 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 
-	public DbIterator<Operation> iterateStores(String branchId) throws SQLException {
+	public DbIterator<Operation> iterateStores(String branchId, String excludeStoreId, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and store_id != branch_id");
+		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and "
+				+ "store_id != branch_id and store_id != ? " + DaoSupport.buildLimit(offset, size));
 		ps.setString(1, branchId);
+		ps.setString(2, excludeStoreId);
 		System.out.println("SQL: " + ps);
 		ResultSet rs = ps.executeQuery();
 		return new DbIterator<Operation>(conn, ps, rs, this);

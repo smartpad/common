@@ -28,8 +28,8 @@ class StoreDriller implements DetailDriller {
 		DrillResult dr = new DrillResult();
 
 		//5 stores belong in same branch with this store, and 3 similar branches
-		JsonArray ja = findStoresOfBranch(targetBranch.getId(), targetId, 5);
-		JsonArray ja2 = BranchDriller.findBranchesSimilar(targetBranch.getId(), 5);
+		JsonArray ja = findStoresOfBranch(targetBranch.getId(), targetId, 0, 8);
+		JsonArray ja2 = BranchDriller.findBranchesSimilar(targetBranch.getId(), 8);
 		dr.add("branches", ja, 5, ja2, 3);
 		
 		//Some active promotions from this branch in one compound
@@ -38,15 +38,12 @@ class StoreDriller implements DetailDriller {
 		return dr.toString();
 	}
 
-	static JsonArray findStoresOfBranch(String targetBranchId, String targetStoreId, int count) throws SQLException { //TODO count
+	static JsonArray findStoresOfBranch(String targetBranchId, String excludeStoreId, int offset, int count) throws SQLException { //TODO count
 
-		DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId);
+		DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId, excludeStoreId, offset, count);
 		JsonArray ja = new JsonArray();
 		while (stores.hasNext()) {
 			Operation one = stores.next();
-			if (targetStoreId != null && one.getId().equals(targetStoreId)) {
-				continue;
-			}
 			ja.add(one.generateFeedJson());
 		}
 		stores.close();

@@ -71,6 +71,14 @@ class DaoSupport {
 			return clause;
 		}
 	}
+
+	static String buildLimit(int offset, int pageSize) {
+		if (pageSize > 0) {
+			return "limit " + pageSize + " offset " + offset;
+		} else {
+			return "";
+		}
+	}
 	
 	static final String GPS_FIELDS = "gps_lon=?, gps_lat=?, gps_inherit=?";
 

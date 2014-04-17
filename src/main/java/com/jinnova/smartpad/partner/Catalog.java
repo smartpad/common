@@ -19,9 +19,9 @@ import com.jinnova.smartpad.db.CatalogItemDao;
 
 public class Catalog implements ICatalog {
 	
-	private final String branchId;
+	public final String branchId;
 	
-	private final String storeId;
+	public final String storeId;
 	
 	private String catalogId;
 	
@@ -284,6 +284,10 @@ public class Catalog implements ICatalog {
 	@Override
 	public void setSystemCatalogId(String systemCatalogId) {
 		this.systemCatalogId = systemCatalogId;
+	}
+	
+	public String getParentCatalogId() {
+		return this.parentCatalogId;
 	}
 
 	@Override

@@ -11,8 +11,8 @@ import com.jinnova.smartpad.partner.ICatalogSpec;
 
 public class CatalogItemDriller {
 	
-	static JsonArray findCatalogItems(Catalog targetCatalog) throws SQLException {
-		ICatalogSpec spec = targetCatalog.getSystemCatalog().getCatalogSpec();
+	static JsonArray findCatalogItems(Catalog targetCatalog, String excludeCatItem, int count) throws SQLException {
+		ICatalogSpec spec = targetCatalog.getSystemCatalog().getCatalogSpec(); //TODO exclude, count
 		DbIterator<CatalogItem> catalogs = new CatalogItemDao().iterateCatalogItems(targetCatalog.getId(), targetCatalog.getSystemCatalogId(), spec);
 		JsonArray ja = new JsonArray();
 		while (catalogs.hasNext()) {

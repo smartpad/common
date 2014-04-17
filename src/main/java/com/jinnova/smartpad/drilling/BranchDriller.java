@@ -27,7 +27,7 @@ class BranchDriller implements DetailDriller {
 		
 		//At most 5 stores belong to this branch and 3 similar branches
 		DrillResult dr = new DrillResult();
-		JsonArray ja = StoreDriller.findStoresOfBranch(branchId, null, 8);
+		JsonArray ja = StoreDriller.findStoresOfBranch(branchId, null, 0, 8);
 		JsonArray ja2 = findBranchesSimilar(branchId, 8);
 		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
 		
@@ -36,12 +36,12 @@ class BranchDriller implements DetailDriller {
 		dr.add(IDetailManager.TYPENAME_COMPOUND_PROMOS, ja, 5);
 		
 		//10 sub categories of this branch's root category in one compound
-		ja = CatalogDriller.findSubCataogs(branchId);
+		ja = CatalogDriller.findSubCatalogs(branchId, null, 10);
 		dr.add(IDetailManager.TYPENAME_COMPOUND_CAT, ja, 10);
 		
 		//Feature catelog items from this branch's root category
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(branchId);
-		ja = CatalogItemDriller.findCatalogItems((Catalog) targetBranch.getRootCatalog());
+		ja = CatalogItemDriller.findCatalogItems((Catalog) targetBranch.getRootCatalog(), null, 20);
 		dr.add(IDetailManager.TYPENAME_COMPOUND_CITEM, ja, 20);
 		
 		//Gson gson = new GsonBuilder().setPrettyPrinting().create();

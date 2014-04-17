@@ -160,7 +160,10 @@ class DrillResult {
 			if (!flatten) {
 				flatten = oneSection.copyTo(jsonList);
 			} else {
-				jsonList.add(oneSection.getJson());
+				JsonObject oneJson = oneSection.getJson();
+				if (oneJson != null) {
+					jsonList.add(oneJson);
+				}
 			}
 		}
 		

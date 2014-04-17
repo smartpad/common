@@ -21,18 +21,15 @@ public class CatalogDao implements DbPopulator<Catalog> {
 	
 	private JsonParser parser;
 	
-	private boolean parseSpec = true;
-	
-	public CatalogDao() {
+	/*public CatalogDao() {
 		this(true);
 	}
 	
 	public CatalogDao(boolean parseSpec) {
-		this.parseSpec = parseSpec;
 		if (parseSpec) {
 			parser = new JsonParser();
 		}
-	}
+	}*/
 
 	public int countSubCatalogs(String parentId) throws SQLException {
 		Connection conn = null;
@@ -49,6 +46,34 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			} else {
 				return 0;
 			}
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public ICatalog loadCatalog(String catId, boolean parseSpec) throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select * from catalogs where catalog_id = ?");
+			ps.setString(1, catId);
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			if (parseSpec) {
+				parser = new JsonParser();
+			}
+			return populate(rs);
 		} finally {
 			if (rs != null) {
 				rs.close();
@@ -90,6 +115,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(1, parentId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
+			
+			parser = new JsonParser();
 			LinkedList<ICatalog> subCatalogs = new LinkedList<ICatalog>();
 			while (rs.next()) {
 				Catalog cat = populate(rs);
@@ -117,7 +144,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		DaoSupport.populateName(rs, cat.getName());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
 		String spec = rs.getString("spec");
-		if (parseSpec && spec != null) {
+		if (parser != null && spec != null) {
 			JsonObject json = parser.parse(spec).getAsJsonObject();
 			((CatalogSpec) cat.getCatalogSpec()).populate(json);
 		}
@@ -230,8 +257,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		}
 	}
 
-	public DbIterator<Catalog> iterateSubCatalogs(String parentCatalogId) throws SQLException {
-		
+	public DbIterator<Catalog> iterateSubCatalogs(String parentCatalogId, String excludeCatId, int count) throws SQLException {
+		//TODO exclude, count
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		String sql = "select * from catalogs where parent_id = '" + parentCatalogId + "'";

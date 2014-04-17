@@ -3,14 +3,10 @@ package com.jinnova.smartpad.drilling;
 import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.DbIterator;
-import com.jinnova.smartpad.db.OperationDao;
-import com.jinnova.smartpad.db.PromotionDao;
 import com.jinnova.smartpad.partner.Catalog;
-import com.jinnova.smartpad.partner.Operation;
-import com.jinnova.smartpad.partner.Promotion;
+import com.jinnova.smartpad.partner.IDetailManager;
 
 class CatalogDriller implements DetailDriller {
 
@@ -18,7 +14,7 @@ class CatalogDriller implements DetailDriller {
      * Returns in order the following:
      * 
      * 	- All sub categories of this category in one compound 
-     * 	- Feature catelog items from this branch's root category
+     * 	- Feature catalog items from this branch's root category
      * 	- All stores belong to this branch in one compound
      * 	- Some similar branches in one compound
      * 	- Some active promotions from this branch in one compound
@@ -28,44 +24,30 @@ class CatalogDriller implements DetailDriller {
 	@Override
 	public String generate(String targetId, String gpsZone, int page) throws SQLException {
 		
-		//All stores belong to this branch in one compound
-		JsonObject branchJson = new JsonObject();
-		DbIterator<Operation> stores = new OperationDao().iterateStores(targetId);
-		JsonArray ja = new JsonArray();
-		while (stores.hasNext()) {
-			Operation one = stores.next();
-			ja.add(one.generateFeedJson());
-		}
-		stores.close();
-		branchJson.add("stores", ja);
+		//5 sub cats, 3 sibling cats, 3 similar branches 
+		Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
+		JsonArray ja = findSubCatalogs(targetId, null, 8);
+		JsonArray ja2 = findSubCatalogs(cat.getParentCatalogId(), targetId, 8);
+		DrillResult dr = new DrillResult();
+		dr.add(IDetailManager.TYPENAME_CAT, ja, 5, ja2, 3);
 		
-		//Some similar branches in one compound
-		Operation targetBranch = (Operation) new OperationDao().loadBranch(targetId);
-		String syscatId = ((Catalog) targetBranch.getRootCatalog()).getSystemCatalogId();
-		DbIterator<Operation> similarBranches = new OperationDao().iterateSimilarBranches(targetId, syscatId);
-		ja = new JsonArray();
-		while (similarBranches.hasNext()) {
-			Operation one = similarBranches.next();
-			ja.add(one.generateFeedJson());
-		}
-		similarBranches.close();
-		branchJson.add("branches", ja);
+		//5 active promotions from this branch in one compound
+		ja = PromotionDriller.findOperationPromotions(new String[] {cat.branchId}, 5);
+		dr.add(IDetailManager.TYPENAME_PROMO, ja, 5);
 		
-		//Some active promotions from this branch in one compound
-		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(new String[] {targetId}, 10); //TODO which number
-		ja = new JsonArray();
-		while (promos.hasNext()) {
-			Promotion one = promos.next();
-			ja.add(one.generateFeedJson());
-		}
-		promos.close();
-		branchJson.add("promos", ja);
+		//5 feature items from this catalog
+		ja = CatalogItemDriller.findCatalogItems(cat, null, 5);
+		dr.add(IDetailManager.TYPENAME_CATITEM, ja, 5);
 		
-		return branchJson.toString();
+		//5 other stores, 3 similar branches
+		ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);
+		ja2 = BranchDriller.findBranchesSimilar(cat.branchId, 8);
+		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
+		return dr.toString();
 	}
 	
-	static JsonArray findSubCataogs(String targetCatalogId) throws SQLException {
-		DbIterator<Catalog> catalogs = new CatalogDao(false).iterateSubCatalogs(targetCatalogId);
+	static JsonArray findSubCatalogs(String parentCatId, String excludeCatId, int count) throws SQLException {
+		DbIterator<Catalog> catalogs = new CatalogDao().iterateSubCatalogs(parentCatId, excludeCatId, count);
 		JsonArray ja = new JsonArray();
 		while (catalogs.hasNext()) {
 			Catalog one = catalogs.next();
