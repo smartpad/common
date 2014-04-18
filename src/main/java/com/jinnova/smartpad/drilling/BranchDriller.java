@@ -2,11 +2,13 @@ package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.Catalog;
-import com.jinnova.smartpad.partner.IDetailManager;
 import com.jinnova.smartpad.partner.Operation;
+
+import static com.jinnova.smartpad.partner.IDetailManager.*;
+import static com.jinnova.smartpad.drilling.ActionLoad.*;
 
 class BranchDriller implements DetailDriller {
 
@@ -22,32 +24,36 @@ class BranchDriller implements DetailDriller {
      *
      */
 	@Override
-	public JsonArray generate(String branchId, String gpsZone, int page) throws SQLException {
+	public void drill(String branchId, String gpsZone, int page, int size, JsonObject resultJson) throws SQLException {
 		
-		//At most 5 stores belong to this branch and 3 similar branches
 		DrillResult dr = new DrillResult();
 		OperationDao odao = new OperationDao();
-		Object[] ja = odao.iterateStores(branchId, null, 0, 8).toArray();
 		String syscatId = odao.loadBranch(branchId).getSyscatId();
+
+		//At most 5 stores belong to this branch and 3 similar branches
+		Object[] ja = odao.iterateStores(branchId, null, 0, 8).toArray();
 		Object[] ja2 = odao.iterateSimilarBranches(branchId, syscatId).toArray();
-		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
+		dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
+				new DrillSectionSimple(TYPENAME_STORE, ja, 5, new ActionLoad(TYPENAME_BRANCH, branchId, TYPENAME_STORE, REL_BELONG, 10)), 
+				new DrillSectionSimple(TYPENAME_BRANCH, ja2, 3, new ActionLoad(TYPENAME_BRANCH, branchId, TYPENAME_BRANCH, REL_SIMILAR, 10)));
 		
 		//5 active promotions from this branch in one compound
 		ja = PromotionDriller.findOperationPromotions(new String[] {branchId}, 5);
-		dr.add(IDetailManager.TYPENAME_COMPOUND_PROMOS, ja, 5);
+		dr.add(TYPENAME_COMPOUND_PROMOS, ja, 5, new ActionLoad(TYPENAME_BRANCH, branchId, TYPENAME_PROMO, REL_BELONG, 10)); //TODO multiple branches
 		
 		//10 sub categories of this branch's root category in one compound
 		ja = CatalogDriller.findSubCatalogs(branchId, null, 10);
-		dr.add(IDetailManager.TYPENAME_COMPOUND_CAT, ja, 10);
+		dr.add(TYPENAME_COMPOUND_CAT, ja, 10, new ActionLoad(TYPENAME_CAT, branchId, TYPENAME_CAT, REL_BELONG, 10));
 		
-		//Feature catelog items from this branch's root category
+		//catelog items from this branch's root category
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(branchId);
-		ja = CatalogItemDriller.findCatalogItems((Catalog) targetBranch.getRootCatalog(), null, 20);
-		dr.add(IDetailManager.TYPENAME_COMPOUND_CITEM, ja, 20);
+		Catalog rootCat = (Catalog) targetBranch.getRootCatalog();
+		ja = CatalogItemDriller.findCatalogItems(rootCat, null, page, size);
+		dr.add(TYPENAME_COMPOUND_CITEM, ja, 20, new ActionLoad(TYPENAME_CAT, branchId, TYPENAME_CATITEM, REL_BELONG, 10));
 		
 		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		//return gson.toJson(dr);
-		return dr.toJson();
+		dr.writeJson(resultJson);
 	}
 	
 	/*static Object[] findBranchesSimilar(String targetBranchId, int count) throws SQLException {

@@ -2,9 +2,9 @@ package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 interface DetailDriller {
 	
-	JsonArray generate(String targetId, String gpsZone, int page) throws SQLException;
+	void drill(String targetId, String gpsZone, int page, int size, JsonObject resultJson) throws SQLException;
 }

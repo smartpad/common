@@ -2,7 +2,7 @@ package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.db.PromotionDao;
 import com.jinnova.smartpad.partner.IPromotion;
@@ -12,7 +12,7 @@ import com.jinnova.smartpad.partner.Operation;
 class PromotionDriller implements DetailDriller {
 	
 	@Override
-	public JsonArray generate(String promoId, String gpsZone, int page) throws SQLException {
+	public void drill(String promoId, String gpsZone, int page, int size, JsonObject resultJson) throws SQLException {
 		
 		new PromotionDao().load(promoId);
 		
@@ -38,7 +38,6 @@ class PromotionDriller implements DetailDriller {
 		//Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		//return gson.toJson(dr);
 		return dr.toString();*/
-		return null;
 	}
 
 	static Object[] findOperationPromotions(String[] branchIds, int count) throws SQLException {

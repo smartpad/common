@@ -2,7 +2,7 @@ package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.ICatalogItem;
@@ -11,7 +11,7 @@ import com.jinnova.smartpad.partner.ICatalogItemSort;
 class CatalogItemDriller implements DetailDriller {
 	
 	@Override
-	public JsonArray generate(String targetId, String gpsZone, int page) throws SQLException {
+	public void drill(String targetId, String gpsZone, int page, int size, JsonObject resultJson) throws SQLException {
 		
 		//5 sibling cats, 3 similar branches 
 		/*CatalogItem catItem = new CatalogItemDao().loadCatalogItem(targetId, spec);
@@ -34,14 +34,13 @@ class CatalogItemDriller implements DetailDriller {
 		ja2 = BranchDriller.findBranchesSimilar(cat.branchId, 8);
 		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
 		return dr.toString();*/
-		return null;
 	}
 	
-	static Object[] findCatalogItems(Catalog targetCatalog, String excludeCatItem, int count) throws SQLException {
+	static Object[] findCatalogItems(Catalog targetCatalog, String excludeCatItem, int page, int size) throws SQLException {
 		
 		CachedPagingList<ICatalogItem, ICatalogItemSort> paging = Catalog.createCatalogItemPagingList(targetCatalog.branchId, targetCatalog.storeId, targetCatalog.getId(), targetCatalog.getSystemCatalogId(), null);
-		paging.setPageSize(count);
-		return paging.loadPage(1).getPageEntries();
+		paging.setPageSize(size);
+		return paging.loadPage(page).getPageEntries();
 		
 		/*ICatalogSpec spec = targetCatalog.getSystemCatalog().getCatalogSpec(); //TODO exclude, count
 		DbIterator<CatalogItem> catalogs = new CatalogItemDao().iterateCatalogItems(targetCatalog.getId(), targetCatalog.getSystemCatalogId(), spec);
