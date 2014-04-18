@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import com.google.gson.JsonArray;
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.db.CatalogDao;
+import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.ICatalogSort;
@@ -42,8 +43,11 @@ class CatalogDriller implements DetailDriller {
 		dr.add(IDetailManager.TYPENAME_COMPOUND_CAT, ja, 5);
 		
 		//5 other stores, 3 similar branches
-		ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);
-		ja2 = BranchDriller.findBranchesSimilar(cat.branchId, 8);
+		//ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);
+		ja = new OperationDao().iterateStores(cat.branchId, cat.storeId, 0, 8).toArray();
+		OperationDao odao = new OperationDao();
+		String syscatId = odao.loadBranch(cat.branchId).getSyscatId();
+		ja2 = odao.iterateSimilarBranches(cat.branchId, syscatId).toArray();
 		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
 		return dr.toJson();
 	}

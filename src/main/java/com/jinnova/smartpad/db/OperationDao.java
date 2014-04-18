@@ -32,7 +32,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		return oper;
 	}
 
-	public IOperation loadBranch(String branchId) throws SQLException {
+	public Operation loadBranch(String branchId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -61,7 +61,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 
-	public IOperation loadStore(String storeId) throws SQLException {
+	public Operation loadStore(String storeId) throws SQLException {
 		
 		return loadBranch(storeId);
 	}
@@ -227,13 +227,16 @@ public class OperationDao implements DbPopulator<Operation> {
 	public DbIterator<Operation> iterateStores(String branchId, String excludeStoreId, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		PreparedStatement ps = conn.prepareStatement("select * from operations where branch_id = ? and "
-				+ "store_id != branch_id and store_id != ? " + DaoSupport.buildLimit(offset, size));
-		ps.setString(1, branchId);
-		ps.setString(2, excludeStoreId);
-		System.out.println("SQL: " + ps);
-		ResultSet rs = ps.executeQuery();
-		return new DbIterator<Operation>(conn, ps, rs, this);
+		StringBuffer sql = new StringBuffer();
+		sql.append("select * from operations where store_id != branch_id and branch_id = '" + branchId + "' ");
+		if (excludeStoreId != null) {
+			sql.append("and store_id != '" + excludeStoreId + "'");
+		}
+		sql.append(DaoSupport.buildLimit(offset, size));
+		Statement stmt = conn.createStatement();
+		System.out.println("SQL: " + sql.toString());
+		ResultSet rs = stmt.executeQuery(sql.toString());
+		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
 	public DbIterator<Operation> iterateSimilarBranches(String targetBranchId, String targetSyscatId) throws SQLException {

@@ -3,12 +3,8 @@ package com.jinnova.smartpad.drilling;
 import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
-import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.db.OperationDao;
-import com.jinnova.smartpad.partner.IOperation;
-import com.jinnova.smartpad.partner.IOperationSort;
 import com.jinnova.smartpad.partner.Operation;
-import com.jinnova.smartpad.partner.User;
 
 class StoreDriller implements DetailDriller {
 	
@@ -26,13 +22,14 @@ class StoreDriller implements DetailDriller {
 	@Override
 	public JsonArray generate(String targetId, String gpsZone, int page) throws SQLException {
 
-		Operation targetStore = (Operation) new OperationDao().loadStore(targetId);
-		Operation targetBranch = (Operation) new OperationDao().loadBranch(targetStore.getBranchId());
+		OperationDao odao = new OperationDao();
+		Operation targetStore = odao.loadStore(targetId);
+		Operation targetBranch = odao.loadBranch(targetStore.getBranchId());
 		DrillResult dr = new DrillResult();
 
 		//5 stores belong in same branch with this store, and 3 similar branches
-		Object[] ja = findStoresOfBranch(targetBranch.getId(), targetId, 0, 8);
-		Object[] ja2 = BranchDriller.findBranchesSimilar(targetBranch.getId(), 8);
+		Object[] ja = new OperationDao().iterateStores(targetBranch.getId(), targetId, 0, 8).toArray();
+		Object[] ja2 = odao.iterateSimilarBranches(targetBranch.getId(), targetBranch.getSyscatId()).toArray();
 		dr.add("branches", ja, 5, ja2, 3);
 		
 		//Some active promotions from this branch in one compound
@@ -41,18 +38,18 @@ class StoreDriller implements DetailDriller {
 		return dr.toJson();
 	}
 
-	static Object[] findStoresOfBranch(String targetBranchId, String excludeStoreId, int offset, int count) throws SQLException { //TODO count
+	/*static Object[] findStoresOfBranch(String targetBranchId, String excludeStoreId, int offset, int count) throws SQLException { //TODO count
 
-		CachedPagingList<IOperation, IOperationSort> paging = User.createStorePagingList(targetBranchId, /*branchSyscatId*/null, /*branchGps*/null);
+		CachedPagingList<IOperation, IOperationSort> paging = User.createStorePagingList(targetBranchId, branchSyscatIdnull, branchGpsnull);
 		paging.setPageSize(count);
 		return paging.loadPage(1).getPageEntries();
-		/*DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId, excludeStoreId, offset, count);
-		JsonArray ja = new JsonArray();
+		
+		DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId, excludeStoreId, offset, count);
+		LinkedList<Object> ja = new LinkedList<>();
 		while (stores.hasNext()) {
-			Operation one = stores.next();
-			ja.add(one.generateFeedJson());
+			ja.add(stores.next());
 		}
 		stores.close();
-		return ja;*/
-	}
+		return ja.toArray();
+	}*/
 }

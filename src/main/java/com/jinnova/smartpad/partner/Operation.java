@@ -276,6 +276,10 @@ public class Operation implements IOperation, Feed {
 	public ICatalog getRootCatalog() {
 		return rootCatalog;
 	}
+	
+	public String getSyscatId() {
+		return rootCatalog.getSystemCatalogId();
+	}
 
 	/*@Override
 	public String getSystemCatalogId() {

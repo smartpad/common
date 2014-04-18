@@ -1,10 +1,8 @@
 package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
-import java.util.LinkedList;
 
 import com.google.gson.JsonArray;
-import com.jinnova.smartpad.db.DbIterator;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.IDetailManager;
@@ -28,8 +26,10 @@ class BranchDriller implements DetailDriller {
 		
 		//At most 5 stores belong to this branch and 3 similar branches
 		DrillResult dr = new DrillResult();
-		Object[] ja = StoreDriller.findStoresOfBranch(branchId, null, 0, 8);
-		Object[] ja2 = findBranchesSimilar(branchId, 8);
+		OperationDao odao = new OperationDao();
+		Object[] ja = odao.iterateStores(branchId, null, 0, 8).toArray();
+		String syscatId = odao.loadBranch(branchId).getSyscatId();
+		Object[] ja2 = odao.iterateSimilarBranches(branchId, syscatId).toArray();
 		dr.add(IDetailManager.TYPENAME_COMPOUND_BRANCHSTORE, ja, 5, ja2, 3);
 		
 		//5 active promotions from this branch in one compound
@@ -50,22 +50,13 @@ class BranchDriller implements DetailDriller {
 		return dr.toJson();
 	}
 	
-	static Object[] findBranchesSimilar(String targetBranchId, int count) throws SQLException {
-		
-		/*CachedPagingList<IOperation, IOperationSort> paging = User.createStorePagingList(targetBranchId, null, null);
-		paging.setPageSize(count);
-		CachedPage<IOperation> page = paging.loadPage(1);
-		return page.getPageEntries();*/
-		
+	/*static Object[] findBranchesSimilar(String targetBranchId, int count) throws SQLException {
 		Operation targetBranch = (Operation) new OperationDao().loadBranch(targetBranchId);
-		String syscatId = ((Catalog) targetBranch.getRootCatalog()).getSystemCatalogId();
-		DbIterator<Operation> similarBranches = new OperationDao().iterateSimilarBranches(targetBranchId, syscatId);
-		LinkedList<Object> ja = new LinkedList<>();
-		while (similarBranches.hasNext()) {
-			Operation one = similarBranches.next();
-			ja.add(one);
-		}
-		similarBranches.close();
-		return ja.toArray();
+		return findBranchesSimilar(targetBranch, count);
 	}
+	
+	static Object[] findBranchesSimilar(Operation targetBranch, int count) throws SQLException {
+		String syscatId = ((Catalog) targetBranch.getRootCatalog()).getSystemCatalogId();
+		return new OperationDao().iterateSimilarBranches(targetBranch.getId(), syscatId).toArray();
+	}*/
 }
