@@ -3,9 +3,12 @@ package com.jinnova.smartpad.drilling;
 import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
-import com.jinnova.smartpad.db.DbIterator;
+import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.db.OperationDao;
+import com.jinnova.smartpad.partner.IOperation;
+import com.jinnova.smartpad.partner.IOperationSort;
 import com.jinnova.smartpad.partner.Operation;
+import com.jinnova.smartpad.partner.User;
 
 class StoreDriller implements DetailDriller {
 	
@@ -28,8 +31,8 @@ class StoreDriller implements DetailDriller {
 		DrillResult dr = new DrillResult();
 
 		//5 stores belong in same branch with this store, and 3 similar branches
-		JsonArray ja = findStoresOfBranch(targetBranch.getId(), targetId, 0, 8);
-		JsonArray ja2 = BranchDriller.findBranchesSimilar(targetBranch.getId(), 8);
+		Object[] ja = findStoresOfBranch(targetBranch.getId(), targetId, 0, 8);
+		Object[] ja2 = BranchDriller.findBranchesSimilar(targetBranch.getId(), 8);
 		dr.add("branches", ja, 5, ja2, 3);
 		
 		//Some active promotions from this branch in one compound
@@ -38,15 +41,18 @@ class StoreDriller implements DetailDriller {
 		return dr.toJson();
 	}
 
-	static JsonArray findStoresOfBranch(String targetBranchId, String excludeStoreId, int offset, int count) throws SQLException { //TODO count
+	static Object[] findStoresOfBranch(String targetBranchId, String excludeStoreId, int offset, int count) throws SQLException { //TODO count
 
-		DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId, excludeStoreId, offset, count);
+		CachedPagingList<IOperation, IOperationSort> paging = User.createStorePagingList(targetBranchId, /*branchSyscatId*/null, /*branchGps*/null);
+		paging.setPageSize(count);
+		return paging.loadPage(1).getPageEntries();
+		/*DbIterator<Operation> stores = new OperationDao().iterateStores(targetBranchId, excludeStoreId, offset, count);
 		JsonArray ja = new JsonArray();
 		while (stores.hasNext()) {
 			Operation one = stores.next();
 			ja.add(one.generateFeedJson());
 		}
 		stores.close();
-		return ja;
+		return ja;*/
 	}
 }

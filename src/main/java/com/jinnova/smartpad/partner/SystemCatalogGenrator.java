@@ -8,14 +8,14 @@ class SystemCatalogGenrator {
 		
 		//system catalog
 		PartnerManager pm = PartnerManager.instance;
-		ICatalog sysCatFoods = pm.getSystemRootCatalog().getSubCatalogPagingList().newEntryInstance(pm.getSystemUser());
+		ICatalog sysCatFoods = pm.getSystemRootCatalog().getSubCatalogPagingList().newEntryInstance(pm.systemUser);
 		sysCatFoods.getName().setName("Foods");
 		sysCatFoods.getCatalogSpec().setSpecId("foods"); //table name
 		ICatalogField field = sysCatFoods.getCatalogSpec().createField();
 		field.setId("name"); //column name
 		field.setFieldType(ICatalogFieldType.Text_Name);
 		field.setName("Name");
-		pm.getSystemRootCatalog().getSubCatalogPagingList().put(pm.getSystemUser(), sysCatFoods);
+		pm.getSystemRootCatalog().getSubCatalogPagingList().put(pm.systemUser, sysCatFoods);
 	}
 
 }

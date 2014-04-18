@@ -3,9 +3,11 @@ package com.jinnova.smartpad.drilling;
 import java.sql.SQLException;
 
 import com.google.gson.JsonArray;
-import com.jinnova.smartpad.db.DbIterator;
+import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.db.PromotionDao;
-import com.jinnova.smartpad.partner.Promotion;
+import com.jinnova.smartpad.partner.IPromotion;
+import com.jinnova.smartpad.partner.IPromotionSort;
+import com.jinnova.smartpad.partner.Operation;
 
 class PromotionDriller implements DetailDriller {
 	
@@ -39,14 +41,17 @@ class PromotionDriller implements DetailDriller {
 		return null;
 	}
 
-	static JsonArray findOperationPromotions(String[] branchIds, int count) throws SQLException {
-		DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(branchIds, count);
+	static Object[] findOperationPromotions(String[] branchIds, int count) throws SQLException {
+		CachedPagingList<IPromotion, IPromotionSort> paging = Operation.createPromotionPagingList(branchIds[0], /*operationId*/null, /*gps*/null); //TODO multiple branches
+		paging.setPageSize(count);
+		return paging.loadPage(1).getPageEntries();
+		/*DbIterator<Promotion> promos = new PromotionDao().iterateOperationPromos(branchIds, count);
 		JsonArray ja = new JsonArray();
 		while (promos.hasNext()) {
 			Promotion one = promos.next();
 			ja.add(one.generateFeedJson());
 		}
 		promos.close();
-		return ja;
+		return ja;*/
 	}
 }

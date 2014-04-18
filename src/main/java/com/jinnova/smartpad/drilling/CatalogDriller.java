@@ -9,7 +9,6 @@ import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.ICatalogSort;
 import com.jinnova.smartpad.partner.IDetailManager;
-import com.jinnova.smartpad.partner.PartnerManager;
 
 class CatalogDriller implements DetailDriller {
 
@@ -29,8 +28,8 @@ class CatalogDriller implements DetailDriller {
 		
 		//5 sub cats, 3 sibling cats, 3 similar branches 
 		Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
-		JsonArray ja = findSubCatalogs(targetId, null, 8);
-		JsonArray ja2 = findSubCatalogs(cat.getParentCatalogId(), targetId, 8);
+		Object[] ja = findSubCatalogs(targetId, null, 8);
+		Object[] ja2 = findSubCatalogs(cat.getParentCatalogId(), targetId, 8);
 		DrillResult dr = new DrillResult();
 		dr.add(IDetailManager.TYPENAME_COMPOUND_CAT, ja, 5, ja2, 3);
 		
@@ -49,7 +48,7 @@ class CatalogDriller implements DetailDriller {
 		return dr.toJson();
 	}
 	
-	static JsonArray findSubCatalogs(String parentCatId, String excludeCatId, int count) throws SQLException {
+	static Object[] findSubCatalogs(String parentCatId, String excludeCatId, int count) throws SQLException {
 		/*DbIterator<Catalog> catalogs = new CatalogDao().iterateSubCatalogs(parentCatId, excludeCatId, count);
 		JsonArray ja = new JsonArray();
 		while (catalogs.hasNext()) {
@@ -61,11 +60,11 @@ class CatalogDriller implements DetailDriller {
 		String syscatId = null; //don't need to parse spec 
 		CachedPagingList<ICatalog, ICatalogSort> paging = Catalog.createSubCatalogPagingList(null, null, parentCatId, syscatId, null);
 		paging.setPageSize(count);
-		ICatalog[] subs = paging.loadPage(PartnerManager.instance.getSystemUser(), 1).getPageEntries();
-		JsonArray ja = new JsonArray();
+		return paging.loadPage(1).getPageEntries();
+		/*JsonArray ja = new JsonArray();
 		for (ICatalog oneSub : subs) {
 			ja.add(((Catalog) oneSub).generateFeedJson());
 		}
-		return ja;
+		return ja;*/
 	}
 }

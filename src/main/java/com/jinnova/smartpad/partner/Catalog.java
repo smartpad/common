@@ -5,10 +5,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPage;
 import com.jinnova.smartpad.CachedPagingList;
+import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
@@ -17,7 +17,7 @@ import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.CatalogItemDao;
 
-public class Catalog implements ICatalog {
+public class Catalog implements ICatalog, Feed {
 	
 	public final String branchId;
 	
@@ -347,7 +347,7 @@ public class Catalog implements ICatalog {
 		}
 	}
 
-	public JsonElement generateFeedJson() {
+	public JsonObject generateFeedJson() {
 		JsonObject json = new JsonObject();
 		json.addProperty("id", this.catalogId);
 		json.addProperty("type", IDetailManager.TYPENAME_CAT);

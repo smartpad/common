@@ -277,7 +277,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			Catalog cat = catList.remove();
 			updateGps(cat.getSystemCatalogId(), targetFieldValue, gpsLon, gpsLat, inherit, targetField);
 			cat.getSubCatalogPagingList().setPageSize(-1);
-			ICatalog[] subCats = cat.getSubCatalogPagingList().loadPage(PartnerManager.instance.getSystemUser(), 1).getPageEntries();
+			ICatalog[] subCats = cat.getSubCatalogPagingList().loadPage(PartnerManager.instance.systemUser, 1).getPageEntries();
 			for (ICatalog oneSub : subCats) {
 				catList.add((Catalog) oneSub);
 			}

@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.partner.IDetailManager;
 
 class DrillResult {
@@ -21,10 +22,10 @@ class DrillResult {
 	private class SimpleSection implements DrillSection {
 		
 		String sectionType;
-		JsonArray ja;
+		Object[] ja;
 		int expectedSize;
 		
-		SimpleSection(String sectionType, JsonArray ja, int expectedSize) {
+		SimpleSection(String sectionType, Object[] ja, int expectedSize) {
 			this.sectionType = sectionType;
 			this.ja = ja;
 			this.expectedSize = expectedSize;
@@ -32,30 +33,35 @@ class DrillResult {
 		
 		@Override
 		public JsonObject getJson() {
-			if (ja == null || ja.size() == 0) {
+			if (ja == null || ja.length == 0) {
 				return null;
 			}
-			if (ja.size() == 1) {
-				return ja.get(0).getAsJsonObject();
+			if (ja.length == 1) {
+				return ((Feed) ja[0]).generateFeedJson();
 			}
 			
 			//trim off if less expected count
-			if (expectedSize < ja.size()) {
-				JsonArray jaTemp = new JsonArray();
+			if (expectedSize < ja.length) {
+				Object[] jaTemp = new Object[expectedSize];
 				for (int i = 0; i < expectedSize; i++) {
-					jaTemp.add(ja.get(i));
+					jaTemp[i] = ja[i];
 				}
 				ja = jaTemp;
 			}
 			
+			JsonArray array = new JsonArray();
+			for (Object o : ja) {
+				array.add(((Feed) o).generateFeedJson());
+			}
+			
 			JsonObject json = new JsonObject();
 			json.addProperty(IDetailManager.FIELD_TYPE, sectionType);
-			json.add(IDetailManager.FIELD_ARRAY, ja);
+			json.add(IDetailManager.FIELD_ARRAY, array);
 			return json;
 		}
 		
 		boolean isEmpty() {
-			return ja == null || ja.size() == 0;
+			return ja == null || ja.length == 0;
 		}
 		
 		@Override
@@ -67,10 +73,10 @@ class DrillResult {
 			
 			boolean copied = false;
 			for (int i = 0; i < expectedSize; i++) {
-				if (i >= ja.size()) {
+				if (i >= ja.length) {
 					break;
 				}
-				jsonList.add(ja.get(i).getAsJsonObject());
+				jsonList.add(((Feed) ja[i]).generateFeedJson());
 				copied = true;
 			}
 			return copied;
@@ -93,19 +99,19 @@ class DrillResult {
 			
 			//flatten if needed
 			if (section1.isEmpty()) {
-				section2.expectedSize = section2.ja.size();
+				section2.expectedSize = section2.ja.length;
 				return section2.copyTo(jsonList);
 			}
 			if (section2.isEmpty()) {
-				section1.expectedSize = section1.ja.size();
+				section1.expectedSize = section1.ja.length;
 				return section1.copyTo(jsonList);
 			}
 			
 			//adjust sizes
-			if (section1.ja.size() < section1.expectedSize) {
-				section2.expectedSize += section1.expectedSize - section1.ja.size();
-			} else if (section2.ja.size() < section2.expectedSize) {
-				section1.expectedSize += section2.expectedSize - section2.ja.size();
+			if (section1.ja.length < section1.expectedSize) {
+				section2.expectedSize += section1.expectedSize - section1.ja.length;
+			} else if (section2.ja.length < section2.expectedSize) {
+				section1.expectedSize += section2.expectedSize - section2.ja.length;
 			}
 			
 			boolean copied = section1.copyTo(jsonList);
@@ -139,11 +145,11 @@ class DrillResult {
 		}
 	}
 	
-	void add(String sectionType, JsonArray ja, int expectedSize) {
+	void add(String sectionType, Object[] ja, int expectedSize) {
 		allSections.add(new SimpleSection(sectionType, ja, expectedSize));
 	}
 	
-	void add(String sectionType, JsonArray ja1, int expectedSize1, JsonArray ja2, int expectedSize2) {
+	void add(String sectionType, Object[] ja1, int expectedSize1, Object[] ja2, int expectedSize2) {
 		
 		allSections.add(new TwinSection(sectionType, 
 				new SimpleSection(sectionType, ja1, expectedSize1), 

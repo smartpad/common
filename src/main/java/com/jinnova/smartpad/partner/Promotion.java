@@ -3,12 +3,13 @@ package com.jinnova.smartpad.partner;
 import java.util.Date;
 
 import com.google.gson.JsonObject;
+import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.member.Consumer;
 
-public class Promotion implements IPromotion {
+public class Promotion implements IPromotion, Feed {
 	
 	private String promotionId;
 	

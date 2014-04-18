@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPagingList;
+import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.Name;
@@ -25,7 +26,7 @@ import com.jinnova.smartpad.member.Member;
  * @author HuyBA
  *
  */
-public class Operation implements IOperation {
+public class Operation implements IOperation, Feed {
 	
 	private final String branchId;
 	
@@ -103,6 +104,13 @@ public class Operation implements IOperation {
 		this.rootCatalog.gps.setLatitude(gpsLat);
 		this.rootCatalog.gps.setInheritFrom(gpsInherit);*/
 		
+		this.promotions = createPromotionPagingList(branchId, operId, gps);
+		this.memberPagingList = createMemberPagingList();
+	}
+	
+	public static CachedPagingList<IPromotion, IPromotionSort> createPromotionPagingList(
+			final String branchId, final String operationId, final GPSInfo gps) {
+		
 		@SuppressWarnings({ "unchecked" })
 		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];
 		promoComparators[IPromotionSort.creation.ordinal()] = new Comparator<IPromotion>() {
@@ -129,13 +137,13 @@ public class Operation implements IOperation {
 			@Override
 			public IPromotion newEntryInstance(IUser authorizedUser) {
 				String gpsInherit;
-				if (Operation.this.branchId.equals(operationId)) {
+				if (branchId.equals(operationId)) {
 					gpsInherit = GPSInfo.INHERIT_BRANCH;
 				} else {
 					gpsInherit = GPSInfo.INHERIT_STORE;
 				}
-				Promotion promo = new Promotion(null, Operation.this.operationId);
-				promo.gps.inherit(Operation.this.gps, gpsInherit);
+				Promotion promo = new Promotion(null, operationId);
+				promo.gps.inherit(gps, gpsInherit);
 				return promo;
 			}
 
@@ -146,12 +154,12 @@ public class Operation implements IOperation {
 
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new PromotionDao().count(Operation.this.operationId);
+				return new PromotionDao().count(operationId);
 			}
 
 			@Override
 			public LinkedList<IPromotion> load(IUser authorizedUser, int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
-				return new PromotionDao().load(Operation.this.operationId, offset, pageSize, sortField, ascending);
+				return new PromotionDao().load(operationId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -159,8 +167,8 @@ public class Operation implements IOperation {
 				if (t.getName().getName() == null || "".equals(t.getName().getName())) {
 					throw new RuntimeException("Promotion name is missing");
 				}
-				String newId = SmartpadCommon.md5(Operation.this.branchId + Operation.this.operationId + t.getName().getName()); 
-				new PromotionDao().insert(newId, operationId, Operation.this.branchId, (Promotion) t);
+				String newId = SmartpadCommon.md5(branchId + operationId + t.getName().getName()); 
+				new PromotionDao().insert(newId, operationId, branchId, (Promotion) t);
 			}
 
 			@Override
@@ -172,7 +180,10 @@ public class Operation implements IOperation {
 			public void delete(IUser authorizedUser, IPromotion t) throws SQLException {
 				new PromotionDao().delete(((Promotion) t).getId(), t);
 			}};
-		this.promotions = new CachedPagingList<IPromotion, IPromotionSort>(promoMate, promoComparators, IPromotionSort.creation, new IPromotion[0]);
+		return new CachedPagingList<IPromotion, IPromotionSort>(promoMate, promoComparators, IPromotionSort.creation, new IPromotion[0]);
+	}
+	
+	private CachedPagingList<IMember, IMemberSort> createMemberPagingList() {
 		
 		@SuppressWarnings("unchecked")
 		Comparator<IMember>[] memberComparators = new Comparator[IMemberSort.values().length];
@@ -221,7 +232,7 @@ public class Operation implements IOperation {
 				new MemberDao().delete(((Member) member).getId(), member);
 			}
 		};
-		this.memberPagingList = new CachedPagingList<IMember, IMemberSort>(memberMate, memberComparators, IMemberSort.Creation, new IMember[0]);
+		return new CachedPagingList<IMember, IMemberSort>(memberMate, memberComparators, IMemberSort.Creation, new IMember[0]);
 	}
 	
 	public String getBranchId() {

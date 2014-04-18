@@ -9,6 +9,7 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IRecordInfoHolder;
 import com.jinnova.smartpad.partner.IUser;
+import com.jinnova.smartpad.partner.PartnerManager;
 
 public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E> {
 	
@@ -91,6 +92,10 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 	@Override
 	public T newEntryInstance(IUser authorizedUser) {
 		return memberMate.newEntryInstance(authorizedUser);
+	}
+	
+	public CachedPage<T> loadPage(int pageNumber) throws SQLException {
+		return loadPage(PartnerManager.instance.systemUser, pageNumber);
 	}
 	
 	@Override

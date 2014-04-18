@@ -18,7 +18,7 @@ public class PartnerManager implements IPartnerManager {
 	
 	public static PartnerManager instance;
 	
-	final User systemUser;
+	public final User systemUser;
 	
 	private final CachedPagingList<IUser, IUserSort> userPagingList;
 	
