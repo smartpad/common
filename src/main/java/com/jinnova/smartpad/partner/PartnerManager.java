@@ -30,8 +30,9 @@ public class PartnerManager implements IPartnerManager {
 	
 	private PartnerManager() throws SQLException {
 		
-		systemUser = new User("SMARTPAD", /*"SMARTPAD",*/ null);
-		systemUser.loadBranch("SMARTPAD");
+		systemUser = new User("SMARTPAD", "SMARTPAD", null);
+		//systemUser.loadBranch("SMARTPAD");
+		systemUser.loadBranch();
 		
 		@SuppressWarnings("unchecked")
 		final Comparator<IUser>[] comparators = new Comparator[3];
@@ -60,7 +61,7 @@ public class PartnerManager implements IPartnerManager {
 
 			@Override
 			public IUser newEntryInstance(IUser authorizedUser) {
-				User u = new User(null, /*((User) authorizedUser).getBranch().getBranchId(),*/ null);
+				User u = new User(null, ((User) authorizedUser).branchId, null);
 				u.setBranch((Operation) ((User) authorizedUser).getBranch());
 				return u;
 			}
@@ -74,14 +75,14 @@ public class PartnerManager implements IPartnerManager {
 			public LinkedList<IUser> load(IUser authorizedUser, int offset, int pageSize,
 					IUserSort sortField, boolean ascending) throws SQLException {
 				
-				return new UserDao().listUsers(((User) authorizedUser).getBranchId(), offset, pageSize, sortField, ascending);
+				return new UserDao().listUsers(((User) authorizedUser).branchId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
 			public void insert(IUser authorizedUser, IUser newMember) throws SQLException {
 				User newUser = (User) newMember;
 				newUser.setLogin();
-				new UserDao().createUser(newUser.getBranchId(), newUser);
+				new UserDao().createUser(newUser.branchId, newUser);
 			}
 
 			@Override
@@ -99,7 +100,7 @@ public class PartnerManager implements IPartnerManager {
 
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new UserDao().count(((User) authorizedUser).getBranchId());
+				return new UserDao().count(((User) authorizedUser).branchId);
 			}
 		};
 		
@@ -135,7 +136,7 @@ public class PartnerManager implements IPartnerManager {
 	
 	@Override
 	public IUser createPrimaryUser(String login, String password) throws SQLException {
-		User u = new User(login, /*login,*/ SmartpadCommon.md5(password));
+		User u = new User(login, login, SmartpadCommon.md5(password));
 		((RecordInfo) u.getRecordInfo()).setCreateBy(login);
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
@@ -156,15 +157,15 @@ public class PartnerManager implements IPartnerManager {
 		if (password == null || login == null) {
 			return null;
 		}
-		String[] branchId = new String[1];
-		User u = (User) new UserDao().loadUser(login, branchId);
+		//String[] branchId = new String[1];
+		User u = (User) new UserDao().loadUser(login/*, branchId*/);
 		if (u == null) {
 			return null;
 		}
 		if (!SmartpadCommon.md5(password).equals(u.getPasshash())) {
 			return null;
 		}
-		u.loadBranch(branchId[0]);
+		u.loadBranch(/*branchId[0]*/);
 		return u;
 	}
 

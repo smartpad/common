@@ -116,11 +116,11 @@ public class UserDao {
 	}
 	
 	private static User populateUser(ResultSet rs) throws SQLException {
-		User user = new User(rs.getString("login"), /*rs.getString("branch_id"),*/ rs.getString("passhash"));
+		User user = new User(rs.getString("login"), rs.getString("branch_id"), rs.getString("passhash"));
 		return user;
 	}
 
-	public IUser loadUser(String login, String[] branchId) throws SQLException {
+	public IUser loadUser(String login/*, String[] branchId*/) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -135,7 +135,7 @@ public class UserDao {
 				return null;
 			}
 			IUser user = populateUser(rs);
-			branchId[0] = rs.getString("branch_id");
+			//branchId[0] = rs.getString("branch_id");
 			return user;
 		} finally {
 			if (rs != null) {

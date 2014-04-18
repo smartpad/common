@@ -23,19 +23,25 @@ public class User implements IUser {
 	
 	private String passhash;
 
-	public String branchId;
+	public final String branchId;
 	
 	private Operation branch;
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
-	private final CachedPagingList<IOperation, IOperationSort> storePagingList;
+	private CachedPagingList<IOperation, IOperationSort> storePagingList;
 
-	public User(String login, /*String branchId,*/ String passhash) {
+	public User(String login, String branchId, String passhash) {
 		super();
 		this.login = login;
-		//this.branchId = branchId;
+		this.branchId = branchId;
 		this.passhash = passhash;
+		//this.storePagingList = createStorePagingList(branchId, branchSyscatId, branchGps);
+	}
+	
+	public static CachedPagingList<IOperation, IOperationSort> createStorePagingList(
+			final String branchId, final String branchSyscatId, final GPSInfo branchGps) {
+		
 		@SuppressWarnings("unchecked")
 		final Comparator<IOperation>[] storeComparators = new Comparator[IOperationSort.values().length];
 		storeComparators[IOperationSort.creation.ordinal()] = new Comparator<IOperation>() {
@@ -60,11 +66,8 @@ public class User implements IUser {
 
 			@Override
 			public IOperation newEntryInstance(IUser authorizedUser) {
-				Operation op = new Operation(null, User.this.branch.getBranchId(), 
-						((Catalog) User.this.branch.getRootCatalog()).getSystemCatalogId(),
-						branch.gps.getLongitude(),
-						branch.gps.getLatitude(),
-						GPSInfo.INHERIT_BRANCH, false);
+				Operation op = new Operation(null, branchId, branchSyscatId,
+						branchGps.getLongitude(), branchGps.getLatitude(), GPSInfo.INHERIT_BRANCH, false);
 				//op.gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);
 				return op;
 			}
@@ -78,7 +81,7 @@ public class User implements IUser {
 			public LinkedList<IOperation> load(IUser authorizedUser, 
 					int offset, int pageSize, IOperationSort sortField, boolean ascending) throws SQLException {
 				
-				return new OperationDao().loadStores(User.this.branchId, offset, pageSize, sortField, ascending);
+				return new OperationDao().loadStores(branchId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -87,9 +90,9 @@ public class User implements IUser {
 				if (((Catalog) op.getRootCatalog()).getSystemCatalogId() == null) {
 					throw new RuntimeException("A system catalog must be assigned to a store");
 				}
-				String newId = SmartpadCommon.md5(User.this.branch.getBranchId() +  op.getName());
+				String newId = SmartpadCommon.md5(branchId +  op.getName());
 				op.setId(newId);
-				new OperationDao().createOperation(newId, User.this.branch.getBranchId(), op);
+				new OperationDao().createOperation(newId, branchId, op);
 			}
 
 			@Override
@@ -103,7 +106,7 @@ public class User implements IUser {
 				if (gpsModified) {
 					new CatalogDao().updateStoreGps(op.getId(), op.gps.getLongitude(), op.gps.getLatitude());
 					new CatalogItemDao().updateStoreGps(op, op.gps.getLongitude(), op.gps.getLatitude());
-					new PromotionDao().updateStoreGps(op.getId(), op.gps.getLongitude(), branch.gps.getLatitude());
+					new PromotionDao().updateStoreGps(op.getId(), op.gps.getLongitude(), branchGps.getLatitude());
 				}
 			}
 
@@ -116,10 +119,10 @@ public class User implements IUser {
 
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new OperationDao().countStores(User.this.branch.getBranchId());
+				return new OperationDao().countStores(branchId);
 			}
 		};
-		this.storePagingList = new CachedPagingList<IOperation, IOperationSort>(storeMate, storeComparators, IOperationSort.creation, new IOperation[0]);
+		return new CachedPagingList<IOperation, IOperationSort>(storeMate, storeComparators, IOperationSort.creation, new IOperation[0]);
 	}
 	
 	@Override
@@ -189,21 +192,23 @@ public class User implements IUser {
 		}
 	}
 	
-	void loadBranch(String branchId) throws SQLException {
-		/*if (branch != null) {
-			return branch;
-		}*/
+	void loadBranch(/*String branchId*/) throws SQLException {
 		branch = (Operation) new OperationDao().loadBranch(branchId);
 		if (branch == null) {
 			branch = new Operation(branchId, branchId, null, 0, 0, null, true);
 		}
 		//((Catalog) branch.getRootCatalog()).gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);
-		this.branchId = branch.getId();
+		//this.branchId = branch.getId();
+		
+		String syscatId = ((Catalog) branch.getRootCatalog()).getSystemCatalogId();
+		if (syscatId != null) {
+			this.storePagingList = createStorePagingList(branchId, syscatId, branch.gps);
+		}
 	}
 	
 	void setBranch(Operation branch) {
 		this.branch = branch;
-		branchId = branch.getId();
+		//branchId = branch.getId();
 	}
 	
 	@Override
@@ -211,9 +216,9 @@ public class User implements IUser {
 		return this.branch;
 	}
 	
-	String getBranchId() {
+	/*String getBranchId() {
 		return this.branch.getBranchId();
-	}
+	}*/
 
 	@Override
 	public IPagingList<IOperation, IOperationSort> getStorePagingList() throws SQLException {
