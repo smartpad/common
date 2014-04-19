@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.drilling;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -74,6 +75,10 @@ class DrillResult {
 		}
 	}
 	
+	void add(ActionLoad actionLoad) throws SQLException {
+		allSections.add(new DrillSectionSimple(actionLoad));
+	}
+	
 	void add(String sectionType, Object[] ja, int expectedSize, ActionLoad actionLoad) {
 		allSections.add(new DrillSectionSimple(sectionType, ja, expectedSize, actionLoad));
 	}
@@ -81,6 +86,11 @@ class DrillResult {
 	void add(String sectionType, DrillSectionSimple section1, DrillSectionSimple section2) {
 		
 		allSections.add(new DrillSectionTwin(sectionType, section1, section2));
+	}
+	
+	void add(String sectionType, ActionLoad load1, ActionLoad load2) throws SQLException {
+		allSections.add(new DrillSectionTwin(sectionType, 
+				new DrillSectionSimple(load1), new DrillSectionSimple(load2)));
 	}
 	
 	public void writeJson(JsonObject resultJson) {
@@ -129,6 +139,13 @@ class DrillSectionSimple implements DrillSection {
 		this.expectedSize = expectedSize;
 		this.actionLoad = load;
 		System.out.println("next load: " + load.generateNextLoadUrl());
+	}
+	
+	DrillSectionSimple(ActionLoad load) throws SQLException {
+		this.sectionType = load.targetType;
+		this.ja = load.executeInitial();
+		this.expectedSize = load.initialDrillSize;
+		this.actionLoad = load;
 	}
 	
 	@Override
