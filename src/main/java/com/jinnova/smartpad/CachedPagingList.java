@@ -148,6 +148,17 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		}
 		return newPage;
 	}
+	
+	public CachedPage<T> loadFromOffset(int offset) throws SQLException {
+		
+		if (offset < 0) {
+			//return null;
+			return new CachedPage<>(-1, 1, -1, offset, this.pageSize, new LinkedList<T>(), array);
+		}
+		
+		LinkedList<T> members = memberMate.load(PartnerManager.instance.systemUser, offset, pageSize, sortField, ascending);
+		return new CachedPage<>(-1, 1, -1, offset, this.pageSize, members, array);
+	}
 
 	@Override
 	public void put(IUser authorizedUser, T newMember) throws SQLException {

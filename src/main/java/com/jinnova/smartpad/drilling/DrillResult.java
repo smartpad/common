@@ -79,15 +79,6 @@ class DrillResult {
 		allSections.add(new DrillSectionSimple(actionLoad));
 	}
 	
-	void add(String sectionType, Object[] ja, int expectedSize, ActionLoad actionLoad) {
-		allSections.add(new DrillSectionSimple(sectionType, ja, expectedSize, actionLoad));
-	}
-	
-	void add(String sectionType, DrillSectionSimple section1, DrillSectionSimple section2) {
-		
-		allSections.add(new DrillSectionTwin(sectionType, section1, section2));
-	}
-	
 	void add(String sectionType, ActionLoad load1, ActionLoad load2) throws SQLException {
 		allSections.add(new DrillSectionTwin(sectionType, 
 				new DrillSectionSimple(load1), new DrillSectionSimple(load2)));
@@ -143,8 +134,8 @@ class DrillSectionSimple implements DrillSection {
 	
 	DrillSectionSimple(ActionLoad load) throws SQLException {
 		this.sectionType = load.targetType;
-		this.ja = load.executeInitial();
-		this.expectedSize = load.initialDrillSize;
+		this.ja = load.loadFirstEntries();
+		this.expectedSize = load.getInitialDrillSize();
 		this.actionLoad = load;
 	}
 	
@@ -167,7 +158,7 @@ class DrillSectionSimple implements DrillSection {
 		json.addProperty(IDetailManager.FIELD_TYPE, sectionType);
 		json.add(IDetailManager.FIELD_ARRAY, array);
 		if (ja.length >= expectedSize && actionLoad != null) {
-			actionLoad.offset = actualCount;
+			actionLoad.setOffset(actualCount);
 			json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, actionLoad.generateNextLoadUrl());
 		}
 		return json;
@@ -190,7 +181,7 @@ class DrillSectionSimple implements DrillSection {
 			jsonList.add(((Feed) ja[i]).generateFeedJson());
 			copied = true;
 		}
-		actionLoad.offset = actualCount;
+		actionLoad.setOffset(actualCount);
 		return copied;
 	}
 }

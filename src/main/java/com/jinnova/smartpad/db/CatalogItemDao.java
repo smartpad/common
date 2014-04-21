@@ -62,7 +62,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public ICatalogItem loadCatalogItem(String catItemId, ICatalogSpec spec) throws SQLException {
+	public CatalogItem loadCatalogItem(String catItemId, ICatalogSpec spec) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
