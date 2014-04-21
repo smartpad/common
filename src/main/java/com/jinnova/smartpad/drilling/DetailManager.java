@@ -31,14 +31,14 @@ public class DetailManager implements IDetailManager {
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
 						new ALStoresBelongToBranch(branchId, null, 10, 8, 5), new ALBranchesBelongToSyscat(syscatId, branchId, 10, 8, 3));
 				
-				//5 active promotions from this branch in one compound 
-				dr.add(new ALPromotionsBelongToBranch(branchId, 10, 5, 5)); //TODO multiple branches
+				//5 active promotions by syscat, this branch first 
+				dr.add(new ALPromotionsBelongToSyscat(syscatId, branchId, 10, 5, 5));
 				
 				//10 sub categories of this branch's root category in one compound
 				dr.add(new ALCatalogsBelongToCatalog(branchId, null, 10, 10, 10));
 				
 				//catelog items from this branch's root category
-				dr.add(new ALCatItemBelongToCatalog(branchId, 20, 20, 20));
+				dr.add(new ALCatItemBelongToCatalog(branchId, syscatId, 20, 20, 20));
 				return dr;
 			}
 		};
@@ -56,7 +56,7 @@ public class DetailManager implements IDetailManager {
 						new ALBranchesBelongToSyscat(targetStore.getSyscatId(), targetStore.getBranchId(), 10, 8, 3));
 				
 				//Some active promotions from this branch in one compound
-				dr.add(new ALPromotionsBelongToBranch(targetStore.getBranchId(), 10, 10, 10));
+				dr.add(new ALPromotionsBelongToSyscat(targetStore.getSyscatId(), targetStore.getBranchId(), 10, 10, 10));
 				return dr;
 			}
 			
@@ -74,10 +74,10 @@ public class DetailManager implements IDetailManager {
 						new ALCatalogsBelongToCatalog(cat.getParentCatalogId(), targetId, 10, 8, 3));
 				
 				//5 active promotions from this branch in one compound
-				dr.add(new ALPromotionsBelongToBranch(cat.branchId, 10, 5, 5));
+				dr.add(new ALPromotionsBelongToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 5, 5));
 				
 				//5 feature items from this catalog
-				dr.add(new ALCatItemBelongToCatalog(targetId, 10, 5, 5));
+				dr.add(new ALCatItemBelongToCatalog(targetId, cat.getSystemCatalogId(), 10, 5, 5));
 				
 				//5 other stores, 3 similar branches
 				//ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);

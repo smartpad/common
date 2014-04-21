@@ -129,7 +129,6 @@ class DrillSectionSimple implements DrillSection {
 		this.ja = ja;
 		this.expectedSize = expectedSize;
 		this.actionLoad = load;
-		System.out.println("next load: " + load.generateNextLoadUrl());
 	}
 	
 	DrillSectionSimple(ActionLoad load) throws SQLException {
@@ -161,6 +160,7 @@ class DrillSectionSimple implements DrillSection {
 			actionLoad.setOffset(actualCount);
 			json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, actionLoad.generateNextLoadUrl());
 		}
+		System.out.println("next load: " + actionLoad.generateNextLoadUrl());
 		return json;
 	}
 	

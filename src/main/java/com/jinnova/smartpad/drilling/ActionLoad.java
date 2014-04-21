@@ -49,7 +49,7 @@ abstract class ActionLoad {
 	public static void initialize() {
 		actionClasses = new HashMap<String, Class<? extends ActionLoad>>();
 		register(new ALBranchesBelongToSyscat());
-		register(new ALPromotionsBelongToBranch());
+		register(new ALPromotionsBelongToSyscat());
 		register(new ALStoresBelongToBranch());
 	}
 	
@@ -212,40 +212,43 @@ class ALCatalogsBelongToCatalog extends ActionLoad {
 
 class ALCatItemBelongToCatalog extends ActionLoad {
 	
+	private String syscatId;
+	
 	ALCatItemBelongToCatalog() {
 		super(TYPENAME_CAT, TYPENAME_CATITEM, REL_BELONG);
 	}
 
-	ALCatItemBelongToCatalog(String catId, int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALCatItemBelongToCatalog(String catId, String syscatId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(catId, null, pageSize, initialLoadSize, initialDrillSize);
+		this.syscatId = syscatId;
 	}
 
 	@Override
 	Object[] load(int offset, int size) throws SQLException {
-		CachedPagingList<ICatalogItem, ICatalogItemSort> paging = Catalog.createCatalogItemPagingList(null, null, anchorId, null, null);
+		CachedPagingList<ICatalogItem, ICatalogItemSort> paging = Catalog.createCatalogItemPagingList(null, null, anchorId, syscatId, null);
 		paging.setPageSize(size);
 		return paging.loadFromOffset(offset).getPageEntries();
 	}
 	
 	@Override
 	Object[] loadFirstEntries(int size) throws SQLException {
-		CachedPagingList<ICatalogItem, ICatalogItemSort> paging = Catalog.createCatalogItemPagingList(null, null, anchorId, null, null);
+		CachedPagingList<ICatalogItem, ICatalogItemSort> paging = Catalog.createCatalogItemPagingList(null, null, anchorId, syscatId, null);
 		paging.setPageSize(size);
 		return paging.loadFromOffset(0).getPageEntries();
 	}
 	
 }
 
-class ALPromotionsBelongToBranch extends ActionLoad {
+class ALPromotionsBelongToSyscat extends ActionLoad {
 	
-	ALPromotionsBelongToBranch() {
+	ALPromotionsBelongToSyscat() {
 		super(TYPENAME_BRANCH, TYPENAME_PROMO, REL_BELONG);
 	}
 
-	ALPromotionsBelongToBranch(String branchId, int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALPromotionsBelongToSyscat(String syscatId, String preferedBranchId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
-		setParams(branchId, null, pageSize, initialLoadSize, initialDrillSize);
+		setParams(syscatId, null, pageSize, initialLoadSize, initialDrillSize);
 	}
 
 	@Override
