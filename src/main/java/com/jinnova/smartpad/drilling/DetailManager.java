@@ -20,6 +20,16 @@ public class DetailManager implements IDetailManager {
 	private static DetailDriller[] drillers = new DetailDriller[TYPE_COUNT];
 	
 	public static void initialize() {
+		drillers[TYPE_NO] = new DetailDriller() {
+			
+			@Override
+			public DrillResult drill(String branchId, String gpsZone/*, int page, int size*/) throws SQLException {
+				
+				DrillResult dr = new DrillResult();
+				dr.add(new ALBranchesBelongToSyscat("foods", null, 10, 10, 10));
+				return dr;
+			}
+		};
 		drillers[TYPE_BRANCH] = new DetailDriller() {
 			
 			@Override
@@ -156,7 +166,10 @@ public class DetailManager implements IDetailManager {
 	}
 	
 	private static int typeNameToNumber(String name) {
-		if (TYPENAME_BRANCH.equals(name)) {
+		
+		if (TYPENAME_NO == name) {
+			return TYPE_NO;
+		} else if (TYPENAME_BRANCH.equals(name)) {
 			return TYPE_BRANCH;
 		} else if (TYPENAME_STORE.equals(name)) {
 			return TYPE_STORE;
@@ -201,23 +214,25 @@ public class DetailManager implements IDetailManager {
 			String branchId, String storeId, String catId, String syscatId, String excludeId,
 			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
 		
-		Object[] ja = ActionLoad.loadMore(targetType, anchorType, anchorId, relation, branchId, storeId, catId, syscatId, excludeId, gpsLon, gpsLat, offset, size);
+		//Object[] ja
+		ActionLoad action = ActionLoad.loadMore(targetType, anchorType, anchorId, relation, branchId, storeId, catId, syscatId, excludeId, gpsLon, gpsLat, offset, size);
 
-		if (ja == null || ja.length == 0) {
+		/*if (ja == null || ja.length == 0) {
 			return null;
 		}
 		if (ja.length == 1) {
 			return ((Feed) ja[0]).generateFeedJson().toString();
-		}
+		}*/
 		
+		Object[] data = action.load();
 		JsonArray array = new JsonArray();
-		for (int i = 0; i < ja.length; i++) {
-			array.add(((Feed) ja[i]).generateFeedJson());
+		for (int i = 0; i < data.length; i++) {
+			array.add(((Feed) data[i]).generateFeedJson());
 		}
 		
 		JsonObject json = new JsonObject();
 		json.add(IDetailManager.FIELD_ARRAY, array);
-		//json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, actionLoad.generateNextLoadUrl());
+		json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, action.generateNextLoadUrl());
 		//System.out.println("next load: " + actionLoad.generateNextLoadUrl());
 		return json.toString();
 	}

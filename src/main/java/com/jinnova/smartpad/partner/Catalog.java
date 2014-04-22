@@ -109,8 +109,8 @@ public class Catalog implements ICatalog, Feed {
 				
 				String newId;
 				if (subCat.catalogSpec == null) {
-					//newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
-					newId = catalogId + "_1";
+					newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
+					//newId = catalogId + "_1";
 				} else {
 					newId = subCat.catalogSpec.getSpecId();
 					if (newId.contains(" ")) {
@@ -299,6 +299,7 @@ public class Catalog implements ICatalog, Feed {
 	@Override
 	public void setSystemCatalogId(String systemCatalogId) {
 		this.systemCatalogId = systemCatalogId;
+		createPagingLists();
 	}
 	
 	public String getParentCatalogId() {

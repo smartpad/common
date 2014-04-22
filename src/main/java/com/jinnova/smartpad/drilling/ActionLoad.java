@@ -73,7 +73,7 @@ public abstract class ActionLoad {
 		actionClasses.put(key, load.getClass());
 	}
 	
-	static Object[] loadMore(String targetType, String anchorType, String anchorId, String relation,
+	static ActionLoad loadMore(String targetType, String anchorType, String anchorId, String relation,
 			String branchId, String storeId, String catId, String syscatId, String excludeId,
 			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
 		
@@ -84,7 +84,7 @@ public abstract class ActionLoad {
 			load.excludeId = excludeId;
 			load.offset = offset;
 			load.pageSize = size;
-			return load.load();
+			return load;
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}

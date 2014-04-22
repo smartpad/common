@@ -46,7 +46,8 @@ public class Operation implements IOperation, Feed {
 	
 	//static final String CATALOG_ID_OPERROOT = "OPER_ROOT";
 	//private final Catalog rootCatalog = new Catalog(this.branchId, this.branchId, CATALOG_ID_OPERROOT);
-	private final Catalog rootCatalog;
+	private String systemCatalogId;
+	private Catalog rootCatalog;
 	
 	//private String systemCatalogId;
 	
@@ -98,7 +99,9 @@ public class Operation implements IOperation, Feed {
 		} else {
 			rootCatInherit = GPSInfo.INHERIT_STORE;
 		}
-		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, null, systemCatalogId);
+		
+		this.systemCatalogId = systemCatalogId;
+		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, this.operationId, systemCatalogId);
 		this.rootCatalog.gps.inherit(this.gps, rootCatInherit);
 		/*this.rootCatalog.gps.setLongitude(gpsLon);
 		this.rootCatalog.gps.setLatitude(gpsLat);
@@ -260,6 +263,8 @@ public class Operation implements IOperation, Feed {
 	
 	public void setId(String operationId) {
 		this.operationId = operationId;
+		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, this.operationId, this.systemCatalogId);
+		createMemberPagingList();
 	}
 
 	@Override
