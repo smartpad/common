@@ -16,7 +16,7 @@ import com.jinnova.smartpad.partner.IPromotion;
 import com.jinnova.smartpad.partner.IPromotionSort;
 import com.jinnova.smartpad.partner.Operation;
 
-abstract class ActionLoad {
+public abstract class ActionLoad {
 	
 	static final String REL_SIMILAR = "sim";
 	
@@ -73,8 +73,9 @@ abstract class ActionLoad {
 		actionClasses.put(key, load.getClass());
 	}
 	
-	public static Object[] loadMore(String anchorType, String targetType, String relation,
-			String anchorId, String excludeId, int offset, int pageSize) throws SQLException {
+	static Object[] loadMore(String targetType, String anchorType, String anchorId, String relation,
+			String branchId, String storeId, String catId, String syscatId, String excludeId,
+			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
 		
 		Class<? extends ActionLoad> c = actionClasses.get(anchorType + targetType + relation);
 		try {
@@ -82,7 +83,7 @@ abstract class ActionLoad {
 			load.anchorId = anchorId;
 			load.excludeId = excludeId;
 			load.offset = offset;
-			load.pageSize = pageSize;
+			load.pageSize = size;
 			return load.load();
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RuntimeException(e);
@@ -124,8 +125,8 @@ abstract class ActionLoad {
 		if (!more) {
 			return null;
 		}
-		StringBuffer buffer = new StringBuffer(targetType + "/" + relation + "?anchorType=" + anchorType + 
-				"&anchorId=" + anchorId + "&offset=" + offset + "&size="  + pageSize);
+		StringBuffer buffer = new StringBuffer(targetType + "/" + relation + "/" + anchorType + 
+				"/" + anchorId + "?offset=" + offset + "&size="  + pageSize);
 		if (branchId != null) {
 			buffer.append("&branchId=" + branchId);
 		}
@@ -138,6 +139,9 @@ abstract class ActionLoad {
 		if (syscatId != null) {
 			buffer.append("&syscatId=" + syscatId);
 		}
+		if (excludeId != null) {
+			buffer.append("&excludeId=" + excludeId);
+		}
 		return buffer.toString();
 	}
 	
@@ -147,7 +151,7 @@ abstract class ActionLoad {
 		return loadFirstEntries(initialLoadSize);
 	}
 	
-	abstract Object[] loadFirstEntries(int size) throws SQLException;
+	abstract Object[] loadFirstEntries(int initialLoadSize) throws SQLException;
 	
 	final Object[] load() throws SQLException {
 		Object[] result = load(offset, pageSize);

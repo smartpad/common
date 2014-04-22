@@ -18,6 +18,8 @@ class DrillResult {
 		String sectionType;
 		DrillSectionSimple section1, section2;
 		
+		DrillSectionSimple flatenSection;
+		
 		DrillSectionTwin(String sectionType, DrillSectionSimple section1, DrillSectionSimple section2) {
 			this.sectionType = sectionType;
 			this.section1 = section1;
@@ -30,10 +32,12 @@ class DrillResult {
 			//flatten if needed
 			if (section1.isEmpty()) {
 				section2.expectedSize = section2.ja.length;
+				flatenSection = section2;
 				return section2.copyTo(jsonList);
 			}
 			if (section2.isEmpty()) {
 				section1.expectedSize = section1.ja.length;
+				flatenSection = section1;
 				return section1.copyTo(jsonList);
 			}
 			
@@ -45,7 +49,14 @@ class DrillResult {
 			}
 			
 			boolean copied = section1.copyTo(jsonList);
-			copied = section2.copyTo(jsonList);
+			if (copied) {
+				flatenSection = section1;
+			}
+			if (section2.copyTo(jsonList)) {
+				flatenSection = section2;
+				copied = true;
+			}
+			
 			return copied;
 			
 		}
@@ -92,7 +103,13 @@ class DrillResult {
 			DrillSection oneSection = allSections.get(i);
 			if (!flatten) {
 				flatten = oneSection.copyTo(jsonList);
-				resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, ((DrillSectionSimple) oneSection).actionLoad.generateNextLoadUrl());
+				if (oneSection instanceof DrillSectionSimple) {
+					resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, 
+							((DrillSectionSimple) oneSection).actionLoad.generateNextLoadUrl());
+				} else {
+					resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, 
+							((DrillSectionTwin) oneSection).flatenSection.actionLoad.generateNextLoadUrl());
+				}
 			} else {
 				JsonObject oneJson = oneSection.getJson();
 				if (oneJson != null) {

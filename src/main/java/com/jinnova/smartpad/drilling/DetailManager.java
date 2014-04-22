@@ -2,7 +2,9 @@ package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.db.CacheDao;
 import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.CatalogItemDao;
@@ -152,31 +154,42 @@ public class DetailManager implements IDetailManager {
 			}
 		};
 	}
+	
+	private static int typeNameToNumber(String name) {
+		if (TYPENAME_BRANCH.equals(name)) {
+			return TYPE_BRANCH;
+		} else if (TYPENAME_STORE.equals(name)) {
+			return TYPE_STORE;
+		} else if (TYPENAME_CAT.equals(name)) {
+			return TYPE_CAT;
+		} else if (TYPENAME_CATITEM.equals(name)) {
+			return TYPE_CATITEM;
+		} else if (TYPENAME_PROMO.equals(name)) {
+			return TYPE_PROMO;
+		} else {
+			throw new RuntimeException();
+		}
+	}
     
 	@Override
-    public String drill(int targetType, String targetId, String gpsLon, String gpsLat/*, int page, int size*/) throws SQLException {
+    public String drill(String targetType, String targetId, String gpsLon, String gpsLat/*, int page, int size*/) throws SQLException {
     	
+		int targetTypeNumber = typeNameToNumber(targetType);
 		String gpsZone = findGpsZone(gpsLon, gpsLat);
-		String cached = CacheDao.query(targetType, targetId, gpsZone/*, page*/);
+		String cached = CacheDao.query(targetTypeNumber, targetId, gpsZone/*, page*/);
     	if (cached != null) {
     		return cached;
     	}
     	
-    	DrillResult dr = drillers[targetType].drill(targetId, gpsZone/*, page, size*/);
+    	DrillResult dr = drillers[targetTypeNumber].drill(targetId, gpsZone/*, page, size*/);
     	JsonObject json = new JsonObject();
     	dr.writeJson(json);
     	json.addProperty(FIELD_VERSION, "a");
     	//json.addProperty("page", page);
     	//json.addProperty("size", size);
     	cached = json.toString();
-    	CacheDao.put(cached, targetType, targetId, gpsZone/*, page*/);
+    	CacheDao.put(cached, targetTypeNumber, targetId, gpsZone/*, page*/);
     	return cached;
-    }
-    
-    public String getMore(String anchorType, String targetType, String relation, String anchorId,
-    		String excludeId, String gpsLon, String gpsLat, int offset, int pageSize) throws SQLException {
-
-    	return ActionLoad.loadMore(anchorType, targetType, relation, anchorId, excludeId, offset, pageSize).toString();
     }
 	
 	private String findGpsZone(String gpsLon, String gpsLat) {
@@ -184,10 +197,28 @@ public class DetailManager implements IDetailManager {
 	}
 
 	@Override
-	public String more(String targetType, String anchorType, String anchorId,
-			String relation, String gpsLon, String gpsLat, int offsete, int size)
-			throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public String more(String targetType, String anchorType, String anchorId, String relation,
+			String branchId, String storeId, String catId, String syscatId, String excludeId,
+			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
+		
+		Object[] ja = ActionLoad.loadMore(targetType, anchorType, anchorId, relation, branchId, storeId, catId, syscatId, excludeId, gpsLon, gpsLat, offset, size);
+
+		if (ja == null || ja.length == 0) {
+			return null;
+		}
+		if (ja.length == 1) {
+			return ((Feed) ja[0]).generateFeedJson().toString();
+		}
+		
+		JsonArray array = new JsonArray();
+		for (int i = 0; i < ja.length; i++) {
+			array.add(((Feed) ja[i]).generateFeedJson());
+		}
+		
+		JsonObject json = new JsonObject();
+		json.add(IDetailManager.FIELD_ARRAY, array);
+		//json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, actionLoad.generateNextLoadUrl());
+		//System.out.println("next load: " + actionLoad.generateNextLoadUrl());
+		return json.toString();
 	}
 }

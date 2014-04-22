@@ -12,6 +12,7 @@ import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.db.UserDao;
+import com.jinnova.smartpad.drilling.ActionLoad;
 import com.jinnova.smartpad.drilling.DetailManager;
 
 public class PartnerManager implements IPartnerManager {
@@ -114,6 +115,7 @@ public class PartnerManager implements IPartnerManager {
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 		instance.systemCatMap.remove("SMARTPAD");
 		DetailManager.initialize();
+		ActionLoad.initialize();
 	}
 
 	public void clearDatabaseForTests() throws SQLException {
