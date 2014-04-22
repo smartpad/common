@@ -35,10 +35,10 @@ public class DetailManager implements IDetailManager {
 				dr.add(new ALPromotionsBelongToSyscat(syscatId, branchId, 10, 5, 5));
 				
 				//10 sub categories of this branch's root category in one compound
-				dr.add(new ALCatalogsBelongToCatalog(branchId, null, 10, 10, 10));
+				dr.add(new ALCatalogsBelongDirectlyToCatalog(branchId, null, 10, 10, 10));
 				
 				//catelog items from this branch's root category
-				dr.add(new ALCatItemBelongToCatalog(branchId, syscatId, 20, 20, 20));
+				dr.add(new ALCatItemBelongDirectlyToCatalog(branchId, syscatId, 20, 20, 20));
 				return dr;
 			}
 		};
@@ -70,14 +70,14 @@ public class DetailManager implements IDetailManager {
 				Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
 				DrillResult dr = new DrillResult();
 				dr.add(TYPENAME_COMPOUND, 
-						new ALCatalogsBelongToCatalog(targetId, null, 10, 8, 5), 
-						new ALCatalogsBelongToCatalog(cat.getParentCatalogId(), targetId, 10, 8, 3));
+						new ALCatalogsBelongDirectlyToCatalog(targetId, null, 10, 8, 5), 
+						new ALCatalogsBelongDirectlyToCatalog(cat.getParentCatalogId(), targetId, 10, 8, 3));
 				
 				//5 active promotions from this branch in one compound
 				dr.add(new ALPromotionsBelongToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 5, 5));
 				
 				//5 feature items from this catalog
-				dr.add(new ALCatItemBelongToCatalog(targetId, cat.getSystemCatalogId(), 10, 5, 5));
+				dr.add(new ALCatItemBelongDirectlyToCatalog(targetId, cat.getSystemCatalogId(), 10, 5, 5));
 				
 				//5 other stores, 3 similar branches
 				//ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);
@@ -97,7 +97,7 @@ public class DetailManager implements IDetailManager {
 				CatalogItem catItem = new CatalogItemDao().loadCatalogItem(targetId, null);
 				Catalog cat = new CatalogDao().loadCatalog(catItem.getCatalogId(), false);
 				DrillResult dr = new DrillResult();
-				dr.add(new ALCatalogsBelongToCatalog(cat.getParentCatalogId(), catItem.getCatalogId(), 10, 8, 5));
+				dr.add(new ALCatalogsBelongDirectlyToCatalog(cat.getParentCatalogId(), catItem.getCatalogId(), 10, 8, 5));
 				return dr;
 				/*Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
 				JsonArray ja = findSubCatalogs(targetId, null, 8);

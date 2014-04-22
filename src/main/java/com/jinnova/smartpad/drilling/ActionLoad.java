@@ -20,7 +20,9 @@ abstract class ActionLoad {
 	
 	static final String REL_SIMILAR = "sim";
 	
-	static final String REL_BELONG = "bel";
+	static final String REL_BELONG_DIRECTLY = "beld";
+	
+	static final String REL_BELONG_INHERIT = "beli";
 	
 	static final String REL_SIBLING = "sib";
 	
@@ -57,6 +59,8 @@ abstract class ActionLoad {
 	public static void initialize() {
 		actionClasses = new HashMap<String, Class<? extends ActionLoad>>();
 		register(new ALBranchesBelongToSyscat());
+		register(new ALCatalogsBelongDirectlyToCatalog());
+		register(new ALCatItemBelongDirectlyToCatalog());
 		register(new ALPromotionsBelongToSyscat());
 		register(new ALStoresBelongToBranch());
 	}
@@ -158,7 +162,7 @@ abstract class ActionLoad {
 class ALBranchesBelongToSyscat extends ActionLoad {
 	
 	ALBranchesBelongToSyscat() {
-		super(TYPENAME_SYSCAT, TYPENAME_BRANCH, REL_BELONG);
+		super(TYPENAME_SYSCAT, TYPENAME_BRANCH, REL_BELONG_DIRECTLY);
 	}
 
 	ALBranchesBelongToSyscat(String anchorSyscatId, String excludeBranchId,
@@ -182,7 +186,7 @@ class ALBranchesBelongToSyscat extends ActionLoad {
 class ALStoresBelongToBranch extends ActionLoad {
 	
 	ALStoresBelongToBranch() {
-		super(TYPENAME_BRANCH, TYPENAME_STORE, REL_BELONG);
+		super(TYPENAME_BRANCH, TYPENAME_STORE, REL_BELONG_DIRECTLY);
 	}
 
 	ALStoresBelongToBranch(String anchorBranchId, String excludeStoreId, int pageSize, int initialLoadSize, int initialDrillSize) {
@@ -202,13 +206,13 @@ class ALStoresBelongToBranch extends ActionLoad {
 	
 }
 
-class ALCatalogsBelongToCatalog extends ActionLoad {
+class ALCatalogsBelongDirectlyToCatalog extends ActionLoad {
 	
-	ALCatalogsBelongToCatalog() {
-		super(TYPENAME_CAT, TYPENAME_CAT, REL_BELONG);
+	ALCatalogsBelongDirectlyToCatalog() {
+		super(TYPENAME_CAT, TYPENAME_CAT, REL_BELONG_DIRECTLY);
 	}
 
-	ALCatalogsBelongToCatalog(String catId, String excludeCatId, int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALCatalogsBelongDirectlyToCatalog(String catId, String excludeCatId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(catId, excludeCatId, pageSize, initialLoadSize, initialDrillSize);
 	}
@@ -231,13 +235,13 @@ class ALCatalogsBelongToCatalog extends ActionLoad {
 	
 }
 
-class ALCatItemBelongToCatalog extends ActionLoad {
+class ALCatItemBelongDirectlyToCatalog extends ActionLoad {
 	
-	ALCatItemBelongToCatalog() {
-		super(TYPENAME_CAT, TYPENAME_CATITEM, REL_BELONG);
+	ALCatItemBelongDirectlyToCatalog() {
+		super(TYPENAME_CAT, TYPENAME_CATITEM, REL_BELONG_DIRECTLY);
 	}
 
-	ALCatItemBelongToCatalog(String catId, String syscatId, int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALCatItemBelongDirectlyToCatalog(String catId, String syscatId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(catId, null, pageSize, initialLoadSize, initialDrillSize);
 		this.syscatId = syscatId;
@@ -262,7 +266,7 @@ class ALCatItemBelongToCatalog extends ActionLoad {
 class ALPromotionsBelongToSyscat extends ActionLoad {
 	
 	ALPromotionsBelongToSyscat() {
-		super(TYPENAME_BRANCH, TYPENAME_PROMO, REL_BELONG);
+		super(TYPENAME_BRANCH, TYPENAME_PROMO, REL_BELONG_INHERIT);
 	}
 
 	ALPromotionsBelongToSyscat(String syscatId, String preferedBranchId, int pageSize, int initialLoadSize, int initialDrillSize) {
