@@ -21,7 +21,7 @@ public class DetailManager implements IDetailManager {
 		drillers[TYPE_BRANCH] = new DetailDriller() {
 			
 			@Override
-			public DrillResult drill(String branchId, String gpsZone, int page, int size) throws SQLException {
+			public DrillResult drill(String branchId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
 				DrillResult dr = new DrillResult();
 				OperationDao odao = new OperationDao();
@@ -45,7 +45,7 @@ public class DetailManager implements IDetailManager {
 		drillers[TYPE_STORE] = new DetailDriller() {
 
 			@Override
-			public DrillResult drill(String targetId, String gpsZone, int page, int size) throws SQLException {
+			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
 				DrillResult dr = new DrillResult();
 				Operation targetStore = new OperationDao().loadStore(targetId);
@@ -64,7 +64,7 @@ public class DetailManager implements IDetailManager {
 		drillers[TYPE_CAT] = new DetailDriller() {
 
 			@Override
-			public DrillResult drill(String targetId, String gpsZone, int page, int size) throws SQLException {
+			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
 				//5 sub cats, 3 sibling cats 
 				Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
@@ -92,7 +92,7 @@ public class DetailManager implements IDetailManager {
 		drillers[TYPE_CATITEM] = new DetailDriller() {
 			
 			@Override
-			public DrillResult drill(String targetId, String gpsZone, int page, int size) throws SQLException {
+			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 				//5 sibling cats, 3 similar branches 
 				CatalogItem catItem = new CatalogItemDao().loadCatalogItem(targetId, null);
 				Catalog cat = new CatalogDao().loadCatalog(catItem.getCatalogId(), false);
@@ -123,7 +123,7 @@ public class DetailManager implements IDetailManager {
 		drillers[TYPE_PROMO] = new DetailDriller() {
 			
 			@Override
-			public DrillResult drill(String targetId, String gpsZone, int page, int size) throws SQLException {
+			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 
 				
 				//At most 5 stores belong to this branch and 3 similar branches
@@ -154,22 +154,22 @@ public class DetailManager implements IDetailManager {
 	}
     
 	@Override
-    public String getDetail(int targetType, String targetId, String gpsLon, String gpsLat, int page, int size) throws SQLException {
+    public String drill(int targetType, String targetId, String gpsLon, String gpsLat/*, int page, int size*/) throws SQLException {
     	
 		String gpsZone = findGpsZone(gpsLon, gpsLat);
-		String cached = CacheDao.query(targetType, targetId, gpsZone, page);
+		String cached = CacheDao.query(targetType, targetId, gpsZone/*, page*/);
     	if (cached != null) {
     		return cached;
     	}
     	
-    	DrillResult dr = drillers[targetType].drill(targetId, gpsZone, page, size);
+    	DrillResult dr = drillers[targetType].drill(targetId, gpsZone/*, page, size*/);
     	JsonObject json = new JsonObject();
     	dr.writeJson(json);
     	json.addProperty(FIELD_VERSION, "a");
     	//json.addProperty("page", page);
     	//json.addProperty("size", size);
     	cached = json.toString();
-    	CacheDao.put(cached, targetType, targetId, gpsZone, page);
+    	CacheDao.put(cached, targetType, targetId, gpsZone/*, page*/);
     	return cached;
     }
     
@@ -180,6 +180,14 @@ public class DetailManager implements IDetailManager {
     }
 	
 	private String findGpsZone(String gpsLon, String gpsLat) {
+		return null;
+	}
+
+	@Override
+	public String more(String targetType, String anchorType, String anchorId,
+			String relation, String gpsLon, String gpsLat, int offsete, int size)
+			throws SQLException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

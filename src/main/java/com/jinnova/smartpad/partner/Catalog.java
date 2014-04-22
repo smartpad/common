@@ -109,7 +109,8 @@ public class Catalog implements ICatalog, Feed {
 				
 				String newId;
 				if (subCat.catalogSpec == null) {
-					newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
+					//newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
+					newId = catalogId + "_1";
 				} else {
 					newId = subCat.catalogSpec.getSpecId();
 					if (newId.contains(" ")) {

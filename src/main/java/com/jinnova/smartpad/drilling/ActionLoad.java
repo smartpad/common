@@ -24,6 +24,14 @@ abstract class ActionLoad {
 	
 	static final String REL_SIBLING = "sib";
 	
+	String branchId;
+	
+	String storeId;
+	
+	String catId;
+	
+	String syscatId;
+	
 	final String anchorType;
 
 	final String targetType;
@@ -112,8 +120,21 @@ abstract class ActionLoad {
 		if (!more) {
 			return null;
 		}
-		return targetType + "/" + relation + "?anchorType=" + anchorType + 
-				"&anchorId=" + anchorId + "&offset=" + offset + "&size="  + pageSize;
+		StringBuffer buffer = new StringBuffer(targetType + "/" + relation + "?anchorType=" + anchorType + 
+				"&anchorId=" + anchorId + "&offset=" + offset + "&size="  + pageSize);
+		if (branchId != null) {
+			buffer.append("&branchId=" + branchId);
+		}
+		if (storeId != null) {
+			buffer.append("&storeId=" + storeId);
+		}
+		if (catId != null) {
+			buffer.append("&catId=" + catId);
+		}
+		if (syscatId != null) {
+			buffer.append("&syscatId=" + syscatId);
+		}
+		return buffer.toString();
 	}
 	
 	abstract Object[] load(int offset, int size) throws SQLException;
@@ -211,8 +232,6 @@ class ALCatalogsBelongToCatalog extends ActionLoad {
 }
 
 class ALCatItemBelongToCatalog extends ActionLoad {
-	
-	private String syscatId;
 	
 	ALCatItemBelongToCatalog() {
 		super(TYPENAME_CAT, TYPENAME_CATITEM, REL_BELONG);

@@ -50,14 +50,14 @@ public class CacheDao {
 		}
     }*/
     
-    public static String query(int targetType, String targetId, String gpsZone, int page) throws SQLException {
+    public static String query(int targetType, String targetId, String gpsZone/*, int page*/) throws SQLException {
     	Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("select json from similars where target = ?");
-			ps.setString(1, /*versions.get(targetType) +*/ targetType + targetId + page);
+			ps.setString(1, /*versions.get(targetType) +*/ targetType + targetId /*+ page*/);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
@@ -77,7 +77,7 @@ public class CacheDao {
 		}
     }
     
-    public static void put(String json, int targetType, String targetId, String gpsZone, int page) throws SQLException {
+    public static void put(String json, int targetType, String targetId, String gpsZone/*, int page*/) throws SQLException {
     	
     }
 
