@@ -1,4 +1,4 @@
-CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8;
+--CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8;
 
 use smartpad;
 

@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
@@ -11,6 +13,7 @@ import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.OperationDao;
+import com.jinnova.smartpad.db.ScriptRunner;
 import com.jinnova.smartpad.db.UserDao;
 import com.jinnova.smartpad.drilling.ActionLoad;
 import com.jinnova.smartpad.drilling.DetailManager;
@@ -118,9 +121,9 @@ public class PartnerManager implements IPartnerManager {
 		ActionLoad.initialize();
 	}
 
-	public void clearDatabaseForTests() throws SQLException {
-		new UserDao().clearDatabaseForTests();
-		SystemCatalogGenrator.generate();
+	public void clearDatabaseForTests() throws SQLException, FileNotFoundException, IOException {
+		ScriptRunner.clearDatabaseForTests();
+		new SystemCatalogGenrator().generate();
 	}
 	
 	/*public Iterator<CatalogItem> storeItemIterator() {

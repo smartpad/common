@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.IUser;
@@ -13,19 +12,6 @@ import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.User;
 
 public class UserDao {
-
-	public void clearDatabaseForTests() throws SQLException {
-
-		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("delete from sp_users");
-		stmt.executeUpdate("delete from operations");
-		stmt.executeUpdate("delete from catalogs");
-		stmt.executeUpdate("delete from promos");
-		stmt.executeUpdate("drop table if exists cs_foods");
-		stmt.close();
-		conn.close();
-	}
 	
 	public void createUser(String branchId, User u) throws SQLException {
 		
