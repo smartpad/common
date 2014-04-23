@@ -33,7 +33,7 @@ CREATE TABLE `operations` (
   
   `gps_lon` float DEFAULT NULL,
   `gps_lat` float DEFAULT NULL,
-  `gps_inherit` varchar(8) default null,
+  `gps_inherit` varchar(8) NOT null,
   
   `schedule` varchar(1024) DEFAULT NULL,
   `address` varchar(1024) DEFAULT NULL,

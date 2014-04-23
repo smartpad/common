@@ -2,6 +2,8 @@ package com.jinnova.smartpad.partner;
 
 public class GPSInfo implements IGPSInfo {
 	
+	public static String INHERIT_PROVIDED = "provided";
+	
 	public static String INHERIT_BRANCH = "branch";
 	
 	public static String INHERIT_STORE = "store";
@@ -17,7 +19,7 @@ public class GPSInfo implements IGPSInfo {
 	void inherit(GPSInfo other, String inheritFrom) {
 		this.longitude = other.longitude;
 		this.latitude = other.latitude;
-		if (other.inheritFrom == null) {
+		if (/*other.inheritFrom == null*/INHERIT_PROVIDED.equals(other.inheritFrom)) {
 			this.inheritFrom = inheritFrom;
 		} else {
 			this.inheritFrom = other.inheritFrom;
@@ -32,7 +34,8 @@ public class GPSInfo implements IGPSInfo {
 	@Override
 	public void setLongitude(float longitude) {
 		this.longitude = longitude;
-		inheritFrom = null;
+		inheritFrom = INHERIT_PROVIDED;
+		//inheritFrom = null;
 		modified = true;
 	}
 
@@ -44,7 +47,8 @@ public class GPSInfo implements IGPSInfo {
 	@Override
 	public void setLatitude(float latitude) {
 		this.latitude = latitude;
-		inheritFrom = null;
+		inheritFrom = INHERIT_PROVIDED;
+		//inheritFrom = null;
 		modified = true;
 	}
 

@@ -213,7 +213,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			}
 			StringBuffer tableSql = new StringBuffer();
 			tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + 
-					" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL," +
+					" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL, " +
 					"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 			for (ICatalogField f : cat.getCatalogSpec().getAllFields()) {
 				tableSql.append(", ");

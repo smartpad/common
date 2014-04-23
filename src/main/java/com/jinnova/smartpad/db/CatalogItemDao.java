@@ -159,11 +159,12 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			//ICatalogSpec spec = item.catalog.getSystemCatalog().getCatalogSpec();
-			ps = conn.prepareStatement("insert into " + /*CS +*/ spec.getSpecId() + " set item_id=?, catalog_id=?, branch_id=?, store_id=?, " + 
+			ps = conn.prepareStatement("insert into " + /*CS +*/ spec.getSpecId() + " set item_id=?, catalog_id=?, syscat_id=?, branch_id=?, store_id=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + genSpecFields(spec));
 			int i = 1;
 			ps.setString(i++, itemId);
 			ps.setString(i++, item.getCatalogId());
+			ps.setString(i++, item.getSyscatId());
 			ps.setString(i++, item.branchId);
 			ps.setString(i++, item.storeId);
 			i = setSpecFields(spec, item, ps, i);

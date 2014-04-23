@@ -236,14 +236,21 @@ public class Catalog implements ICatalog, Feed {
 			@Override
 			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				new CatalogItemDao().update(item.getId(), syscat.getCatalogSpec(), item);
+				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				while (syscat != null) {
+					new CatalogItemDao().update(item.getId(), syscat.getCatalogSpec(), item);
+					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
+				}
 			}
 			
 			@Override
 			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
 				CatalogItem item = (CatalogItem) member;
-				new CatalogItemDao().delete(item.getId());
+				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				while (syscat != null) {
+					new CatalogItemDao().delete(item.getId());
+					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
+				}
 			}
 		};
 		

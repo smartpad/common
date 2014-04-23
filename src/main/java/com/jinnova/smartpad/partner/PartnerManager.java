@@ -148,7 +148,7 @@ public class PartnerManager implements IPartnerManager {
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
 		
-		Operation branch = new Operation(null, login, null, 0, 0, null, true);
+		Operation branch = new Operation(null, login, null, 0, 0, GPSInfo.INHERIT_BRANCH, true);
 		branch.getName().setName("");
 		branch.getRootCatalog().setSystemCatalogId("foods"); //TODO default place for new branch?
 		branch.getRecordInfo().setCreateBy(login);
