@@ -60,6 +60,7 @@ CREATE TABLE `catalogs` (
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) DEFAULT NULL,
+  `sub_count` int default 0,
   
   `gps_lon` float DEFAULT NULL,
   `gps_lat` float DEFAULT NULL,

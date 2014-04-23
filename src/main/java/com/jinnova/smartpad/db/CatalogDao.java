@@ -153,17 +153,37 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		return cat;
 	}
 
-	public void insert(String branchId, String storeId, String catalogId, String parentCatalogId, Catalog cat) throws SQLException {
+	public void insert(String branchId, String storeId, String catalogIdPrefix, String[] catalogIdGen, String parentCatalogId, Catalog cat) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
+		Statement stmtSubcount = null;
 		Statement stmt = null;
+		ResultSet rs = null;
+		boolean rollbackable = false;
+		boolean success = false;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			conn.setAutoCommit(false);
+
+			stmtSubcount = conn.createStatement();
+			String sql = "select sub_count from catalogs where catalog_id='" + parentCatalogId + "'";
+			System.out.println("SQL: " + sql);
+			rs = stmtSubcount.executeQuery(sql);
+			int subcount = 0;
+			if (rs.next()) {
+				subcount = rs.getInt("sub_count");
+			}
+			subcount++;
+			if (catalogIdGen[0] == null) {
+				catalogIdGen[0] = catalogIdPrefix + "_" + subcount;
+			}
+			
 			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, spec=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+			rollbackable = true;
 			int i = 1;
-			ps.setString(i++, catalogId);
+			ps.setString(i++, catalogIdGen[0]);
 			ps.setString(i++, parentCatalogId);
 			ps.setString(i++, branchId);
 			ps.setString(i++, storeId);
@@ -176,7 +196,14 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 			
+			//update subcount
+			sql = "update catalogs set sub_count=" + subcount + " where catalog_id='" + parentCatalogId + "'";
+			System.out.println("SQL: " + sql);
+			stmtSubcount.executeUpdate(sql);
+			
 			if (spec == null) {
+				conn.commit();
+				success = true;
 				return;
 			}
 			String tableName = cat.getCatalogSpec().getSpecId();
@@ -199,8 +226,19 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			System.out.println("SQL: " + tableSql.toString());
 			stmt = conn.createStatement();
 			stmt.executeUpdate(tableSql.toString());
+			conn.commit();
+			success = true;
 			
 		} finally {
+			if (rollbackable && !success) {
+				conn.rollback();
+			}
+			if (rs != null) {
+				rs.close();
+			}
+			if (stmtSubcount != null) {
+				stmtSubcount.close();
+			}
 			if (ps != null) {
 				ps.close();
 			}

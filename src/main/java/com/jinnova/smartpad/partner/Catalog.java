@@ -107,18 +107,21 @@ public class Catalog implements ICatalog, Feed {
 					throw new RuntimeException("This catalog must be linked to a system catalog");
 				}
 				
-				String newId;
+				String newIdPrefix;
+				String[] newIdGen = new String[1];
 				if (subCat.catalogSpec == null) {
-					newId = SmartpadCommon.md5(subCat.branchId + subCat.name.getName());
-					//newId = catalogId + "_1";
+					//newIdPrefix = SmartpadCommon.md5(catalogId + subCat.name.getName());
+					newIdPrefix = catalogId;
 				} else {
-					newId = subCat.catalogSpec.getSpecId();
-					if (newId.contains(" ")) {
+					//TODO proper syscat id
+					newIdPrefix = subCat.catalogSpec.getSpecId();
+					if (newIdPrefix.contains(" ")) {
 						throw new RuntimeException("CatalogSpec id can't contains special charaters");
 					}
+					newIdGen[0] = subCat.catalogSpec.getSpecId();
 				}
-				new CatalogDao().insert(subCat.branchId, subCat.storeId, newId, subCat.parentCatalogId, subCat);
-				subCat.catalogId = newId;
+				new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat);
+				subCat.catalogId = newIdGen[0];
 				subCat.createPagingLists();
 				
 				if (subCat.catalogSpec != null) {
