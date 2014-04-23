@@ -205,8 +205,7 @@ public class Catalog implements ICatalog, Feed {
 			
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				return new CatalogItemDao().countCatalogItems(catalogId, syscat.getCatalogSpec());
+				return new CatalogItemDao().countCatalogItems(catalogId, systemCatalogId);
 			}
 			
 			@Override
@@ -226,8 +225,11 @@ public class Catalog implements ICatalog, Feed {
 					throw new RuntimeException("CatalogItem's name unset");
 				}
 				String newId = SmartpadCommon.md5(branchId + catalogId + name);
-				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				new CatalogItemDao().insert(newId, syscat.getCatalogSpec(), item);
+				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				while (syscat != null) {
+					new CatalogItemDao().insert(newId, syscat.getCatalogSpec(), item);
+					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
+				}
 				item.setId(newId);
 			}
 			

@@ -115,7 +115,7 @@ public class PartnerManager implements IPartnerManager {
 	}
 	
 	public static void initialize() throws SQLException {
-		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
+		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad?useUnicode=true&characterEncoding=UTF-8");
 		instance = new PartnerManager();
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 		instance.systemCatMap.remove(SYSTEM_BRANCH_ID);

@@ -33,14 +33,14 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		this.spec = spec;
 	}*/
 
-	public int countCatalogItems(String catalogId, ICatalogSpec spec) throws SQLException {
+	public int countCatalogItems(String catalogId, String syscatId) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select count(*) from " + /*CS +*/ spec.getSpecId() + " where catalog_id = ?");
+			ps = conn.prepareStatement("select count(*) from " + /*CS +*/ syscatId + " where catalog_id = ?");
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();

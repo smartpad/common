@@ -11,7 +11,19 @@ class SystemCatalogGenrator {
 		//system catalog
 		systemUser = PartnerManager.instance.systemUser;
 		Catalog rootCat = PartnerManager.instance.getSystemRootCatalog();
-		createCat(rootCat, "elec", "Điện tử & Máy tính");
+		Catalog elec = createCat(rootCat, "elec", "Điện tử & Máy tính");
+		{
+			Catalog elecComp = createCat(elec, "comp", "Vi tính & viễn thông");
+			{
+				createCat(elecComp, "phone", "Điện thoại di động");
+				createCat(elecComp, "tablet", "Máy tính bảng");
+				createCat(elecComp, "laptop", "Máy tính xách tay");
+				createCat(elecComp, "desktop", "Máy tính để bàn");
+				createCat(elecComp, "item", "Thiết bị ngoại vi");
+			}
+			createCat(elec, "cam", "Máy ảnh & Máy quay phim");
+			createCat(elec, "av", "Âm thanh & Hình ảnh");
+		}
 		createCat(rootCat, "appliance", "Điện gia dụng");
 		createCat(rootCat, "office", "Máy văn phòng & Văn phòng phẩm");
 		
