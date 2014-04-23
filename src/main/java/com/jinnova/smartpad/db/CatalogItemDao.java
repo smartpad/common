@@ -23,7 +23,7 @@ import com.jinnova.smartpad.partner.User;
 
 public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	
-	static final String CS = "cs_";
+	//static final String CS = "cs_";
 	
 	private ICatalogSpec spec;
 	
@@ -40,7 +40,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		try {
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select count(*) from " + CS + spec.getSpecId() + " where catalog_id = ?");
+			ps = conn.prepareStatement("select count(*) from " + /*CS +*/ spec.getSpecId() + " where catalog_id = ?");
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -72,7 +72,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			syscatId = spec.getSpecId();
-			ps = conn.prepareStatement("select * from " + CS + syscatId + " where item_id = ?");
+			ps = conn.prepareStatement("select * from " + /*CS +*/ syscatId + " where item_id = ?");
 			ps.setString(1, catItemId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -117,7 +117,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			syscatId = spec.getSpecId();
-			ps = conn.prepareStatement("select * from " + CS + syscatId + " where catalog_id = ? " + orderLimitClause);
+			ps = conn.prepareStatement("select * from " + /*CS +*/ syscatId + " where catalog_id = ? " + orderLimitClause);
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -159,7 +159,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			//ICatalogSpec spec = item.catalog.getSystemCatalog().getCatalogSpec();
-			ps = conn.prepareStatement("insert into " + CS + spec.getSpecId() + " set item_id=?, catalog_id=?, branch_id=?, store_id=?, " + 
+			ps = conn.prepareStatement("insert into " + /*CS +*/ spec.getSpecId() + " set item_id=?, catalog_id=?, branch_id=?, store_id=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + genSpecFields(spec));
 			int i = 1;
 			ps.setString(i++, itemId);
@@ -208,7 +208,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		try {
 			//ICatalogSpec spec = item.catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update " + CS + spec.getSpecId() + " set " + DaoSupport.GPS_FIELDS +
+			ps = conn.prepareStatement("update " + /*CS +*/ spec.getSpecId() + " set " + DaoSupport.GPS_FIELDS +
 					DaoSupport.RECINFO_FIELDS + ", " + genSpecFields(spec) + " where item_id=?");
 			int i = 1;
 			i = setSpecFields(spec, item, ps, i);
@@ -247,7 +247,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	public DbIterator<CatalogItem> iterateCatalogItems(String catalogId, String syscatId, ICatalogSpec spec) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String sql = "select * from " + CS + syscatId + " where catalog_id = '" + catalogId + "'";
+		String sql = "select * from " + /*CS +*/ syscatId + " where catalog_id = '" + catalogId + "'";
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
 		this.spec = spec;
@@ -289,7 +289,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update " + CS + syscatId + " set gps_lon=?, gps_lat=? where gps_inherit='" + inherit + "' and " + targetField + "=?");
+			ps = conn.prepareStatement("update " + /*CS +*/ syscatId + " set gps_lon=?, gps_lat=? where gps_inherit='" + inherit + "' and " + targetField + "=?");
 			int i = 1;
 			ps.setFloat(i++, gpsLon);
 			ps.setFloat(i++, gpsLat);

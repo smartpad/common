@@ -20,6 +20,8 @@ import com.jinnova.smartpad.drilling.DetailManager;
 
 public class PartnerManager implements IPartnerManager {
 	
+	private static final String SYSTEM_BRANCH_ID = "z";
+	
 	public static PartnerManager instance;
 	
 	public final User systemUser;
@@ -34,7 +36,7 @@ public class PartnerManager implements IPartnerManager {
 	
 	private PartnerManager() throws SQLException {
 		
-		systemUser = new User("SMARTPAD", "SMARTPAD", null);
+		systemUser = new User(SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, null);
 		//systemUser.loadBranch("SMARTPAD");
 		systemUser.loadBranch();
 		
@@ -109,14 +111,14 @@ public class PartnerManager implements IPartnerManager {
 		};
 		
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
-		systemRootCatalog = new Catalog("SMARTPAD", "SMARTPAD", "SMARTPAD", null, null);
+		systemRootCatalog = new Catalog(SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, null, null);
 	}
 	
 	public static void initialize() throws SQLException {
 		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad");
 		instance = new PartnerManager();
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
-		instance.systemCatMap.remove("SMARTPAD");
+		instance.systemCatMap.remove(SYSTEM_BRANCH_ID);
 		DetailManager.initialize();
 		ActionLoad.initialize();
 	}

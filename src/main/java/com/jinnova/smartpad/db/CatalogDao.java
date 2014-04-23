@@ -167,23 +167,24 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			conn.setAutoCommit(false);
 
 			stmtSubcount = conn.createStatement();
-			String sql = "select sub_count from catalogs where catalog_id='" + parentCatalogId + "'";
+			String sql = "select max(partial_id) from catalogs where parent_id='" + parentCatalogId + "'";
 			System.out.println("SQL: " + sql);
 			rs = stmtSubcount.executeQuery(sql);
-			int subcount = 0;
+			int partialId = 1;
 			if (rs.next()) {
-				subcount = rs.getInt("sub_count");
+				partialId = rs.getInt(1);
 			}
-			subcount++;
+			partialId++;
 			if (catalogIdGen[0] == null) {
-				catalogIdGen[0] = catalogIdPrefix + "_" + subcount;
+				catalogIdGen[0] = catalogIdPrefix + "_" + partialId;
 			}
 			
-			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, spec=?, " + 
+			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, partial_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, spec=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			rollbackable = true;
 			int i = 1;
 			ps.setString(i++, catalogIdGen[0]);
+			ps.setInt(i++, partialId);
 			ps.setString(i++, parentCatalogId);
 			ps.setString(i++, branchId);
 			ps.setString(i++, storeId);
@@ -197,9 +198,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.executeUpdate();
 			
 			//update subcount
-			sql = "update catalogs set sub_count=" + subcount + " where catalog_id='" + parentCatalogId + "'";
+			/*sql = "update catalogs set sub_count=" + subcount + " where catalog_id='" + parentCatalogId + "'";
 			System.out.println("SQL: " + sql);
-			stmtSubcount.executeUpdate(sql);
+			stmtSubcount.executeUpdate(sql);*/
 			
 			if (spec == null) {
 				conn.commit();
@@ -211,7 +212,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				throw new RuntimeException("Missing tableName for CatalogSpec");
 			}
 			StringBuffer tableSql = new StringBuffer();
-			tableSql.append("create table " + CatalogItemDao.CS + tableName + 
+			tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + 
 					" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL," +
 					"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 			for (ICatalogField f : cat.getCatalogSpec().getAllFields()) {

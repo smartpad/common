@@ -113,12 +113,14 @@ public class Catalog implements ICatalog, Feed {
 					//newIdPrefix = SmartpadCommon.md5(catalogId + subCat.name.getName());
 					newIdPrefix = catalogId;
 				} else {
-					//TODO proper syscat id
-					newIdPrefix = subCat.catalogSpec.getSpecId();
-					if (newIdPrefix.contains(" ")) {
+					//newIdPrefix = subCat.catalogSpec.getSpecId();
+					String providedSyscatId = subCat.catalogSpec.getSpecId();
+					if (providedSyscatId.contains(" ") || providedSyscatId.contains("_")) {
 						throw new RuntimeException("CatalogSpec id can't contains special charaters");
 					}
-					newIdGen[0] = subCat.catalogSpec.getSpecId();
+					newIdPrefix = null;
+					newIdGen[0] = catalogId + "_" + providedSyscatId;
+					subCat.getCatalogSpec().setSpecId(newIdGen[0]);
 				}
 				new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat);
 				subCat.catalogId = newIdGen[0];
