@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.db;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +23,7 @@ public class OperationDao implements DbPopulator<Operation> {
 	@Override
 	public Operation populate(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
-				rs.getFloat("gps_lon"), rs.getFloat("gps_lat"), rs.getString("gps_inherit"), populateBranch);
+				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);
 		DaoSupport.populateName(rs, oper.getName());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		//DaoSupport.populateGps(rs, oper.gps);
@@ -265,15 +266,15 @@ public class OperationDao implements DbPopulator<Operation> {
 		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
-	public void updateBranchGps(String branchId, float gpsLon, float gpsLat) throws SQLException {
+	public void updateBranchGps(String branchId, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("update operations set gps_lon=?, gps_lat=? where gps_inherit='" + GPSInfo.INHERIT_BRANCH + "' and branch_id=?");
 			int i = 1;
-			ps.setFloat(i++, gpsLon);
-			ps.setFloat(i++, gpsLat);
+			ps.setBigDecimal(i++, gpsLon);
+			ps.setBigDecimal(i++, gpsLat);
 			ps.setString(i++, branchId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

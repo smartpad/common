@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.partner;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -86,7 +87,7 @@ public class Operation implements IOperation, Feed {
 	
 	//private Integer memberOfferedSurveyLevel;
 
-	public Operation(String operId, String branchId, String systemCatalogId, float gpsLon, float gpsLat, String gpsInherit, boolean branch) {
+	public Operation(String operId, String branchId, String systemCatalogId, BigDecimal gpsLon, BigDecimal gpsLat, String gpsInherit, boolean branch) {
 		this.operationId = operId;
 		this.branchId = branchId;
 		this.gps.setLongitude(gpsLon);

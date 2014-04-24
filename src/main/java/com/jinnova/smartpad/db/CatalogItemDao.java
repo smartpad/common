@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.db;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -265,7 +266,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
-	public void updateBranchGps(User primaryUser, float gpsLon, float gpsLat) throws SQLException {
+	public void updateBranchGps(User primaryUser, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {
 		Operation branch = (Operation) primaryUser.getBranch();
 		updateGpsByCatalog((Catalog) branch.getRootCatalog(), branch.getBranchId(), gpsLon, gpsLat, GPSInfo.INHERIT_BRANCH, "branch_id");
 		
@@ -276,11 +277,11 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public void updateStoreGps(Operation store, float gpsLon, float gpsLat) throws SQLException {
+	public void updateStoreGps(Operation store, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {
 		updateGpsByCatalog((Catalog) store.getRootCatalog(), store.getId(), gpsLon, gpsLat, GPSInfo.INHERIT_STORE, "store_id");
 	}
 	
-	private void updateGpsByCatalog(Catalog rootCat, String targetFieldValue, float gpsLon, float gpsLat, String inherit, String targetField) throws SQLException {
+	private void updateGpsByCatalog(Catalog rootCat, String targetFieldValue, BigDecimal gpsLon, BigDecimal gpsLat, String inherit, String targetField) throws SQLException {
 		
 		LinkedList<Catalog> catList = new LinkedList<>();
 		catList.add(rootCat);
@@ -295,15 +296,15 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	private void updateGps(String syscatId, String targetFieldValue, float gpsLon, float gpsLat, String inherit, String targetField) throws SQLException {
+	private void updateGps(String syscatId, String targetFieldValue, BigDecimal gpsLon, BigDecimal gpsLat, String inherit, String targetField) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("update " + /*CS +*/ syscatId + " set gps_lon=?, gps_lat=? where gps_inherit='" + inherit + "' and " + targetField + "=?");
 			int i = 1;
-			ps.setFloat(i++, gpsLon);
-			ps.setFloat(i++, gpsLat);
+			ps.setBigDecimal(i++, gpsLon);
+			ps.setBigDecimal(i++, gpsLat);
 			ps.setString(i++, targetFieldValue);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

@@ -195,7 +195,7 @@ public class User implements IUser {
 	void loadBranch(/*String branchId*/) throws SQLException {
 		branch = (Operation) new OperationDao().loadBranch(branchId);
 		if (branch == null) {
-			branch = new Operation(branchId, branchId, null, 0, 0, null, true);
+			branch = new Operation(branchId, branchId, null, null, null, null, true);
 		}
 		//((Catalog) branch.getRootCatalog()).gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);
 		//this.branchId = branch.getId();

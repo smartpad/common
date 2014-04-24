@@ -63,9 +63,20 @@ public class ScriptRunner {
 		conn.close();
 
 		conn = DriverManager.getConnection("jdbc:mysql://localhost/smartpad", "root", "");
-		ScriptRunner r = new ScriptRunner(conn, true, true);
 		System.out.println("Working dir: " + new File(".").getAbsolutePath());
-		r.runScript(new FileReader("../common/src/main/sql/schema.sql"));
+		ScriptRunner runner = new ScriptRunner(conn, true, true);
+		runner.runScript(new FileReader("../common/src/main/sql/schema.sql"));
+
+		runner = new ScriptRunner(conn, true, true);
+		runner.setDelimiter("$$", false);
+		runner.runScript(new FileReader("../common/src/main/sql/stored_routines.sql"));
+		/**
+		 * select sp_dist(10.780000, 106.681000, 10.780000, 106.682000), 
+			sp_dist_grade(10.780000, 106.681000, 10.780000, 106.682000),
+			sp_dist_grade(10.780000, 106.680000, 10.780000, 106.690000),
+			
+			sp_dist_grade(10.780000, 106.680000, 10.780000, 206.690000)
+		 */
 		conn.close();
 	}
 

@@ -31,8 +31,8 @@ CREATE TABLE `operations` (
   `create_by` varchar(32) NOT NULL,
   `update_by` varchar(32) DEFAULT NULL,
   
-  `gps_lon` float DEFAULT NULL,
-  `gps_lat` float DEFAULT NULL,
+  `gps_lon` decimal(9,6) DEFAULT NULL,
+  `gps_lat` decimal(9,6) DEFAULT NULL,
   `gps_inherit` varchar(8) NOT null,
   
   `schedule` varchar(1024) DEFAULT NULL,
@@ -62,8 +62,8 @@ CREATE TABLE `catalogs` (
   `syscat_id` varchar(32) DEFAULT NULL,
   `partial_id` int NOT NULL,
   
-  `gps_lon` float DEFAULT NULL,
-  `gps_lat` float DEFAULT NULL,
+  `gps_lon` decimal(9,6) DEFAULT NULL,
+  `gps_lat` decimal(9,6) DEFAULT NULL,
   `gps_inherit` varchar(8) default null,
   
   `name` varchar(1024) NOT NULL,
@@ -84,8 +84,8 @@ CREATE TABLE `promos` (
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   
-  `gps_lon` float DEFAULT NULL,
-  `gps_lat` float DEFAULT NULL,
+  `gps_lon` decimal(9,6) DEFAULT NULL,
+  `gps_lat` decimal(9,6) DEFAULT NULL,
   `gps_inherit` varchar(8) default null,
   
   `create_date` datetime NOT NULL,

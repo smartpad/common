@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import java.math.BigDecimal;
+
 public class GPSInfo implements IGPSInfo {
 	
 	public static String INHERIT_PROVIDED = "provided";
@@ -8,9 +10,9 @@ public class GPSInfo implements IGPSInfo {
 	
 	public static String INHERIT_STORE = "store";
 
-	private float longitude;
+	private BigDecimal longitude;
 	
-	private float latitude;
+	private BigDecimal latitude;
 	
 	private String inheritFrom;
 	
@@ -27,12 +29,12 @@ public class GPSInfo implements IGPSInfo {
 	}
 
 	@Override
-	public float getLongitude() {
+	public BigDecimal getLongitude() {
 		return longitude;
 	}
 
 	@Override
-	public void setLongitude(float longitude) {
+	public void setLongitude(BigDecimal longitude) {
 		this.longitude = longitude;
 		inheritFrom = INHERIT_PROVIDED;
 		//inheritFrom = null;
@@ -40,12 +42,12 @@ public class GPSInfo implements IGPSInfo {
 	}
 
 	@Override
-	public float getLatitude() {
+	public BigDecimal getLatitude() {
 		return latitude;
 	}
 
 	@Override
-	public void setLatitude(float latitude) {
+	public void setLatitude(BigDecimal latitude) {
 		this.latitude = latitude;
 		inheritFrom = INHERIT_PROVIDED;
 		//inheritFrom = null;

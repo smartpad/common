@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.db;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -309,23 +310,23 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		return new DbIterator<Catalog>(conn, stmt, rs, this);
 	}
 
-	public void updateBranchGps(String branchId, float gpsLon, float gpsLat) throws SQLException {
+	public void updateBranchGps(String branchId, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {
 		updateGps(branchId, gpsLon, gpsLat, GPSInfo.INHERIT_STORE, "branch_id");
 	}
 
-	public void updateStoreGps(String storeId, float gpsLon, float gpsLat) throws SQLException {
+	public void updateStoreGps(String storeId, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {
 		updateGps(storeId, gpsLon, gpsLat, GPSInfo.INHERIT_STORE, "store_id");
 	}
 
-	private void updateGps(String targetFieldValue, float gpsLon, float gpsLat, String inherit, String targetField) throws SQLException {
+	private void updateGps(String targetFieldValue, BigDecimal gpsLon, BigDecimal gpsLat, String inherit, String targetField) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("update catalogs set gps_lon=?, gps_lat=? where gps_inherit='" + inherit + "' and " + targetField + "=?");
 			int i = 1;
-			ps.setFloat(i++, gpsLon);
-			ps.setFloat(i++, gpsLat);
+			ps.setBigDecimal(i++, gpsLon);
+			ps.setBigDecimal(i++, gpsLat);
 			ps.setString(i++, targetFieldValue);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
