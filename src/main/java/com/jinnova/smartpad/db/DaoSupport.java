@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.db;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -115,5 +116,11 @@ class DaoSupport {
 			return "";
 		}
 		return field + operator + "'" + value + "'";
+	}
+	
+	static String buildDGradeField(BigDecimal lon, BigDecimal lat) {
+		String lonS = lon == null ? "null" : lon.toPlainString();
+		String latS = lat == null ? "null" : lat.toPlainString();
+		return "sp_dist_grade(gps_lon, gps_lat, " + lonS + ", " + latS + ")";
 	}
 }

@@ -2,6 +2,7 @@ package com.jinnova.smartpad.drilling;
 
 import static com.jinnova.smartpad.partner.IDetailManager.*;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -51,6 +52,10 @@ public abstract class ActionLoad {
 	
 	private int pageSize;
 	
+	BigDecimal gpsLon;
+	
+	BigDecimal gpsLat;
+	
 	private int initialLoadSize;
 	
 	private int initialDrillSize;
@@ -91,6 +96,12 @@ public abstract class ActionLoad {
 			load.excludeId = excludeId;
 			load.offset = offset;
 			load.pageSize = size;
+			if (gpsLon != null) {
+				load.gpsLon = new BigDecimal(gpsLon);
+			}
+			if (gpsLat != null) {
+				load.gpsLat = new BigDecimal(gpsLat);
+			}
 			return load;
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RuntimeException(e);
@@ -151,6 +162,12 @@ public abstract class ActionLoad {
 		}
 		if (excludeId != null) {
 			buffer.append("&excludeId=" + excludeId);
+		}
+		if (gpsLon != null) {
+			buffer.append("&lon=" + gpsLon.toPlainString());
+		}
+		if (gpsLat != null) {
+			buffer.append("&lat=" + gpsLat.toPlainString());
 		}
 		return buffer.toString();
 	}
@@ -315,13 +332,13 @@ class ALItemBelongRecursivelyToSyscat extends ActionLoad {
 	@Override
 	Object[] load(int offset, int size) throws SQLException {
 		ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(anchorId);
-		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, offset, size).toArray();
+		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, gpsLon, gpsLat, offset, size).toArray();
 	}
 	
 	@Override
 	Object[] loadFirstEntries(int size) throws SQLException {
 		ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(anchorId);
-		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, 0, size).toArray();
+		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, gpsLon, gpsLat, 0, size).toArray();
 	}
 	
 }
