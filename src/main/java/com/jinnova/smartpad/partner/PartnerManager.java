@@ -31,8 +31,9 @@ public class PartnerManager implements IPartnerManager {
 	private final Catalog systemRootCatalog;
 	
 	private final HashMap<String, Catalog> systemCatMap = new HashMap<>();
+	private final HashMap<String, LinkedList<Catalog>> systemSubCatMap = new HashMap<>();
 	
-	private final HashMap<String, ICatalogSpec> catalogSpecMap = new HashMap<>();
+	//private final HashMap<String, ICatalogSpec> catalogSpecMap = new HashMap<>();
 	
 	private PartnerManager() throws SQLException {
 		
@@ -119,6 +120,14 @@ public class PartnerManager implements IPartnerManager {
 		instance = new PartnerManager();
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 		instance.systemCatMap.remove(SYSTEM_BRANCH_ID);
+		for (Catalog cat : instance.systemCatMap.values()) {
+			LinkedList<Catalog> subCats = instance.systemSubCatMap.get(cat.getParentCatalogId());
+			if (subCats == null) {
+				subCats = new LinkedList<>();
+				instance.systemSubCatMap.put(cat.getParentCatalogId(), subCats);
+			}
+			subCats.add(cat);
+		}
 		DetailManager.initialize();
 		ActionLoad.initialize();
 	}
@@ -148,9 +157,9 @@ public class PartnerManager implements IPartnerManager {
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
 		
-		Operation branch = new Operation(null, login, null, 0, 0, GPSInfo.INHERIT_BRANCH, true);
+		Operation branch = new Operation(null, login, null, 0, 0, GPSInfo.INHERIT_PROVIDED, true);
 		branch.getName().setName("");
-		branch.getRootCatalog().setSystemCatalogId("foods"); //TODO default place for new branch?
+		branch.getRootCatalog().setSystemCatalogId(systemRootCatalog.getId());
 		branch.getRecordInfo().setCreateBy(login);
 		branch.getRecordInfo().setCreateDate(new Date());
 		new OperationDao().createOperation(login, login, branch);
@@ -196,8 +205,13 @@ public class PartnerManager implements IPartnerManager {
 	}
 	
 	@Override
-	public ICatalogSpec getCatalogSpec(String specId) {
-		return catalogSpecMap.get(specId);
+	public ICatalogSpec getCatalogSpec(String systemCatId) {
+		//return catalogSpecMap.get(specId);
+		return systemCatMap.get(systemCatId).getCatalogSpec();
+	}
+	
+	public LinkedList<Catalog> getSystemSubCatalog(String parentCatId) {
+		return systemSubCatMap.get(parentCatId);
 	}
 	
 	/*public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {

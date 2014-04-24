@@ -245,10 +245,20 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public DbIterator<CatalogItem> iterateCatalogItems(String catalogId, String syscatId, ICatalogSpec spec) throws SQLException {
+	public DbIterator<CatalogItem> iterateCatalogItems(ICatalogSpec spec, String syscatId, String catalogId) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		String sql = "select * from " + /*CS +*/ syscatId + " where catalog_id = '" + catalogId + "'";
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		this.spec = spec;
+		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
+	}
+
+	public DbIterator<CatalogItem> iterateCatalogItems(ICatalogSpec spec, String syscatId, int offset, int size) throws SQLException {
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "select * from " + /*CS +*/ syscatId + " " + DaoSupport.buildLimit(offset, size);
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
 		this.spec = spec;

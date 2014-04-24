@@ -56,15 +56,26 @@ class DaoSupport {
 	}
 
 	static String buildOrderLimit(String fieldName, boolean ascending, int offset, int pageSize) {
-		if (fieldName == null || "".equals(fieldName.trim())) {
-			throw new RuntimeException("Sort field name unset");
-		}
+		String direction;
 		if (ascending) {
-			fieldName += " asc";
+			direction = " asc";
 		} else {
-			fieldName += " desc";
+			direction = " desc";
 		}
-		String clause = "order by " + fieldName;
+		return buildOrderLimit(new String[] {fieldName + direction}, offset, pageSize);
+	}
+
+	static String buildOrderLimit(String[] fieldNameAndDirections, int offset, int pageSize) {
+		/*if (fieldName == null || "".equals(fieldName.trim())) {
+			throw new RuntimeException("Sort field name unset");
+		}*/
+		String clause = "";
+		if (fieldNameAndDirections != null && fieldNameAndDirections.length > 0) {
+			for (int i = 0; i < fieldNameAndDirections.length; i++) {
+				clause += fieldNameAndDirections[i] + " ";
+			}
+			clause = "order by " + clause;
+		}
 		if (pageSize > 0) {
 			return clause +=  " limit " + pageSize + " offset " + offset;
 		} else {
@@ -97,5 +108,12 @@ class DaoSupport {
 		ps.setString(i++, gps.getInheritFrom());
 		gps.clearModifiedFlag();
 		return i;
+	}
+
+	static String buildConditionIfNotNull(String field, String operator, String value) {
+		if (value == null) {
+			return "";
+		}
+		return field + operator + "'" + value + "'";
 	}
 }

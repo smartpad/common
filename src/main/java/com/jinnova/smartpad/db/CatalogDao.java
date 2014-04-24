@@ -298,13 +298,14 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		}
 	}
 
-	public DbIterator<Catalog> iterateSubCatalogs(String parentCatalogId, String excludeCatId, int count) throws SQLException {
-		//TODO exclude, count
+	public DbIterator<Catalog> iterateSubCatalogs(String parentCatalogId, String excludeCatId, int offset, int count) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String sql = "select * from catalogs where parent_id = '" + parentCatalogId + "'";
-		System.out.println("SQL: " + sql);
-		ResultSet rs = stmt.executeQuery(sql);
+		StringBuffer sql = new StringBuffer("select * from catalogs where parent_id = '" + parentCatalogId + "'");
+		sql.append(DaoSupport.buildConditionIfNotNull(" and catalog_id", "!=", excludeCatId));
+		sql.append(DaoSupport.buildLimit(offset, count));
+		System.out.println("SQL: " + sql.toString());
+		ResultSet rs = stmt.executeQuery(sql.toString());
 		return new DbIterator<Catalog>(conn, stmt, rs, this);
 	}
 

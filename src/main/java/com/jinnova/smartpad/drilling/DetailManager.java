@@ -11,13 +11,67 @@ import com.jinnova.smartpad.db.CatalogItemDao;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.CatalogItem;
+import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.IDetailManager;
 import com.jinnova.smartpad.partner.Operation;
-
+import com.jinnova.smartpad.partner.PartnerManager;
 
 public class DetailManager implements IDetailManager {
 	
 	private static DetailDriller[] drillers = new DetailDriller[TYPE_COUNT];
+    
+	@Override
+    public String drill(String targetType, String targetId, String gpsLon, String gpsLat/*, int page, int size*/) throws SQLException {
+    	
+		int targetTypeNumber = typeNameToNumber(targetType);
+		String gpsZone = findGpsZone(gpsLon, gpsLat);
+		String cached = CacheDao.query(targetTypeNumber, targetId, gpsZone/*, page*/);
+    	if (cached != null) {
+    		return cached;
+    	}
+    	
+    	DrillResult dr = drillers[targetTypeNumber].drill(targetId, gpsZone/*, page, size*/);
+    	JsonObject json = new JsonObject();
+    	dr.writeJson(json);
+    	json.addProperty(FIELD_VERSION, "a");
+    	//json.addProperty("page", page);
+    	//json.addProperty("size", size);
+    	cached = json.toString();
+    	CacheDao.put(cached, targetTypeNumber, targetId, gpsZone/*, page*/);
+    	return cached;
+    }
+	
+	private String findGpsZone(String gpsLon, String gpsLat) {
+		return null;
+	}
+
+	@Override
+	public String more(String targetType, String anchorType, String anchorId, String relation,
+			String branchId, String storeId, String catId, String syscatId, String excludeId,
+			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
+		
+		//Object[] ja
+		ActionLoad action = ActionLoad.loadMore(targetType, anchorType, anchorId, relation, branchId, storeId, catId, syscatId, excludeId, gpsLon, gpsLat, offset, size);
+
+		/*if (ja == null || ja.length == 0) {
+			return null;
+		}
+		if (ja.length == 1) {
+			return ((Feed) ja[0]).generateFeedJson().toString();
+		}*/
+		
+		Object[] data = action.load();
+		JsonArray array = new JsonArray();
+		for (int i = 0; i < data.length; i++) {
+			array.add(((Feed) data[i]).generateFeedJson());
+		}
+		
+		JsonObject json = new JsonObject();
+		json.add(IDetailManager.FIELD_ARRAY, array);
+		json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, action.generateNextLoadUrl());
+		//System.out.println("next load: " + actionLoad.generateNextLoadUrl());
+		return json.toString();
+	}
 	
 	public static void initialize() {
 		drillers[TYPE_NO] = new DetailDriller() {
@@ -26,7 +80,10 @@ public class DetailManager implements IDetailManager {
 			public DrillResult drill(String branchId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
 				DrillResult dr = new DrillResult();
-				dr.add(new ALBranchesBelongToSyscat("foods", null, 10, 10, 10));
+				ICatalog rootSyscat = PartnerManager.instance.getSystemRootCatalog();
+				for (ICatalog cat : PartnerManager.instance.getSystemSubCatalog(rootSyscat.getId())) {
+					dr.add(new ALItemBelongRecursivelyToSyscat(cat.getId(), 10, 10, 10));
+				}
 				return dr;
 			}
 		};
@@ -41,16 +98,16 @@ public class DetailManager implements IDetailManager {
 
 				//At most 5 stores belong to this branch and 3 similar branches
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
-						new ALStoresBelongToBranch(branchId, null, 10, 8, 5), new ALBranchesBelongToSyscat(syscatId, branchId, 10, 8, 3));
+						new ALStoresBelongToBranch(branchId, null, 10, 8, 5), new ALBranchesBelongDirectlyToSyscat(syscatId, branchId, 10, 8, 3));
 				
 				//5 active promotions by syscat, this branch first 
-				dr.add(new ALPromotionsBelongToSyscat(syscatId, branchId, 10, 5, 5));
+				dr.add(new ALPromotionsBelongDirectlyToSyscat(syscatId, branchId, 10, 5, 5));
 				
 				//10 sub categories of this branch's root category in one compound
 				dr.add(new ALCatalogsBelongDirectlyToCatalog(branchId, null, 10, 10, 10));
 				
 				//catelog items from this branch's root category
-				dr.add(new ALCatItemBelongDirectlyToCatalog(branchId, syscatId, 20, 20, 20));
+				dr.add(new ALItemBelongDirectlyToCatalog(branchId, syscatId, 20, 20, 20));
 				return dr;
 			}
 		};
@@ -65,10 +122,10 @@ public class DetailManager implements IDetailManager {
 				//5 stores belong in same branch with this store, and 3 similar branches
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
 						new ALStoresBelongToBranch(targetStore.getBranchId(), targetId, 10, 8, 5), 
-						new ALBranchesBelongToSyscat(targetStore.getSyscatId(), targetStore.getBranchId(), 10, 8, 3));
+						new ALBranchesBelongDirectlyToSyscat(targetStore.getSyscatId(), targetStore.getBranchId(), 10, 8, 3));
 				
 				//Some active promotions from this branch in one compound
-				dr.add(new ALPromotionsBelongToSyscat(targetStore.getSyscatId(), targetStore.getBranchId(), 10, 10, 10));
+				dr.add(new ALPromotionsBelongDirectlyToSyscat(targetStore.getSyscatId(), targetStore.getBranchId(), 10, 10, 10));
 				return dr;
 			}
 			
@@ -86,16 +143,16 @@ public class DetailManager implements IDetailManager {
 						new ALCatalogsBelongDirectlyToCatalog(cat.getParentCatalogId(), targetId, 10, 8, 3));
 				
 				//5 active promotions from this branch in one compound
-				dr.add(new ALPromotionsBelongToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 5, 5));
+				dr.add(new ALPromotionsBelongDirectlyToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 5, 5));
 				
 				//5 feature items from this catalog
-				dr.add(new ALCatItemBelongDirectlyToCatalog(targetId, cat.getSystemCatalogId(), 10, 5, 5));
+				dr.add(new ALItemBelongDirectlyToCatalog(targetId, cat.getSystemCatalogId(), 10, 5, 5));
 				
 				//5 other stores, 3 similar branches
 				//ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
 						new ALStoresBelongToBranch(cat.branchId, cat.storeId, 10, 8, 5), 
-						new ALBranchesBelongToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 8, 3));
+						new ALBranchesBelongDirectlyToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 8, 3));
 				return dr;
 			}
 			
@@ -182,58 +239,5 @@ public class DetailManager implements IDetailManager {
 		} else {
 			throw new RuntimeException();
 		}
-	}
-    
-	@Override
-    public String drill(String targetType, String targetId, String gpsLon, String gpsLat/*, int page, int size*/) throws SQLException {
-    	
-		int targetTypeNumber = typeNameToNumber(targetType);
-		String gpsZone = findGpsZone(gpsLon, gpsLat);
-		String cached = CacheDao.query(targetTypeNumber, targetId, gpsZone/*, page*/);
-    	if (cached != null) {
-    		return cached;
-    	}
-    	
-    	DrillResult dr = drillers[targetTypeNumber].drill(targetId, gpsZone/*, page, size*/);
-    	JsonObject json = new JsonObject();
-    	dr.writeJson(json);
-    	json.addProperty(FIELD_VERSION, "a");
-    	//json.addProperty("page", page);
-    	//json.addProperty("size", size);
-    	cached = json.toString();
-    	CacheDao.put(cached, targetTypeNumber, targetId, gpsZone/*, page*/);
-    	return cached;
-    }
-	
-	private String findGpsZone(String gpsLon, String gpsLat) {
-		return null;
-	}
-
-	@Override
-	public String more(String targetType, String anchorType, String anchorId, String relation,
-			String branchId, String storeId, String catId, String syscatId, String excludeId,
-			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
-		
-		//Object[] ja
-		ActionLoad action = ActionLoad.loadMore(targetType, anchorType, anchorId, relation, branchId, storeId, catId, syscatId, excludeId, gpsLon, gpsLat, offset, size);
-
-		/*if (ja == null || ja.length == 0) {
-			return null;
-		}
-		if (ja.length == 1) {
-			return ((Feed) ja[0]).generateFeedJson().toString();
-		}*/
-		
-		Object[] data = action.load();
-		JsonArray array = new JsonArray();
-		for (int i = 0; i < data.length; i++) {
-			array.add(((Feed) data[i]).generateFeedJson());
-		}
-		
-		JsonObject json = new JsonObject();
-		json.add(IDetailManager.FIELD_ARRAY, array);
-		json.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, action.generateNextLoadUrl());
-		//System.out.println("next load: " + actionLoad.generateNextLoadUrl());
-		return json.toString();
 	}
 }

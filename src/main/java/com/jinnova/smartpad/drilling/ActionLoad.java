@@ -6,15 +6,18 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 import com.jinnova.smartpad.CachedPagingList;
+import com.jinnova.smartpad.db.CatalogItemDao;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.ICatalogItem;
 import com.jinnova.smartpad.partner.ICatalogItemSort;
 import com.jinnova.smartpad.partner.ICatalogSort;
+import com.jinnova.smartpad.partner.ICatalogSpec;
 import com.jinnova.smartpad.partner.IPromotion;
 import com.jinnova.smartpad.partner.IPromotionSort;
 import com.jinnova.smartpad.partner.Operation;
+import com.jinnova.smartpad.partner.PartnerManager;
 
 public abstract class ActionLoad {
 	
@@ -22,7 +25,7 @@ public abstract class ActionLoad {
 	
 	static final String REL_BELONG_DIRECTLY = "beld";
 	
-	static final String REL_BELONG_INHERIT = "beli";
+	static final String REL_BELONG_RECURSIVELY = "beli";
 	
 	static final String REL_SIBLING = "sib";
 	
@@ -56,13 +59,17 @@ public abstract class ActionLoad {
 	
 	private static HashMap<String, Class<? extends ActionLoad>> actionClasses;
 	
+	private static boolean initializing = true;
+	
 	public static void initialize() {
 		actionClasses = new HashMap<String, Class<? extends ActionLoad>>();
-		register(new ALBranchesBelongToSyscat());
+		register(new ALBranchesBelongDirectlyToSyscat());
 		register(new ALCatalogsBelongDirectlyToCatalog());
-		register(new ALCatItemBelongDirectlyToCatalog());
-		register(new ALPromotionsBelongToSyscat());
+		register(new ALItemBelongDirectlyToCatalog());
+		register(new ALItemBelongRecursivelyToSyscat());
+		register(new ALPromotionsBelongDirectlyToSyscat());
 		register(new ALStoresBelongToBranch());
+		initializing = false;
 	}
 	
 	private static void register(ActionLoad load) {
@@ -103,6 +110,9 @@ public abstract class ActionLoad {
 	}
 	
 	ActionLoad(String anchorType, String targetType, String relation) {
+		if (!initializing && !actionClasses.containsKey(anchorType + targetType + relation)) {
+			throw new RuntimeException("Action not registered: " + anchorType + targetType + relation);
+		}
 		this.anchorType = anchorType;
 		this.targetType = targetType;
 		this.relation = relation;
@@ -163,13 +173,13 @@ public abstract class ActionLoad {
 	}
 }
 
-class ALBranchesBelongToSyscat extends ActionLoad {
+class ALBranchesBelongDirectlyToSyscat extends ActionLoad {
 	
-	ALBranchesBelongToSyscat() {
+	ALBranchesBelongDirectlyToSyscat() {
 		super(TYPENAME_SYSCAT, TYPENAME_BRANCH, REL_BELONG_DIRECTLY);
 	}
 
-	ALBranchesBelongToSyscat(String anchorSyscatId, String excludeBranchId,
+	ALBranchesBelongDirectlyToSyscat(String anchorSyscatId, String excludeBranchId,
 			int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(anchorSyscatId, excludeBranchId, pageSize, initialLoadSize, initialDrillSize);
@@ -177,12 +187,36 @@ class ALBranchesBelongToSyscat extends ActionLoad {
 
 	@Override
 	Object[] load(int offset, int size) throws SQLException {
-		return new OperationDao().iterateSimilarBranches(excludeId, anchorId).toArray(); //TODO size, offset
+		return new OperationDao().iterateBranchesBySyscatDirectly(anchorId, excludeId).toArray(); //TODO size, offset
 	}
 	
 	@Override
 	Object[] loadFirstEntries(int size) throws SQLException {
-		return new OperationDao().iterateSimilarBranches(excludeId, anchorId).toArray(); //TODO size
+		return new OperationDao().iterateBranchesBySyscatDirectly(anchorId, excludeId).toArray(); //TODO size
+	}
+	
+}
+
+class ALBranchesBelongRecursivelyToSyscat extends ActionLoad {
+	
+	ALBranchesBelongRecursivelyToSyscat() {
+		super(TYPENAME_SYSCAT, TYPENAME_BRANCH, REL_BELONG_RECURSIVELY);
+	}
+
+	ALBranchesBelongRecursivelyToSyscat(String anchorSyscatId, String excludeBranchId,
+			int pageSize, int initialLoadSize, int initialDrillSize) {
+		this();
+		setParams(anchorSyscatId, excludeBranchId, pageSize, initialLoadSize, initialDrillSize);
+	}
+
+	@Override
+	Object[] load(int offset, int size) throws SQLException {
+		return new OperationDao().iterateBranchesBySyscatDirectly(anchorId, excludeId).toArray(); //TODO size, offset
+	}
+	
+	@Override
+	Object[] loadFirstEntries(int size) throws SQLException {
+		return new OperationDao().iterateBranchesBySyscatDirectly(anchorId, excludeId).toArray(); //TODO size
 	}
 	
 }
@@ -239,13 +273,13 @@ class ALCatalogsBelongDirectlyToCatalog extends ActionLoad {
 	
 }
 
-class ALCatItemBelongDirectlyToCatalog extends ActionLoad {
+class ALItemBelongDirectlyToCatalog extends ActionLoad {
 	
-	ALCatItemBelongDirectlyToCatalog() {
+	ALItemBelongDirectlyToCatalog() {
 		super(TYPENAME_CAT, TYPENAME_CATITEM, REL_BELONG_DIRECTLY);
 	}
 
-	ALCatItemBelongDirectlyToCatalog(String catId, String syscatId, int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALItemBelongDirectlyToCatalog(String catId, String syscatId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(catId, null, pageSize, initialLoadSize, initialDrillSize);
 		this.syscatId = syscatId;
@@ -267,13 +301,38 @@ class ALCatItemBelongDirectlyToCatalog extends ActionLoad {
 	
 }
 
-class ALPromotionsBelongToSyscat extends ActionLoad {
+class ALItemBelongRecursivelyToSyscat extends ActionLoad {
 	
-	ALPromotionsBelongToSyscat() {
-		super(TYPENAME_BRANCH, TYPENAME_PROMO, REL_BELONG_INHERIT);
+	ALItemBelongRecursivelyToSyscat() {
+		super(TYPENAME_SYSCAT, TYPENAME_CATITEM, REL_BELONG_RECURSIVELY);
 	}
 
-	ALPromotionsBelongToSyscat(String syscatId, String preferedBranchId, int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALItemBelongRecursivelyToSyscat(String syscatId, int pageSize, int initialLoadSize, int initialDrillSize) {
+		this();
+		setParams(syscatId, null, pageSize, initialLoadSize, initialDrillSize);
+	}
+
+	@Override
+	Object[] load(int offset, int size) throws SQLException {
+		ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(anchorId);
+		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, offset, size).toArray();
+	}
+	
+	@Override
+	Object[] loadFirstEntries(int size) throws SQLException {
+		ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(anchorId);
+		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, 0, size).toArray();
+	}
+	
+}
+
+class ALPromotionsBelongDirectlyToSyscat extends ActionLoad {
+	
+	ALPromotionsBelongDirectlyToSyscat() {
+		super(TYPENAME_BRANCH, TYPENAME_PROMO, REL_BELONG_DIRECTLY);
+	}
+
+	ALPromotionsBelongDirectlyToSyscat(String syscatId, String preferedBranchId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(syscatId, null, pageSize, initialLoadSize, initialDrillSize);
 	}

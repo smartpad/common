@@ -3,6 +3,7 @@ package com.jinnova.smartpad;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 public class CachedPage<T> implements IPage<T> {
 	
@@ -55,6 +56,10 @@ public class CachedPage<T> implements IPage<T> {
 	@Override
 	public T[] getPageEntries() {
 		return members.toArray(array);
+	}
+	
+	public void getPageEntries(List<T> list) {
+		list.addAll(members);
 	}
 	
 	boolean isInPage(T newMember, Comparator<T> comparator) {

@@ -69,24 +69,27 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 	}
 	
 	@Override
-	public void setPageSize(int pageSize) {
+	public IPagingList<T, E> setPageSize(int pageSize) {
 		this.pageCount = -1;
 		this.pageSize = pageSize;
 		this.pages.clear();
+		return this;
 	}
 
 	@Override
-	public void setSortField(E e) {
+	public IPagingList<T, E> setSortField(E e) {
 		this.totalCount = -1;
 		this.pageCount = -1;
 		this.pages.clear();
+		return this;
 	}
 
 	@Override
-	public void setSortDirection(boolean ascending) {
+	public IPagingList<T, E> setSortDirection(boolean ascending) {
 		this.totalCount = -1;
 		this.pageCount = -1;
 		this.pages.clear();
+		return this;
 	}
 	
 	@Override

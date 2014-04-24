@@ -190,7 +190,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 
-	public DbIterator<Promotion> iterateOperationPromos(String[] branchIds, int count) throws SQLException { //TODO count
+	public DbIterator<Promotion> iterateOperationPromos(String[] branchIds, String[] sortFieldAndDirections, int offset, int size) throws SQLException {
 		
 		String questionMarks = null;
 		for (int i = 0; i < branchIds.length; i++) {
@@ -201,7 +201,8 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			}
 		}
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		PreparedStatement ps = conn.prepareStatement("select * from promos where branch_id in (" + questionMarks + ")");
+		String sql = "select * from promos where branch_id in (" + questionMarks + ")" + DaoSupport.buildOrderLimit(sortFieldAndDirections, offset, size);
+		PreparedStatement ps = conn.prepareStatement(sql);
 		for (int i = 0; i < branchIds.length; i++) {
 			ps.setString(i + 1, branchIds[i]);
 		}
