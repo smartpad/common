@@ -83,6 +83,7 @@ CREATE TABLE `promos` (
   `promo_id` varchar(32) NOT NULL,
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
+  `syscat_id` varchar(32) NOT NULL,
   
   `gps_lon` decimal(9,6) DEFAULT NULL,
   `gps_lat` decimal(9,6) DEFAULT NULL,

@@ -3,7 +3,9 @@ package com.jinnova.smartpad.member;
 @SuppressWarnings("unused")
 public class MCard {
 	
-	private String operationId;
+	private String branchId;
+	
+	private String storeId;
 
 	private int level;
 	
@@ -19,8 +21,12 @@ public class MCard {
 	
 	private String email;
 	
-	public String getOperationId() {
-		return operationId;
+	public String getBranchId() {
+		return branchId;
+	}
+	
+	public String getStoreId() {
+		return storeId;
 	}
 
 	public int getLevel() {

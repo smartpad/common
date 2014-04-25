@@ -13,7 +13,11 @@ public class Promotion implements IPromotion, Feed {
 	
 	private String promotionId;
 	
-	private final String operationId;
+	public final String branchId;
+	
+	public final String storeId;
+	
+	public final String syscatId;
 	
 	private final Name name = new Name();
 	
@@ -31,9 +35,11 @@ public class Promotion implements IPromotion, Feed {
 	
 	private final MCardOffer mcardOffer = new MCardOffer();
 
-	public Promotion(String promotionId, String operationId) {
+	public Promotion(String promotionId, String branchId, String storeId, String syscatId) {
 		this.promotionId = promotionId;
-		this.operationId = operationId;
+		this.branchId = branchId;
+		this.storeId = storeId;
+		this.syscatId = syscatId;
 	}
 
 	@Override
@@ -46,7 +52,7 @@ public class Promotion implements IPromotion, Feed {
 	}
 	
 	public boolean qualify(Consumer consumer) {
-		if (!consumer.qualify(operationId, requiredMemberLevel, requiredMemberPoint)) {
+		if (!consumer.qualify(branchId, storeId, requiredMemberLevel, requiredMemberPoint)) {
 			return false;
 		}
 		

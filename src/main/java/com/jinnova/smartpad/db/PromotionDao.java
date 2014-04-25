@@ -112,24 +112,25 @@ public class PromotionDao implements DbPopulator<Promotion> {
 	
 	@Override
 	public Promotion populate(ResultSet rs) throws SQLException {
-		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("store_id"));
+		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("branch_id"), rs.getString("store_id"), rs.getString("syscat_id"));
 		DaoSupport.populateGps(rs, promo.gps);
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
 		DaoSupport.populateName(rs, promo.getName());
 		return promo;
 	}
 
-	public void insert(String promotionId, String operationId, String branchId, Promotion t) throws SQLException {
+	public void insert(String promotionId, String branchId, String storeId, String syscatId, Promotion t) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into promos set promo_id=?, store_id=?, branch_id=?, " +
+			ps = conn.prepareStatement("insert into promos set promo_id=?, branch_id=?, store_id=?, syscat_id=?, " +
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, promotionId);
-			ps.setString(i++, operationId);
 			ps.setString(i++, branchId);
+			ps.setString(i++, storeId);
+			ps.setString(i++, syscatId);
 			i = setFields(i, t, ps);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

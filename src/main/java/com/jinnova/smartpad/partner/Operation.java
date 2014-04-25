@@ -102,18 +102,18 @@ public class Operation implements IOperation, Feed {
 		}
 		
 		this.systemCatalogId = systemCatalogId;
-		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, this.operationId, systemCatalogId);
+		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, this.operationId, this.systemCatalogId);
 		this.rootCatalog.gps.inherit(this.gps, rootCatInherit);
 		/*this.rootCatalog.gps.setLongitude(gpsLon);
 		this.rootCatalog.gps.setLatitude(gpsLat);
 		this.rootCatalog.gps.setInheritFrom(gpsInherit);*/
 		
-		this.promotions = createPromotionPagingList(branchId, operId, gps);
+		this.promotions = createPromotionPagingList(branchId, operId, this.systemCatalogId, gps);
 		this.memberPagingList = createMemberPagingList();
 	}
 	
 	public static CachedPagingList<IPromotion, IPromotionSort> createPromotionPagingList(
-			final String branchId, final String operationId, final GPSInfo gps) {
+			final String branchId, final String storeId, final String syscatId, final GPSInfo gps) {
 		
 		@SuppressWarnings({ "unchecked" })
 		final Comparator<IPromotion>[] promoComparators = new Comparator[IPromotionSort.values().length];
@@ -141,12 +141,12 @@ public class Operation implements IOperation, Feed {
 			@Override
 			public IPromotion newEntryInstance(IUser authorizedUser) {
 				String gpsInherit;
-				if (branchId.equals(operationId)) {
+				if (branchId.equals(storeId)) {
 					gpsInherit = GPSInfo.INHERIT_BRANCH;
 				} else {
 					gpsInherit = GPSInfo.INHERIT_STORE;
 				}
-				Promotion promo = new Promotion(null, operationId);
+				Promotion promo = new Promotion(null, branchId, storeId, syscatId);
 				promo.gps.inherit(gps, gpsInherit);
 				return promo;
 			}
@@ -158,12 +158,12 @@ public class Operation implements IOperation, Feed {
 
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new PromotionDao().count(operationId);
+				return new PromotionDao().count(storeId);
 			}
 
 			@Override
 			public LinkedList<IPromotion> load(IUser authorizedUser, int offset, int pageSize, IPromotionSort sortField, boolean ascending) throws SQLException {
-				return new PromotionDao().load(operationId, offset, pageSize, sortField, ascending);
+				return new PromotionDao().load(storeId, offset, pageSize, sortField, ascending);
 			}
 
 			@Override
@@ -171,8 +171,8 @@ public class Operation implements IOperation, Feed {
 				if (t.getName().getName() == null || "".equals(t.getName().getName())) {
 					throw new RuntimeException("Promotion name is missing");
 				}
-				String newId = SmartpadCommon.md5(branchId + operationId + t.getName().getName()); 
-				new PromotionDao().insert(newId, operationId, branchId, (Promotion) t);
+				String newId = SmartpadCommon.md5(branchId + storeId + t.getName().getName()); 
+				new PromotionDao().insert(newId, branchId, storeId, syscatId, (Promotion) t);
 			}
 
 			@Override

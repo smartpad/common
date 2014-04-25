@@ -192,6 +192,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 	
+	//TODO update store syscat / promotion syscat on changing in branch/store
 	private static final String OP_FIELDS = "syscat_id=?, open_text=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {

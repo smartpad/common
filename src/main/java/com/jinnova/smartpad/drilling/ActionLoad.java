@@ -357,7 +357,7 @@ class ALPromotionsBelongDirectlyToSyscat extends ActionLoad {
 	@Override
 	Object[] load(int offset, int size) throws SQLException {
 		CachedPagingList<IPromotion, IPromotionSort> paging = 
-				Operation.createPromotionPagingList(anchorId, null, /*gps*/null); //TODO gps
+				Operation.createPromotionPagingList(null, null, anchorId, null); //TODO gps
 		paging.setPageSize(size);
 		return paging.loadFromOffset(offset).getPageEntries();
 	}
@@ -365,7 +365,7 @@ class ALPromotionsBelongDirectlyToSyscat extends ActionLoad {
 	@Override
 	Object[] loadFirstEntries(int size) throws SQLException {
 		CachedPagingList<IPromotion, IPromotionSort> paging = 
-				Operation.createPromotionPagingList(anchorId, null, /*gps*/null); //TODO gps
+				Operation.createPromotionPagingList(null, null, anchorId, null); //TODO gps
 		paging.setPageSize(size);
 		return paging.loadFromOffset(0).getPageEntries();
 	}
