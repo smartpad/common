@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.IDetailManager.SYSTEM_BRANCH_ID;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -19,8 +21,6 @@ import com.jinnova.smartpad.drilling.ActionLoad;
 import com.jinnova.smartpad.drilling.DetailManager;
 
 public class PartnerManager implements IPartnerManager {
-	
-	private static final String SYSTEM_BRANCH_ID = "z";
 	
 	public static PartnerManager instance;
 	

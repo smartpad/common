@@ -74,6 +74,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			if (loadSpec) {
 				specParser = new JsonParser();
 			}
+			if (!rs.next()) {
+				return null;
+			}
 			return populate(rs);
 		} finally {
 			if (rs != null) {

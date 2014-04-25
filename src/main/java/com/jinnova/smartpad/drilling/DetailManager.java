@@ -1,6 +1,7 @@
 package com.jinnova.smartpad.drilling;
 
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -74,14 +75,30 @@ public class DetailManager implements IDetailManager {
 	}
 	
 	public static void initialize() {
-		drillers[TYPE_NO] = new DetailDriller() {
+		/*drillers[TYPE_NO] = new DetailDriller() {
 			
 			@Override
-			public DrillResult drill(String branchId, String gpsZone/*, int page, int size*/) throws SQLException {
+			public DrillResult drill(String branchId, String gpsZone, int page, int size) throws SQLException {
 				
 				DrillResult dr = new DrillResult();
 				ICatalog rootSyscat = PartnerManager.instance.getSystemRootCatalog();
 				for (ICatalog cat : PartnerManager.instance.getSystemSubCatalog(rootSyscat.getId())) {
+					dr.add(new ALItemBelongRecursivelyToSyscat(cat.getId(), 10, 10, 10));
+				}
+				return dr;
+			}
+		};*/
+		drillers[TYPE_SYSCAT] = new DetailDriller() {
+			
+			@Override
+			public DrillResult drill(String syscatId, String gpsZone) throws SQLException {
+				
+				DrillResult dr = new DrillResult();
+				LinkedList<Catalog> subSyscats = PartnerManager.instance.getSystemSubCatalog(syscatId);
+				if (subSyscats == null) {
+					return dr; //TODO show what?
+				}
+				for (ICatalog cat : subSyscats) {
 					dr.add(new ALItemBelongRecursivelyToSyscat(cat.getId(), 10, 10, 10));
 				}
 				return dr;
@@ -136,7 +153,15 @@ public class DetailManager implements IDetailManager {
 			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
 				//5 sub cats, 3 sibling cats 
-				Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
+				String syscatId;
+				Catalog cat = (Catalog) PartnerManager.instance.getSystemCatalog(targetId);
+				if (cat != null) {
+					syscatId = targetId;
+				} else {
+					cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
+					syscatId = cat.getSystemCatalogId();
+				}
+				
 				DrillResult dr = new DrillResult();
 				dr.add(TYPENAME_COMPOUND, 
 						new ALCatalogsBelongDirectlyToCatalog(targetId, null, 10, 8, 5), 
@@ -146,13 +171,13 @@ public class DetailManager implements IDetailManager {
 				dr.add(new ALPromotionsBelongDirectlyToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 5, 5));
 				
 				//5 feature items from this catalog
-				dr.add(new ALItemBelongDirectlyToCatalog(targetId, cat.getSystemCatalogId(), 10, 5, 5));
+				dr.add(new ALItemBelongDirectlyToCatalog(targetId, syscatId, 10, 5, 5));
 				
 				//5 other stores, 3 similar branches
 				//ja = StoreDriller.findStoresOfBranch(cat.branchId, cat.storeId, 0, 8);
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
 						new ALStoresBelongToBranch(cat.branchId, cat.storeId, 10, 8, 5), 
-						new ALBranchesBelongDirectlyToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 8, 3));
+						new ALBranchesBelongDirectlyToSyscat(syscatId, cat.branchId, 10, 8, 3));
 				return dr;
 			}
 			
@@ -224,9 +249,9 @@ public class DetailManager implements IDetailManager {
 	
 	private static int typeNameToNumber(String name) {
 		
-		if (TYPENAME_NO == name) {
+		/*if (TYPENAME_NO == name) {
 			return TYPE_NO;
-		} else if (TYPENAME_BRANCH.equals(name)) {
+		} else*/ if (TYPENAME_BRANCH.equals(name)) {
 			return TYPE_BRANCH;
 		} else if (TYPENAME_STORE.equals(name)) {
 			return TYPE_STORE;
@@ -236,8 +261,10 @@ public class DetailManager implements IDetailManager {
 			return TYPE_CATITEM;
 		} else if (TYPENAME_PROMO.equals(name)) {
 			return TYPE_PROMO;
+		} else if (TYPENAME_SYSCAT.equals(name)) {
+			return TYPE_SYSCAT;
 		} else {
-			throw new RuntimeException();
+			throw new RuntimeException(name);
 		}
 	}
 }
