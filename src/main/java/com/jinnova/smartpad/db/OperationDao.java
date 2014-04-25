@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 
+import com.google.gson.JsonParser;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IOperation;
@@ -20,6 +21,8 @@ public class OperationDao implements DbPopulator<Operation> {
 	
 	private boolean populateBranch;
 	
+	private JsonParser parser;
+	
 	@Override
 	public Operation populate(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
@@ -27,8 +30,11 @@ public class OperationDao implements DbPopulator<Operation> {
 		DaoSupport.populateName(rs, oper.getName());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		//DaoSupport.populateGps(rs, oper.gps);
-		oper.getOpenHours().setText(rs.getString("open_text"));
-		oper.getOpenHours().fromString(rs.getString("open_hours"));
+		//oper.getOpenHours().setText(rs.getString("open_text"));
+		String scheduleJson = rs.getString("open_hours");
+		if (scheduleJson != null) {
+			oper.getOpenHours().readJson(parser.parse(scheduleJson).getAsJsonObject());
+		}
 		oper.setMemberLevels(StringArrayUtils.stringArrayFromJson(rs.getString("member_levels")));
 		return oper;
 	}
@@ -47,6 +53,7 @@ public class OperationDao implements DbPopulator<Operation> {
 			if (!rs.next()) {
 				return null;
 			}
+			parser = new JsonParser();
 			populateBranch = true;
 			return populate(rs);
 		} finally {
@@ -93,6 +100,7 @@ public class OperationDao implements DbPopulator<Operation> {
 			rs = ps.executeQuery();
 			LinkedList<IOperation> opList = new LinkedList<IOperation>();
 			populateBranch = false;
+			parser = new JsonParser();
 			while (rs.next()) {
 				opList.add(populate(rs));
 			}
@@ -193,12 +201,11 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 	
 	//TODO update store syscat / promotion syscat on changing in branch/store
-	private static final String OP_FIELDS = "syscat_id=?, open_text=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
+	private static final String OP_FIELDS = "syscat_id=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
 		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
-		ps.setString(i++, op.getOpenHours().getText());
-		ps.setString(i++, op.getOpenHours().toString());
+		ps.setString(i++, op.getOpenHours().writeJson().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));
 		i = DaoSupport.setGpsFields(ps, op.gps, i);
 		return i;

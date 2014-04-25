@@ -270,7 +270,7 @@ public class ScheduleSequence implements IScheduleSequence {
 		}
 	}
 	
-	public JsonObject toJson() {
+	public JsonObject writeJson() {
 		JsonObject json = new JsonObject();
 		json.add("m", toJson(this.minutes));
 		json.add("h", toJson(this.hours));
@@ -281,15 +281,13 @@ public class ScheduleSequence implements IScheduleSequence {
 		return json;
 	}
 	
-	public static ScheduleSequence fromJson(JsonObject json) {
-		ScheduleSequence seq = new ScheduleSequence();
-		fromJson(seq.minutes, json.get("m").getAsJsonArray());
-		fromJson(seq.hours, json.get("h").getAsJsonArray());
-		fromJson(seq.daysOfWeek, json.get("w").getAsJsonArray());
-		fromJson(seq.daysOfMonth, json.get("d").getAsJsonArray());
-		fromJson(seq.months, json.get("mo").getAsJsonArray());
-		fromJson(seq.years, json.get("y").getAsJsonArray());
-		return seq;
+	void readJson(JsonObject json) {
+		fromJson(minutes, json.get("m").getAsJsonArray());
+		fromJson(hours, json.get("h").getAsJsonArray());
+		fromJson(daysOfWeek, json.get("w").getAsJsonArray());
+		fromJson(daysOfMonth, json.get("d").getAsJsonArray());
+		fromJson(months, json.get("mo").getAsJsonArray());
+		fromJson(years, json.get("y").getAsJsonArray());
 		
 	}
 }

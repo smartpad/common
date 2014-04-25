@@ -33,7 +33,7 @@ public class Consumer {
 	//private static boolean 
 
 	public boolean qualify(CCardType requiredCreditType,
-			CCardBranch requiredCreditBranch, CCardIssuer requiredCreditIssuer) {
+			CCardBranch requiredCreditBranch, String requiredCreditIssuer) {
 		
 		if (requiredCreditType != null || requiredCreditBranch != null || requiredCreditIssuer != null) {
 			if (ccards == null) {

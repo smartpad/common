@@ -21,21 +21,25 @@ BEGIN
 		--100m
 		return 'a';
 	end if;
+	if (d <= 0.005000) then
+		--500m
+		return 'b';
+	end if;
 	if (d <= 0.010000) then
 		--1km
-		return 'b';
+		return 'c';
 	end if;
 	if (d <= 0.100000) then
 		--10km
-		return 'c';
+		return 'd';
 	end if;
 	if (d <= 1.000000) then
 		--100km
-		return 'd';
+		return 'e';
 	end if;
 	if (d <= 10.000000) then
 		--1000km
-		return 'e';
+		return 'f';
 	end if;
 
 	return 'z';
