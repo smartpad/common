@@ -103,13 +103,17 @@ class DrillResult {
 			DrillSection oneSection = allSections.get(i);
 			if (!flatten) {
 				flatten = oneSection.copyTo(jsonList);
-				if (oneSection instanceof DrillSectionSimple) {
-					resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, 
-							((DrillSectionSimple) oneSection).actionLoad.generateNextLoadUrl());
-				} else {
-					resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, 
-							((DrillSectionTwin) oneSection).flatenSection.actionLoad.generateNextLoadUrl());
+				if (flatten) {
+					if (oneSection instanceof DrillSectionSimple) {
+						resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, 
+								((DrillSectionSimple) oneSection).actionLoad.generateNextLoadUrl());
+					} else {
+						resultJson.addProperty(IDetailManager.FIELD_ACTION_LOADNEXT, 
+								((DrillSectionTwin) oneSection).flatenSection.actionLoad.generateNextLoadUrl());
+					}
 				}
+			} else if (oneSection instanceof DrillSectionSimple && ((DrillSectionSimple) oneSection).isForcedFlatten()) {
+				oneSection.copyTo(jsonList);
 			} else {
 				JsonObject oneJson = oneSection.getJson();
 				if (oneJson != null) {
@@ -135,11 +139,13 @@ interface DrillSection {
 
 class DrillSectionSimple implements DrillSection {
 	
-	String sectionType;
+	private String sectionType;
 	Object[] ja;
 	int expectedSize;
 	
 	ActionLoad actionLoad;
+	
+	private boolean forcedFlatten = false;
 	
 	DrillSectionSimple(String sectionType, Object[] ja, int expectedSize, ActionLoad load) {
 		this.sectionType = sectionType;
@@ -153,6 +159,15 @@ class DrillSectionSimple implements DrillSection {
 		this.ja = load.loadFirstEntries();
 		this.expectedSize = load.getInitialDrillSize();
 		this.actionLoad = load;
+	}
+	
+	DrillSectionSimple forceFlatten() {
+		this.forcedFlatten = true;
+		return this;
+	}
+	
+	boolean isForcedFlatten() {
+		return forcedFlatten;
 	}
 	
 	@Override

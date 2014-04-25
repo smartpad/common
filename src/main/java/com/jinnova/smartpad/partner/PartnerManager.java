@@ -17,7 +17,6 @@ import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.db.ScriptRunner;
 import com.jinnova.smartpad.db.UserDao;
-import com.jinnova.smartpad.drilling.ActionLoad;
 import com.jinnova.smartpad.drilling.DetailManager;
 
 public class PartnerManager implements IPartnerManager {
@@ -129,7 +128,6 @@ public class PartnerManager implements IPartnerManager {
 			subCats.add(cat);
 		}
 		DetailManager.initialize();
-		ActionLoad.initialize();
 	}
 
 	public void clearDatabaseForTests() throws SQLException, FileNotFoundException, IOException {

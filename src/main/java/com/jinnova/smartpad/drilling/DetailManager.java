@@ -74,7 +74,28 @@ public class DetailManager implements IDetailManager {
 		return json.toString();
 	}
 	
+	private static DrillResult createDefaultDrills() {
+		
+		//order statuses
+		DrillResult dr = new DrillResult();
+		
+		//promotion alerts for a specific syscat
+		
+		return dr;
+	}
+	
+	private static void createSyscatAlerts(DrillResult dr, String syscatId) {
+		
+		//promotion alerts for a specific syscat
+	}
+	
+	private static void createBranchAlerts(DrillResult dr, String syscatId) {
+		
+		//promotion alerts for a specific syscat
+	}
+	
 	public static void initialize() {
+		ActionLoad.initialize();
 		/*drillers[TYPE_NO] = new DetailDriller() {
 			
 			@Override
@@ -93,7 +114,8 @@ public class DetailManager implements IDetailManager {
 			@Override
 			public DrillResult drill(String syscatId, String gpsZone) throws SQLException {
 				
-				DrillResult dr = new DrillResult();
+				DrillResult dr = createDefaultDrills();
+				createSyscatAlerts(dr, syscatId);
 				LinkedList<Catalog> subSyscats = PartnerManager.instance.getSystemSubCatalog(syscatId);
 				if (subSyscats == null) {
 					return dr; //TODO show what?
@@ -109,9 +131,10 @@ public class DetailManager implements IDetailManager {
 			@Override
 			public DrillResult drill(String branchId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
-				DrillResult dr = new DrillResult();
 				OperationDao odao = new OperationDao();
 				String syscatId = odao.loadBranch(branchId).getSyscatId();
+				DrillResult dr = createDefaultDrills();
+				createSyscatAlerts(dr, syscatId);
 
 				//At most 5 stores belong to this branch and 3 similar branches
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
@@ -133,8 +156,9 @@ public class DetailManager implements IDetailManager {
 			@Override
 			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
-				DrillResult dr = new DrillResult();
 				Operation targetStore = new OperationDao().loadStore(targetId);
+				DrillResult dr = createDefaultDrills();
+				createSyscatAlerts(dr, targetStore.getSyscatId());
 				
 				//5 stores belong in same branch with this store, and 3 similar branches
 				dr.add(TYPENAME_COMPOUND_BRANCHSTORE, 
@@ -153,22 +177,26 @@ public class DetailManager implements IDetailManager {
 			public DrillResult drill(String targetId, String gpsZone/*, int page, int size*/) throws SQLException {
 				
 				//5 sub cats, 3 sibling cats 
-				String syscatId;
+				/*String syscatId;
 				Catalog cat = (Catalog) PartnerManager.instance.getSystemCatalog(targetId);
 				if (cat != null) {
 					syscatId = targetId;
 				} else {
 					cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
 					syscatId = cat.getSystemCatalogId();
-				}
+				}*/
+				Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);
+				String syscatId = cat.getSystemCatalogId();
+
+				DrillResult dr = createDefaultDrills();
+				createBranchAlerts(dr, syscatId);
 				
-				DrillResult dr = new DrillResult();
 				dr.add(TYPENAME_COMPOUND, 
 						new ALCatalogsBelongDirectlyToCatalog(targetId, null, 10, 8, 5), 
 						new ALCatalogsBelongDirectlyToCatalog(cat.getParentCatalogId(), targetId, 10, 8, 3));
 				
 				//5 active promotions from this branch in one compound
-				dr.add(new ALPromotionsBelongDirectlyToSyscat(cat.getSystemCatalogId(), cat.branchId, 10, 5, 5));
+				dr.add(new ALPromotionsBelongDirectlyToSyscat(syscatId, cat.branchId, 10, 5, 5));
 				
 				//5 feature items from this catalog
 				dr.add(new ALItemBelongDirectlyToCatalog(targetId, syscatId, 10, 5, 5));
@@ -190,7 +218,10 @@ public class DetailManager implements IDetailManager {
 				//5 sibling cats, 3 similar branches 
 				CatalogItem catItem = new CatalogItemDao().loadCatalogItem(targetId, null);
 				Catalog cat = new CatalogDao().loadCatalog(catItem.getCatalogId(), false);
-				DrillResult dr = new DrillResult();
+
+				DrillResult dr = createDefaultDrills();
+				createBranchAlerts(dr, cat.branchId);
+				
 				dr.add(new ALCatalogsBelongDirectlyToCatalog(cat.getParentCatalogId(), catItem.getCatalogId(), 10, 8, 5));
 				return dr;
 				/*Catalog cat = (Catalog) new CatalogDao().loadCatalog(targetId, false);

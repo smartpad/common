@@ -20,7 +20,7 @@ import com.jinnova.smartpad.partner.IPromotionSort;
 import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.PartnerManager;
 
-public abstract class ActionLoad {
+abstract class ActionLoad {
 	
 	static final String REL_SIMILAR = "sim";
 	
@@ -66,7 +66,7 @@ public abstract class ActionLoad {
 	
 	private static boolean initializing = true;
 	
-	public static void initialize() {
+	static void initialize() {
 		actionClasses = new HashMap<String, Class<? extends ActionLoad>>();
 		register(new ALBranchesBelongDirectlyToSyscat());
 		register(new ALCatalogsBelongDirectlyToCatalog());
