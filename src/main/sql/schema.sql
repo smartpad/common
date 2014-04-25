@@ -1,7 +1,5 @@
 --CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8;
 
-use smartpad;
-
 CREATE TABLE `sp_users` (
   `login` varchar(32) NOT NULL,
   `passhash` varchar(32) DEFAULT NULL,
@@ -20,6 +18,9 @@ CREATE TABLE `operations` (
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
+
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
   
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
@@ -59,6 +60,9 @@ CREATE TABLE `catalogs` (
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) DEFAULT NULL,
   `partial_id` int NOT NULL,
+
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
   
   `gps_lon` decimal(9,6) DEFAULT NULL,
   `gps_lat` decimal(9,6) DEFAULT NULL,
@@ -82,6 +86,9 @@ CREATE TABLE `promos` (
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
+
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
   
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
@@ -119,13 +126,16 @@ CREATE TABLE `promos` (
 
 CREATE TABLE `promos_alerts` (
 
-  `consumer_id` varchar(32) not null,
+  `consumer_id` varchar(32) NOT NULL,
 
-  --identical to promos table
+  --identical to promos
   `promo_id` varchar(32) NOT NULL,
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
+
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
   
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
@@ -138,6 +148,7 @@ CREATE TABLE `promos_alerts` (
   `visa_c_issuers` varchar(1024) default null,
   `visa_d` boolean default false,
   `visa_d_issuers` varchar(1024) default null,
+  
   `master_c` boolean default false,
   `master_c_issuers` varchar(1024) default null,
   `master_d` boolean default false,
@@ -157,51 +168,7 @@ CREATE TABLE `promos_alerts` (
   `create_by` varchar(32) NOT NULL,
   `update_by` varchar(32) DEFAULT NULL,
   
-  PRIMARY KEY (`promo_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `promos_clusloc` (
-
-  `cluster_id` varchar(32) not null,
-  `location_id` varchar(20) not null,
-
-  --identical to promos table
-  `promo_id` varchar(32) NOT NULL,
-  `store_id` varchar(32) NOT NULL,
-  `branch_id` varchar(32) NOT NULL,
-  `syscat_id` varchar(32) NOT NULL,
-  
-  `name` varchar(1024) NOT NULL,
-  `descript` text DEFAULT NULL,
-  `images` text DEFAULT NULL,
-  
-  `member_level` int,
-  `member_point` int,
-  
-  `visa_c` boolean default false,
-  `visa_c_issuers` varchar(1024) default null,
-  `visa_d` boolean default false,
-  `visa_d_issuers` varchar(1024) default null,
-  `master_c` boolean default false,
-  `master_c_issuers` varchar(1024) default null,
-  `master_d` boolean default false,
-  `master_d_issuers` varchar(1024) default null,
-  `ccard_req` text default null,
-  
-  `schedule_start` datetime default null,
-  `schedule_end` datetime default null,
-  `schedule` text default null,
-  
-  `gps_lon` decimal(9,6) DEFAULT NULL,
-  `gps_lat` decimal(9,6) DEFAULT NULL,
-  `gps_inherit` varchar(8) default null,
-  
-  `create_date` datetime NOT NULL,
-  `update_date` datetime DEFAULT NULL,
-  `create_by` varchar(32) NOT NULL,
-  `update_by` varchar(32) DEFAULT NULL,
-  
-  PRIMARY KEY (`promo_id`)
+  PRIMARY KEY (`consumer_id`, `promo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `similars_ver` (

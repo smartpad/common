@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.drilling;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -12,6 +13,16 @@ import com.jinnova.smartpad.partner.IDetailManager;
 class DrillResult {
 	
 	private ArrayList<DrillSection> allSections = new ArrayList<>(10);
+	
+	private final String clusterId;
+	private final BigDecimal lon;
+	private final BigDecimal lat;
+		
+	public DrillResult(String clusterId, BigDecimal lon, BigDecimal lat) {
+		this.clusterId = clusterId;
+		this.lon = lon;
+		this.lat = lat;
+	}
 	
 	private class DrillSectionTwin implements DrillSection {
 		
@@ -87,10 +98,19 @@ class DrillResult {
 	}
 	
 	void add(ActionLoad actionLoad) throws SQLException {
+		actionLoad.clusterId = this.clusterId;
+		actionLoad.gpsLon = this.lon;
+		actionLoad.gpsLat = this.lat;
 		allSections.add(new DrillSectionSimple(actionLoad));
 	}
 	
 	void add(String sectionType, ActionLoad load1, ActionLoad load2) throws SQLException {
+		load1.clusterId = this.clusterId;
+		load1.gpsLon = this.lon;
+		load1.gpsLat = this.lat;
+		load2.clusterId = this.clusterId;
+		load2.gpsLon = this.lon;
+		load2.gpsLat = this.lat;
 		allSections.add(new DrillSectionTwin(sectionType, 
 				new DrillSectionSimple(load1), new DrillSectionSimple(load2)));
 	}

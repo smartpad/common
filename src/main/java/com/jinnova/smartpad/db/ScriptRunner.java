@@ -49,20 +49,24 @@ public class ScriptRunner {
     private boolean fullLineDelimiter = false;
 
 	public static void clearDatabaseForTests() throws SQLException, FileNotFoundException, IOException {
+		createDatabase("smartpad");
+		createDatabase("smartpad_rec");
+	}
+
+	public static void createRecommendDatabase() throws SQLException, FileNotFoundException, IOException {
+		createDatabase("smartpad_rec");
+	}
+
+	private static void createDatabase(String dbname) throws SQLException, FileNotFoundException, IOException {
 
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/mysql", "root", "");
 		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("drop database smartpad");
-		stmt.executeUpdate("CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8");
-		/*stmt.executeUpdate("delete from sp_users");
-		stmt.executeUpdate("delete from operations");
-		stmt.executeUpdate("delete from catalogs");
-		stmt.executeUpdate("delete from promos");
-		stmt.executeUpdate("drop table if exists cs_foods");*/
+		stmt.executeUpdate("drop database if exists " + dbname);
+		stmt.executeUpdate("CREATE DATABASE " + dbname + " DEFAULT CHARACTER SET utf8");
 		stmt.close();
 		conn.close();
 
-		conn = DriverManager.getConnection("jdbc:mysql://localhost/smartpad", "root", "");
+		conn = DriverManager.getConnection("jdbc:mysql://localhost/" + dbname, "root", "");
 		System.out.println("Working dir: " + new File(".").getAbsolutePath());
 		ScriptRunner runner = new ScriptRunner(conn, true, true);
 		runner.runScript(new FileReader("../common/src/main/sql/schema.sql"));

@@ -38,19 +38,21 @@ abstract class ActionLoad {
 	
 	String syscatId;
 	
-	final String anchorType;
+	String clusterId;
+	
+	private final String anchorType;
 
 	final String targetType;
 	
-	final String relation;
+	private final String relation;
 	
 	String anchorId;
 	
 	String excludeId;
 	
-	private int offset;
+	int offset;
 	
-	private int pageSize;
+	int pageSize;
 	
 	BigDecimal gpsLon;
 	
@@ -85,24 +87,11 @@ abstract class ActionLoad {
 		actionClasses.put(key, load.getClass());
 	}
 	
-	static ActionLoad loadMore(String targetType, String anchorType, String anchorId, String relation,
-			String branchId, String storeId, String catId, String syscatId, String excludeId,
-			String gpsLon, String gpsLat, int offset, int size) throws SQLException {
+	static ActionLoad createLoad(String targetType, String anchorType, String relation) throws SQLException {
 		
 		Class<? extends ActionLoad> c = actionClasses.get(anchorType + targetType + relation);
 		try {
-			ActionLoad load = c.newInstance();
-			load.anchorId = anchorId;
-			load.excludeId = excludeId;
-			load.offset = offset;
-			load.pageSize = size;
-			if (gpsLon != null) {
-				load.gpsLon = new BigDecimal(gpsLon);
-			}
-			if (gpsLat != null) {
-				load.gpsLat = new BigDecimal(gpsLat);
-			}
-			return load;
+			return c.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}
@@ -148,6 +137,9 @@ abstract class ActionLoad {
 		}
 		StringBuffer buffer = new StringBuffer(targetType + "/" + relation + "/" + anchorType + 
 				"/" + anchorId + "?offset=" + offset + "&size="  + pageSize);
+		if (clusterId != null) {
+			buffer.append("&clu=" + clusterId);
+		}
 		if (branchId != null) {
 			buffer.append("&branchId=" + branchId);
 		}
@@ -220,8 +212,7 @@ class ALBranchesBelongRecursivelyToSyscat extends ActionLoad {
 		super(TYPENAME_SYSCAT, TYPENAME_BRANCH, REL_BELONG_RECURSIVELY);
 	}
 
-	ALBranchesBelongRecursivelyToSyscat(String anchorSyscatId, String excludeBranchId,
-			int pageSize, int initialLoadSize, int initialDrillSize) {
+	ALBranchesBelongRecursivelyToSyscat(String anchorSyscatId, String excludeBranchId, int pageSize, int initialLoadSize, int initialDrillSize) {
 		this();
 		setParams(anchorSyscatId, excludeBranchId, pageSize, initialLoadSize, initialDrillSize);
 	}
@@ -332,13 +323,13 @@ class ALItemBelongRecursivelyToSyscat extends ActionLoad {
 	@Override
 	Object[] load(int offset, int size) throws SQLException {
 		ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(anchorId);
-		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, gpsLon, gpsLat, offset, size).toArray();
+		return new CatalogItemDao().iterateCatalogItems(clusterId, spec, anchorId, gpsLon, gpsLat, offset, size).toArray();
 	}
 	
 	@Override
 	Object[] loadFirstEntries(int size) throws SQLException {
 		ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(anchorId);
-		return new CatalogItemDao().iterateCatalogItems(spec, anchorId, gpsLon, gpsLat, 0, size).toArray();
+		return new CatalogItemDao().iterateCatalogItems(clusterId, spec, anchorId, gpsLon, gpsLat, 0, size).toArray();
 	}
 	
 }

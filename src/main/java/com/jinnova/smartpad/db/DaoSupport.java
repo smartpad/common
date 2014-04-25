@@ -117,6 +117,14 @@ class DaoSupport {
 		}
 		return field + operator + "'" + value + "'";
 	}
+
+	static String buildConditionWithProperNull(String field, String operator, String value) {
+		if (value == null) {
+			return field + " is null";
+		} else {
+			return field + operator + "'" + value + "'";
+		}
+	}
 	
 	static String buildDGradeField(BigDecimal lon, BigDecimal lat) {
 		String lonS = lon == null ? "null" : lon.toPlainString();
