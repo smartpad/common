@@ -29,6 +29,10 @@ import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.sql.*;
+import java.util.LinkedList;
+
+import com.jinnova.smartpad.partner.Catalog;
+import com.jinnova.smartpad.partner.PartnerManager;
 
 /**
  * Tool to run database scripts
@@ -59,14 +63,36 @@ public class ScriptRunner {
 		}
 	}
 
-	/*public static void createDrillingDatabase(String drillDbhost, String drillDbport, String drillDbname, String drillDblogin, String drillDbpass) throws SQLException, FileNotFoundException, IOException {
-		createDatabase(drillDbhost, drillDbport, drillDbname, drillDblogin, drillDbpass);
+	public static void copyDataToDrilling(String drillDbhost, String drillDbport, String drillDbname, String drillDblogin, String drillDbpass, String mainDbname) throws SQLException, FileNotFoundException, IOException {
+
 		Connection conn = DriverManager.getConnection(makeDburl(drillDbhost, drillDbport, drillDbname), drillDblogin, drillDbpass);
-		System.out.println("Working dir: " + new File(".").getAbsolutePath());
-		ScriptRunner runner = new ScriptRunner(conn, true, true);
-		runner.runScript(new FileReader("../common/src/main/sql/schema_drill.sql"));
+		Statement stmt = conn.createStatement();
+		String sql = "delete from catalogs";
+		System.out.println("SQL: " + sql);
+		stmt.executeUpdate(sql);
+		String[] tables = new String[] {"catalogs", "operations", "promos"};
+		for (String oneTable : tables) {
+			sql = "insert into " + /*drillDbname + "." +*/ oneTable + " (select * from " + mainDbname + "." + oneTable + ")";
+			System.out.println("SQL: " + sql);
+			stmt.execute(sql);
+		}
+		
+		LinkedList<Catalog> catList = new LinkedList<>();
+		Catalog rootCat = PartnerManager.instance.getSystemRootCatalog();
+		catList.addAll(PartnerManager.instance.getSystemSubCatalog(rootCat.getId()));
+		while (!catList.isEmpty()) {
+			Catalog cat = catList.removeFirst();
+			sql = "insert into " + cat.getId() + " (select * from " + mainDbname + "." + cat.getId() + ")";
+			System.out.println("SQL: " + sql);
+			stmt.execute(sql);
+			LinkedList<Catalog> subCats = PartnerManager.instance.getSystemSubCatalog(cat.getId());
+			if (subCats != null) {
+				catList.addAll(subCats);
+			}
+		}
+		
 		conn.close();
-	}*/
+	}
 	
 	public static String makeDburl(String dbhost, String dbport, String dbname) {
 		String dburl = "jdbc:mysql://" + dbhost;

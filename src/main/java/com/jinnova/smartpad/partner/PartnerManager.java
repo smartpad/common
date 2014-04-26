@@ -115,6 +115,11 @@ public class PartnerManager implements IPartnerManager {
 	public static void initialize(String dbhost, String dbport, String dbname, String dblogin, String dbpass) throws SQLException {
 		SmartpadConnectionPool.initialize(dblogin, dbpass,  ScriptRunner.makeDburl(dbhost, dbport, dbname));
 		instance = new PartnerManager();
+		loadSyscatsInitially();
+		DetailManager.initialize();
+	}
+	
+	public static void loadSyscatsInitially() throws SQLException {
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 		instance.systemCatMap.remove(SYSTEM_BRANCH_ID);
 		for (Catalog cat : instance.systemCatMap.values()) {
@@ -125,7 +130,6 @@ public class PartnerManager implements IPartnerManager {
 			}
 			subCats.add(cat);
 		}
-		DetailManager.initialize();
 	}
 	
 	/*public Iterator<CatalogItem> storeItemIterator() {
