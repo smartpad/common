@@ -2,11 +2,11 @@ package com.jinnova.smartpad.partner;
 
 import java.sql.SQLException;
 
-class SystemCatalogGenrator {
+public class SystemCatalogGenrator {
 	
-	private User systemUser;
+	private static User systemUser;
 	
-	void generate() throws SQLException {
+	public static void generate() throws SQLException {
 		
 		//system catalog
 		systemUser = PartnerManager.instance.systemUser;
@@ -46,7 +46,7 @@ class SystemCatalogGenrator {
 		createCat(rootCat, "industrials", "Công nghiệp, xây dựng & Doanh nghiệp");
 	}
 	
-	private Catalog createCat(Catalog parentCat, String catId, String catName, Object[]... fieldIDTypeNames) throws SQLException {
+	private static Catalog createCat(Catalog parentCat, String catId, String catName, Object[]... fieldIDTypeNames) throws SQLException {
 		ICatalog cat = parentCat.getSubCatalogPagingList().newEntryInstance(systemUser);
 		cat.getName().setName(catName);
 		cat.getCatalogSpec().setSpecId(catId); //table name
@@ -61,7 +61,7 @@ class SystemCatalogGenrator {
 		return (Catalog) cat;
 	}
 	
-	private void createColumns(ICatalog cat, Object[][] fieldIDTypeNames) {
+	private static void createColumns(ICatalog cat, Object[][] fieldIDTypeNames) {
 
 		for (Object[] oneIDTypeName : fieldIDTypeNames) {
 			ICatalogField field = cat.getCatalogSpec().createField();

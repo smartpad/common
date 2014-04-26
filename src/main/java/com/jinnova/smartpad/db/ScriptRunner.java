@@ -48,30 +48,47 @@ public class ScriptRunner {
     private String delimiter = DEFAULT_DELIMITER;
     private boolean fullLineDelimiter = false;
 
-	public static void clearDatabaseForTests() throws SQLException, FileNotFoundException, IOException {
-		createDatabase("smartpad");
-		createDrillingDatabase();
+	public static void createDatabase(String dbhost, String dbport, String dbname, String dblogin, String dbpass, boolean withDrilling) throws SQLException, FileNotFoundException, IOException {
+		createDatabase(dbhost, dbport, dbname, dblogin, dbpass);
+		if (withDrilling) {
+			Connection conn = DriverManager.getConnection(makeDburl(dbhost, dbport, dbname), dblogin, dbpass);
+			System.out.println("Working dir: " + new File(".").getAbsolutePath());
+			ScriptRunner runner = new ScriptRunner(conn, true, true);
+			runner.runScript(new FileReader("../common/src/main/sql/schema_drill.sql"));
+			conn.close();
+		}
 	}
 
-	public static void createDrillingDatabase() throws SQLException, FileNotFoundException, IOException {
-		createDatabase("smartpad_drill");
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/smartpad_drill", "root", "");
+	/*public static void createDrillingDatabase(String drillDbhost, String drillDbport, String drillDbname, String drillDblogin, String drillDbpass) throws SQLException, FileNotFoundException, IOException {
+		createDatabase(drillDbhost, drillDbport, drillDbname, drillDblogin, drillDbpass);
+		Connection conn = DriverManager.getConnection(makeDburl(drillDbhost, drillDbport, drillDbname), drillDblogin, drillDbpass);
 		System.out.println("Working dir: " + new File(".").getAbsolutePath());
 		ScriptRunner runner = new ScriptRunner(conn, true, true);
 		runner.runScript(new FileReader("../common/src/main/sql/schema_drill.sql"));
 		conn.close();
+	}*/
+	
+	public static String makeDburl(String dbhost, String dbport, String dbname) {
+		String dburl = "jdbc:mysql://" + dbhost;
+		if (dbport != null) {
+			dburl = dburl + ":" + dbport;
+		}
+		return dburl + "/" + dbname + "?useUnicode=true&characterEncoding=UTF-8";
 	}
 
-	private static void createDatabase(String dbname) throws SQLException, FileNotFoundException, IOException {
+	private static void createDatabase(String dbhost, String dbport, String dbname, String dblogin, String dbpass) throws SQLException, FileNotFoundException, IOException {
 
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/mysql", "root", "");
+		String dburl = "jdbc:mysql://" + dbhost;
+		if (dbport != null) {
+			dburl = dburl + ":" + dbport;
+		}
+		Connection conn = DriverManager.getConnection(makeDburl(dbhost, dbport, "mysql"), dblogin, dbpass);
 		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("drop database if exists " + dbname);
 		stmt.executeUpdate("CREATE DATABASE " + dbname + " DEFAULT CHARACTER SET utf8");
 		stmt.close();
 		conn.close();
 
-		conn = DriverManager.getConnection("jdbc:mysql://localhost/" + dbname, "root", "");
+		conn = DriverManager.getConnection(dburl + "/" + dbname, dblogin, dbpass);
 		System.out.println("Working dir: " + new File(".").getAbsolutePath());
 		ScriptRunner runner = new ScriptRunner(conn, true, true);
 		runner.runScript(new FileReader("../common/src/main/sql/schema.sql"));

@@ -2,8 +2,6 @@ package com.jinnova.smartpad.partner;
 
 import static com.jinnova.smartpad.partner.IDetailManager.SYSTEM_BRANCH_ID;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
@@ -114,8 +112,8 @@ public class PartnerManager implements IPartnerManager {
 		systemRootCatalog = new Catalog(SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, null, null);
 	}
 	
-	public static void initialize() throws SQLException {
-		SmartpadConnectionPool.initialize("root", "", "jdbc:mysql://localhost/smartpad?useUnicode=true&characterEncoding=UTF-8");
+	public static void initialize(String dbhost, String dbport, String dbname, String dblogin, String dbpass) throws SQLException {
+		SmartpadConnectionPool.initialize(dblogin, dbpass,  ScriptRunner.makeDburl(dbhost, dbport, dbname));
 		instance = new PartnerManager();
 		instance.systemRootCatalog.loadAllSubCatalogsRecursively(instance.systemCatMap);
 		instance.systemCatMap.remove(SYSTEM_BRANCH_ID);
@@ -128,11 +126,6 @@ public class PartnerManager implements IPartnerManager {
 			subCats.add(cat);
 		}
 		DetailManager.initialize();
-	}
-
-	public void clearDatabaseForTests() throws SQLException, FileNotFoundException, IOException {
-		ScriptRunner.clearDatabaseForTests();
-		new SystemCatalogGenrator().generate();
 	}
 	
 	/*public Iterator<CatalogItem> storeItemIterator() {
