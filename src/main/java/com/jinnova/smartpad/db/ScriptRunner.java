@@ -50,11 +50,16 @@ public class ScriptRunner {
 
 	public static void clearDatabaseForTests() throws SQLException, FileNotFoundException, IOException {
 		createDatabase("smartpad");
-		createDatabase("smartpad_rec");
+		createDrillingDatabase();
 	}
 
-	public static void createRecommendDatabase() throws SQLException, FileNotFoundException, IOException {
-		createDatabase("smartpad_rec");
+	public static void createDrillingDatabase() throws SQLException, FileNotFoundException, IOException {
+		createDatabase("smartpad_drill");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/smartpad_drill", "root", "");
+		System.out.println("Working dir: " + new File(".").getAbsolutePath());
+		ScriptRunner runner = new ScriptRunner(conn, true, true);
+		runner.runScript(new FileReader("../common/src/main/sql/schema_drill.sql"));
+		conn.close();
 	}
 
 	private static void createDatabase(String dbname) throws SQLException, FileNotFoundException, IOException {

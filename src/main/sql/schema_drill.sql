@@ -1,19 +1,10 @@
---CREATE DATABASE `smartpad` DEFAULT CHARACTER SET utf8;
 
-CREATE TABLE `sp_users` (
-  `login` varchar(32) NOT NULL,
-  `passhash` varchar(32) DEFAULT NULL,
-  `branch_id` varchar(32) DEFAULT NULL,
-  
-  `create_date` datetime NOT NULL,
-  `update_date` datetime DEFAULT NULL,
-  `create_by` varchar(32) NOT NULL,
-  `update_by` varchar(32) DEFAULT NULL,
-  
-  PRIMARY KEY (`login`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `operations_clusters` (
 
-CREATE TABLE `operations` (
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
+  
+  --identical to smartpad.operations
 
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
@@ -50,7 +41,12 @@ CREATE TABLE `operations` (
   PRIMARY KEY (`store_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `catalogs` (
+CREATE TABLE `catalogs_clusters` (
+
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
+
+  --identical to smartpad.catalogs
   `catalog_id` varchar(32) NOT NULL,
   `parent_id` varchar(32) NOT NULL,
   `store_id` varchar(32) NOT NULL,
@@ -75,7 +71,25 @@ CREATE TABLE `catalogs` (
   PRIMARY KEY (`catalog_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `promos` (
+CREATE TABLE `promos_clusters` (
+
+  `cluster_id` varchar(32) default null,
+  `cluster_rank` int default null,
+  
+  `visa_c` boolean default false,
+  `visa_c_issuers` varchar(1024) default null,
+  `visa_d` boolean default false,
+  `visa_d_issuers` varchar(1024) default null,
+  
+  `master_c` boolean default false,
+  `master_c_issuers` varchar(1024) default null,
+  `master_d` boolean default false,
+  `master_d_issuers` varchar(1024) default null,
+  
+  `schedule_start` datetime default null,
+  `schedule_end` datetime default null,
+  
+  --identical to smartpad.promos
   `promo_id` varchar(32) NOT NULL,
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
@@ -102,14 +116,33 @@ CREATE TABLE `promos` (
   PRIMARY KEY (`promo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `similars_ver` (
-  `type_id` varchar(8) NOT NULL,
-  `version` varchar(2) NOT NULL,
-  PRIMARY KEY (`type_id`, `version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `promos_alerts` (
 
-CREATE TABLE `similars` (
-  `target` varchar(42) NOT NULL,
-  `json` text NOT NULL,
-  PRIMARY KEY (`target`)
+  `consumer_id` varchar(32) NOT NULL,
+
+  --identical to promos
+  `promo_id` varchar(32) NOT NULL,
+  `store_id` varchar(32) NOT NULL,
+  `branch_id` varchar(32) NOT NULL,
+  `syscat_id` varchar(32) NOT NULL,
+  
+  `name` varchar(1024) NOT NULL,
+  `descript` text DEFAULT NULL,
+  `images` text DEFAULT NULL,
+  
+  `member_level` int,
+  `member_point` int,
+  `ccard_req` text default null,
+  `schedule` text default null,
+  
+  `gps_lon` decimal(9,6) DEFAULT NULL,
+  `gps_lat` decimal(9,6) DEFAULT NULL,
+  `gps_inherit` varchar(8) default null,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
+  PRIMARY KEY (`consumer_id`, `promo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
