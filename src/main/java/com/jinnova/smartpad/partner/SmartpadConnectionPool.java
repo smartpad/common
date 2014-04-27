@@ -17,6 +17,7 @@ public class SmartpadConnectionPool {
         ds.setPassword(password);
         ds.setUrl(connectURI);
         dataSource = ds;
+        System.out.println("Connection pool is ready for " + connectURI);
     }
     
     public static void initialize(String login, String password, String connectURI) {

@@ -24,6 +24,13 @@ public class OperationDao implements DbPopulator<Operation> {
 	private JsonParser parser;
 	
 	@Override
+	public void preparePopulating() {
+		if (parser == null) {
+			parser = new JsonParser();
+		}
+	}
+	
+	@Override
 	public Operation populate(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
 				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);

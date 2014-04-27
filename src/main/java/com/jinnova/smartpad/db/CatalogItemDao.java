@@ -143,6 +143,11 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	}
 	
 	@Override
+	public void preparePopulating() {
+		//nothign to prepare
+	}
+	
+	@Override
 	public CatalogItem populate(ResultSet rs) throws SQLException {
 		CatalogItem item = new CatalogItem(rs.getString("branch_id"), rs.getString("store_id"), rs.getString("catalog_id"), syscatId, rs.getString("item_id"));
 		DaoSupport.populateGps(rs, item.gps);

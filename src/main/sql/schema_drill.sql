@@ -1,8 +1,18 @@
 
+CREATE TABLE `clusters` (
+
+  `cluster_id` int not null,
+  
+  PRIMARY KEY (`cluster_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `operations_clusters` (
 
-  `cluster_id` varchar(32) default null,
+  `cluster_id` int default null,
   `cluster_rank` int default null,
+  
+  --`open_start` datetime default null,
+  --`open_end` datetime default null,
   
   --identical to smartpad.operations
 
@@ -37,43 +47,12 @@ CREATE TABLE `operations_clusters` (
   `moffer_survey` varchar(256) DEFAULT NULL,
   `moffer_survey_level` int(11) DEFAULT NULL,
   `member_levels` varchar(2048) DEFAULT NULL,
-  `open_hours` varchar(2048) DEFAULT NULL,
-  PRIMARY KEY (`store_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `catalogs_clusters` (
-
-  `cluster_id` varchar(32) default null,
-  `cluster_rank` int default null,
-
-  --identical to smartpad.catalogs
-  `catalog_id` varchar(32) NOT NULL,
-  `parent_id` varchar(32) NOT NULL,
-  `store_id` varchar(32) NOT NULL,
-  `branch_id` varchar(32) NOT NULL,
-  `syscat_id` varchar(32) DEFAULT NULL,
-  `partial_id` int NOT NULL,
-  
-  `gps_lon` decimal(9,6) DEFAULT NULL,
-  `gps_lat` decimal(9,6) DEFAULT NULL,
-  `gps_inherit` varchar(8) default null,
-  
-  `name` varchar(1024) NOT NULL,
-  `descript` text DEFAULT NULL,
-  `images` text DEFAULT NULL,
-  `spec` text DEFAULT NULL,
-  
-  `create_date` datetime NOT NULL,
-  `update_date` datetime DEFAULT NULL,
-  `create_by` varchar(32) NOT NULL,
-  `update_by` varchar(32) DEFAULT NULL,
-  
-  PRIMARY KEY (`catalog_id`)
+  `open_hours` varchar(2048) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `promos_clusters` (
 
-  `cluster_id` varchar(32) default null,
+  `cluster_id` int default null,
   `cluster_rank` int default null,
   
   `visa_c` boolean default false,
@@ -111,9 +90,7 @@ CREATE TABLE `promos_clusters` (
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,
   `create_by` varchar(32) NOT NULL,
-  `update_by` varchar(32) DEFAULT NULL,
-  
-  PRIMARY KEY (`promo_id`)
+  `update_by` varchar(32) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `promos_alerts` (
@@ -142,7 +119,40 @@ CREATE TABLE `promos_alerts` (
   `create_date` datetime NOT NULL,
   `update_date` datetime DEFAULT NULL,
   `create_by` varchar(32) NOT NULL,
-  `update_by` varchar(32) DEFAULT NULL,
-  
-  PRIMARY KEY (`consumer_id`, `promo_id`)
+  `update_by` varchar(32) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into clusters values (1);
+insert into clusters values (2);
+insert into clusters values (3);
+
+insert into operations_clusters (select 1, 1, operations.* from operations);
+insert into operations_clusters (select 2, 1, operations.* from operations);
+insert into operations_clusters (select 3, 1, operations.* from operations);
+
+insert into promos_clusters (cluster_id, cluster_rank, promo_id, store_id, branch_id, syscat_id, 
+	`name`,`descript`,`images`,`member_level`,`member_point`,
+  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`)
+  	 
+	(select 1, 1, promo_id, store_id, branch_id, syscat_id, 
+	`name`,`descript`,`images`,`member_level`,`member_point`,
+  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`
+  	from promos);
+
+insert into promos_clusters (cluster_id, cluster_rank, promo_id, store_id, branch_id, syscat_id, 
+	`name`,`descript`,`images`,`member_level`,`member_point`,
+  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`)
+  	 
+	(select 2, 1, promo_id, store_id, branch_id, syscat_id, 
+	`name`,`descript`,`images`,`member_level`,`member_point`,
+  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`
+  	from promos);
+
+insert into promos_clusters (cluster_id, cluster_rank, promo_id, store_id, branch_id, syscat_id, 
+	`name`,`descript`,`images`,`member_level`,`member_point`,
+  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`)
+  	 
+	(select 3, 1, promo_id, store_id, branch_id, syscat_id, 
+	`name`,`descript`,`images`,`member_level`,`member_point`,
+  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`
+  	from promos);

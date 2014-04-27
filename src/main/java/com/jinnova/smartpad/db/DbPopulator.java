@@ -6,5 +6,6 @@ import java.sql.SQLException;
 public interface DbPopulator<T> {
 	
 	T populate(ResultSet rs) throws SQLException;
+	void preparePopulating();
 
 }

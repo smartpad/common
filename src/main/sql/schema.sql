@@ -13,6 +13,20 @@ CREATE TABLE `sp_users` (
   PRIMARY KEY (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `consumers` (
+  `login` varchar(32) NOT NULL,
+  `passhash` varchar(32) DEFAULT NULL,
+  
+  `cluster_id` int,
+  
+  `create_date` datetime NOT NULL,
+  `update_date` datetime DEFAULT NULL,
+  `create_by` varchar(32) NOT NULL,
+  `update_by` varchar(32) DEFAULT NULL,
+  
+  PRIMARY KEY (`login`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `operations` (
 
   `store_id` varchar(32) NOT NULL,

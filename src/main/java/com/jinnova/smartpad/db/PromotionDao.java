@@ -111,6 +111,11 @@ public class PromotionDao implements DbPopulator<Promotion> {
 	}
 	
 	@Override
+	public void preparePopulating() {
+		//nothign to prepare
+	}
+	
+	@Override
 	public Promotion populate(ResultSet rs) throws SQLException {
 		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("branch_id"), rs.getString("store_id"), rs.getString("syscat_id"));
 		DaoSupport.populateGps(rs, promo.gps);
