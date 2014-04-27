@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.jinnova.smartpad.partner.GPSInfo;
@@ -197,7 +198,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 
-	public DbIterator<Promotion> iterateOperationPromos(String[] branchIds, String[] sortFieldAndDirections, int offset, int size) throws SQLException {
+	public DbIterator<Promotion> iterateBranchPromos(String[] branchIds, String[] sortFieldAndDirections, int offset, int size) throws SQLException {
 		
 		String questionMarks = null;
 		for (int i = 0; i < branchIds.length; i++) {
@@ -216,6 +217,15 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		System.out.println("SQL: " + ps);
 		ResultSet rs = ps.executeQuery();
 		return new DbIterator<Promotion>(conn, ps, rs, this);
+	}
+
+	public DbIterator<Promotion> iterateSyscatPromos(String syscatId) throws SQLException {
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		String sql = "select * from promos where syscat_id = '" + syscatId + "'";
+		Statement stmt = conn.createStatement();
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		return new DbIterator<Promotion>(conn, stmt, rs, this);
 	}
 
 	public void updateBranchGps(String branchId, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {

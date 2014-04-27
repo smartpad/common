@@ -73,7 +73,11 @@ class DaoSupport {
 		String clause = "";
 		if (fieldNameAndDirections != null && fieldNameAndDirections.length > 0) {
 			for (int i = 0; i < fieldNameAndDirections.length; i++) {
-				clause += fieldNameAndDirections[i] + " ";
+				if ("".equals(clause)) {
+					clause = fieldNameAndDirections[i];
+				} else {
+					clause = clause + ", " + fieldNameAndDirections[i];
+				}
 			}
 			clause = "order by " + clause;
 		}

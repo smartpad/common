@@ -121,38 +121,3 @@ CREATE TABLE `promos_alerts` (
   `create_by` varchar(32) NOT NULL,
   `update_by` varchar(32) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-insert into clusters values (1);
-insert into clusters values (2);
-insert into clusters values (3);
-
-insert into operations_clusters (select 1, 1, operations.* from operations);
-insert into operations_clusters (select 2, 1, operations.* from operations);
-insert into operations_clusters (select 3, 1, operations.* from operations);
-
-insert into promos_clusters (cluster_id, cluster_rank, promo_id, store_id, branch_id, syscat_id, 
-	`name`,`descript`,`images`,`member_level`,`member_point`,
-  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`)
-  	 
-	(select 1, 1, promo_id, store_id, branch_id, syscat_id, 
-	`name`,`descript`,`images`,`member_level`,`member_point`,
-  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`
-  	from promos);
-
-insert into promos_clusters (cluster_id, cluster_rank, promo_id, store_id, branch_id, syscat_id, 
-	`name`,`descript`,`images`,`member_level`,`member_point`,
-  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`)
-  	 
-	(select 2, 1, promo_id, store_id, branch_id, syscat_id, 
-	`name`,`descript`,`images`,`member_level`,`member_point`,
-  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`
-  	from promos);
-
-insert into promos_clusters (cluster_id, cluster_rank, promo_id, store_id, branch_id, syscat_id, 
-	`name`,`descript`,`images`,`member_level`,`member_point`,
-  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`)
-  	 
-	(select 3, 1, promo_id, store_id, branch_id, syscat_id, 
-	`name`,`descript`,`images`,`member_level`,`member_point`,
-  	`gps_lon`,`gps_lat`,`gps_inherit`,`create_date`,`update_date`,`create_by`,`update_by`
-  	from promos);

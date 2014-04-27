@@ -7,7 +7,9 @@ import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.member.CCardBranch;
 import com.jinnova.smartpad.member.CCardRequirement;
+import com.jinnova.smartpad.member.CCardType;
 import com.jinnova.smartpad.member.Consumer;
 
 public class Promotion implements IPromotion, Feed {
@@ -50,6 +52,19 @@ public class Promotion implements IPromotion, Feed {
 
 	boolean isPersisted() {
 		return promotionId != null;
+	}
+	
+	public CCardRequirement getCCardOpt(CCardBranch cb, CCardType ct) {
+		if (this.requiredCCardOptions == null) {
+			return null;
+		}
+		
+		for (CCardRequirement opt : requiredCCardOptions) {
+			if (opt.requiredCCardBranch == cb && opt.requiredCCardType == ct) {
+				return opt;
+			}
+		}
+		return null;
 	}
 	
 	public boolean qualify(Consumer consumer) {

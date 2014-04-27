@@ -1,6 +1,5 @@
 package com.jinnova.smartpad.member;
 
-
 public class CCardRequirement {
 	
 	public CCardType requiredCCardType;
