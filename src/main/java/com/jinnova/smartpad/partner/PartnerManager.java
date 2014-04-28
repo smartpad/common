@@ -15,7 +15,6 @@ import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.db.ScriptRunner;
 import com.jinnova.smartpad.db.UserDao;
-import com.jinnova.smartpad.drilling.DetailManager;
 
 public class PartnerManager implements IPartnerManager {
 	
@@ -116,7 +115,6 @@ public class PartnerManager implements IPartnerManager {
 		SmartpadConnectionPool.initialize(dblogin, dbpass,  ScriptRunner.makeDburl(dbhost, dbport, dbname));
 		instance = new PartnerManager();
 		loadSyscatsInitially();
-		DetailManager.initialize();
 	}
 	
 	public static void loadSyscatsInitially() throws SQLException {
