@@ -21,6 +21,7 @@ public class DbIterator<T> {
 		this.stmt = stmt;
 		this.rs = rs;
 		this.populator = populator;
+		populator.preparePopulating();
 	}
 
 	public void close() throws SQLException {

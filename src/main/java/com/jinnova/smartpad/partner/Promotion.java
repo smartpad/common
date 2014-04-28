@@ -2,6 +2,7 @@ package com.jinnova.smartpad.partner;
 
 import java.util.Date;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.IName;
@@ -28,7 +29,7 @@ public class Promotion implements IPromotion, Feed {
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 
-	private Schedule schedule;
+	private final Schedule schedule = new Schedule();
 	
 	private int requiredMemberLevel;
 	
@@ -54,6 +55,29 @@ public class Promotion implements IPromotion, Feed {
 		return promotionId != null;
 	}
 	
+	public String getCCardOptionsJson() {
+		if (this.requiredCCardOptions == null) {
+			return null;
+		}
+		JsonArray ja = new JsonArray();
+		for (CCardRequirement opt : requiredCCardOptions) {
+			ja.add(opt.getJson());
+		}
+		return ja.toString();
+	}
+	
+	public void readCCardOptions(JsonArray ja) {
+		if (ja == null) {
+			return;
+		}
+		
+		this.requiredCCardOptions = new CCardRequirement[ja.size()];
+		for (int i = 0; i < ja.size(); i++) {
+			requiredCCardOptions[i] = new CCardRequirement();
+			requiredCCardOptions[i].readJson(ja.get(i).getAsJsonObject());
+		}
+	}
+	
 	public CCardRequirement getCCardOpt(CCardBranch cb, CCardType ct) {
 		if (this.requiredCCardOptions == null) {
 			return null;
@@ -67,8 +91,25 @@ public class Promotion implements IPromotion, Feed {
 		return null;
 	}
 	
+	@Override
 	public Schedule getSchedule() {
 		return this.schedule;
+	}
+	
+	public int getRequiredMemberLevel() {
+		return this.requiredMemberLevel;
+	}
+	
+	public void setRequiredMemberLevel(int level) {
+		this.requiredMemberLevel = level;
+	}
+	
+	public int getRequiredMemberPoint() {
+		return this.requiredMemberPoint;
+	}
+	
+	public void setRequiredMemberPoint(int point) {
+		this.requiredMemberPoint = point;
 	}
 	
 	public boolean qualify(Consumer consumer) {
@@ -76,11 +117,11 @@ public class Promotion implements IPromotion, Feed {
 			return false;
 		}
 		
-		if (schedule != null) {
+		//if (schedule != null) {
 			if (!schedule.isInAffect(new Date())) {
 				return false;
 			}
-		}
+		//}
 		
 		if (requiredCCardOptions != null) {
 			boolean ok = false;

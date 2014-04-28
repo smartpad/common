@@ -74,6 +74,9 @@ CREATE TABLE `promos_clusters` (
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
   
+  --used by drilling only
+  `ended` boolean default false,
+  
   `name` varchar(1024) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,

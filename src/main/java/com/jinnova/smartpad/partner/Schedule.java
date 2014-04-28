@@ -45,6 +45,9 @@ public class Schedule implements ISchedule {
 	}
 	
 	public boolean isInAffect(Date date) {
+		if (scheduleSequences.isEmpty()) {
+			return true;
+		}
 		for (IScheduleSequence ss : scheduleSequences) {
 			if (((ScheduleSequence) ss).isInAffect(date)) {
 				return true;
@@ -73,7 +76,7 @@ public class Schedule implements ISchedule {
 		}
 	}*/
 	
-	public JsonObject writeJson() {
+	public String writeJson() {
 		JsonObject json = new JsonObject();
 		json.addProperty("desc", desc);
 		JsonArray ja = new JsonArray();
@@ -81,7 +84,7 @@ public class Schedule implements ISchedule {
 			ja.add(((ScheduleSequence) ss).writeJson());
 		}
 		json.add("seqs", ja);
-		return json;
+		return json.toString();
 	}
 	
 	public void readJson(JsonObject json) {

@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 
+import com.google.gson.JsonParser;
+import com.jinnova.smartpad.JsonSupport;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IPromotion;
 import com.jinnova.smartpad.partner.IPromotionSort;
@@ -15,6 +17,8 @@ import com.jinnova.smartpad.partner.Promotion;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class PromotionDao implements DbPopulator<Promotion> {
+	
+	private JsonParser parser;
 
 	public int count(String operationId) throws SQLException {
 		Connection conn = null;
@@ -55,6 +59,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			ps.setString(1, promoId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
+			parser = new JsonParser();
 			return populate(rs);
 		} finally {
 			if (rs != null) {
@@ -93,6 +98,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IPromotion> promoList = new LinkedList<IPromotion>();
+			parser = new JsonParser();
 			while (rs.next()) {
 				Promotion promo = populate(rs);
 				promoList.add(promo);
@@ -113,12 +119,17 @@ public class PromotionDao implements DbPopulator<Promotion> {
 	
 	@Override
 	public void preparePopulating() {
-		//nothign to prepare
+		parser = new JsonParser();
 	}
 	
 	@Override
 	public Promotion populate(ResultSet rs) throws SQLException {
 		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("branch_id"), rs.getString("store_id"), rs.getString("syscat_id"));
+		promo.setRequiredMemberLevel(rs.getInt("member_level"));
+		promo.setRequiredMemberPoint(rs.getInt("member_point"));
+		promo.readCCardOptions(JsonSupport.parseJsonArray(parser, rs.getString("ccard_req")));
+		promo.getSchedule().readJson(JsonSupport.parseJsonObject(parser, rs.getString("schedule")));
+		
 		DaoSupport.populateGps(rs, promo.gps);
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
 		DaoSupport.populateName(rs, promo.getName());
@@ -131,7 +142,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("insert into promos set promo_id=?, branch_id=?, store_id=?, syscat_id=?, " +
-					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+					FIELDS + ", " + DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			int i = 1;
 			ps.setString(i++, promotionId);
 			ps.setString(i++, branchId);
@@ -150,7 +161,13 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 	
+	private static final String FIELDS =  "member_level=?, member_point=?, ccard_req=?, schedule=?";
+	
 	private int setFields(int i, Promotion p, PreparedStatement ps) throws SQLException {
+		ps.setInt(i++, p.getRequiredMemberLevel());
+		ps.setInt(i++, p.getRequiredMemberPoint());
+		ps.setString(i++, p.getCCardOptionsJson());
+		ps.setString(i++, p.getSchedule().writeJson());
 		i = DaoSupport.setGpsFields(ps, p.gps, i);
 		i = DaoSupport.setRecinfoFields(ps, p.getRecordInfo(), i);
 		i = DaoSupport.setNameFields(ps, p.getName(), i);
@@ -219,7 +236,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		return new DbIterator<Promotion>(conn, ps, rs, this);
 	}
 
-	public DbIterator<Promotion> iterateSyscatPromos(String syscatId) throws SQLException {
+	public DbIterator<Promotion> iteratePromosBySyscat(String syscatId) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		String sql = "select * from promos where syscat_id = '" + syscatId + "'";
 		Statement stmt = conn.createStatement();

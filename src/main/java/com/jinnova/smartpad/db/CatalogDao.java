@@ -221,9 +221,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				throw new RuntimeException("Missing tableName for CatalogSpec");
 			}
 			stmt = conn.createStatement();
-			createCatalogItemTable(stmt, spec.getSpecId(), spec);
+			createCatalogItemTable(stmt, spec.getSpecId(), spec, false);
 			if (createClusterTable) {
-				createCatalogItemTable(stmt, spec.getSpecId() + "_c", spec);
+				createCatalogItemTable(stmt, spec.getSpecId() + "_c", spec, true);
 			}
 			conn.commit();
 			success = true;
@@ -250,12 +250,15 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		}
 	}
 	
-	private void createCatalogItemTable(Statement stmt, String tableName, CatalogSpec spec) throws SQLException {
+	private void createCatalogItemTable(Statement stmt, String tableName, CatalogSpec spec, boolean withClusterColumns) throws SQLException {
 		StringBuffer tableSql = new StringBuffer();
-		tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + 
-				" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
+		tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + "(");
+		if (withClusterColumns) {
+			tableSql.append("cluster_id int default null, cluster_rank int default null, ");
+		}
+		tableSql.append("item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
 				"store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL, " +
-				"cluster_id varchar(32) default null, cluster_rank int default null, " +
+				//"cluster_id varchar(32) default null, cluster_rank int default null, " +
 				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 		for (ICatalogField f : spec.getAllFields()) {
 			tableSql.append(", ");
@@ -265,7 +268,11 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			tableSql.append(f.getId() + " " + f.getFieldType().sqlType + " default null");
 		}
 		tableSql.append(", create_date datetime NOT NULL, update_date datetime DEFAULT NULL, create_by varchar(32) NOT NULL, " +
-				"update_by varchar(32) DEFAULT NULL, PRIMARY KEY (item_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+				"update_by varchar(32) DEFAULT NULL");
+		if (!withClusterColumns) {
+			tableSql.append(", PRIMARY KEY (item_id)");
+		}
+		tableSql.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8");
 		System.out.println("SQL: " + tableSql.toString());
 		stmt.executeUpdate(tableSql.toString());
 	}

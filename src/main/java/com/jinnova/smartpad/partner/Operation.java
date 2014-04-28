@@ -31,7 +31,7 @@ public class Operation implements IOperation, Feed {
 	
 	private final String branchId;
 	
-	private String operationId;
+	private String storeId;
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
@@ -52,7 +52,7 @@ public class Operation implements IOperation, Feed {
 	
 	//private String systemCatalogId;
 	
-	private final CachedPagingList<IPromotion, IPromotionSort> promotions;
+	private CachedPagingList<IPromotion, IPromotionSort> promotions;
 	
 	/*private String numberStreet;
 	
@@ -87,8 +87,8 @@ public class Operation implements IOperation, Feed {
 	
 	//private Integer memberOfferedSurveyLevel;
 
-	public Operation(String operId, String branchId, String systemCatalogId, BigDecimal gpsLon, BigDecimal gpsLat, String gpsInherit, boolean branch) {
-		this.operationId = operId;
+	public Operation(String storeId, String branchId, String systemCatalogId, BigDecimal gpsLon, BigDecimal gpsLat, String gpsInherit, boolean branch) {
+		this.storeId = storeId;
 		this.branchId = branchId;
 		this.gps.setLongitude(gpsLon);
 		this.gps.setLatitude(gpsLat);
@@ -102,13 +102,13 @@ public class Operation implements IOperation, Feed {
 		}
 		
 		this.systemCatalogId = systemCatalogId;
-		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, this.operationId, this.systemCatalogId);
+		this.rootCatalog = new Catalog(this.branchId, this.storeId, this.storeId, this.storeId, this.systemCatalogId);
 		this.rootCatalog.gps.inherit(this.gps, rootCatInherit);
 		/*this.rootCatalog.gps.setLongitude(gpsLon);
 		this.rootCatalog.gps.setLatitude(gpsLat);
 		this.rootCatalog.gps.setInheritFrom(gpsInherit);*/
 		
-		this.promotions = createPromotionPagingList(branchId, operId, this.systemCatalogId, gps);
+		this.promotions = createPromotionPagingList(branchId, storeId, this.systemCatalogId, gps);
 		this.memberPagingList = createMemberPagingList();
 	}
 	
@@ -205,14 +205,14 @@ public class Operation implements IOperation, Feed {
 			
 			@Override
 			public int count(IUser authorizedUser) throws SQLException {
-				return new MemberDao().count(Operation.this.branchId, Operation.this.operationId);
+				return new MemberDao().count(Operation.this.branchId, Operation.this.storeId);
 			}
 			
 			@Override
 			public LinkedList<IMember> load(IUser authorizedUser, int offset,
 					int pageSize, IMemberSort sortField, boolean ascending) throws SQLException {
 				
-				return new MemberDao().load(Operation.this.branchId, Operation.this.operationId, offset, pageSize, sortField, ascending);
+				return new MemberDao().load(Operation.this.branchId, Operation.this.storeId, offset, pageSize, sortField, ascending);
 			}
 			
 			@Override
@@ -227,7 +227,7 @@ public class Operation implements IOperation, Feed {
 					throw new RuntimeException("Member name is not set");
 				}
 				String id = ((Member) newMember).generateId();
-				new MemberDao().insert(id, Operation.this.operationId, Operation.this.branchId, newMember);
+				new MemberDao().insert(id, Operation.this.storeId, Operation.this.branchId, newMember);
 				((Member) newMember).setId(id);
 			}
 			
@@ -259,12 +259,12 @@ public class Operation implements IOperation, Feed {
 	
 	@Override
 	public String getId() {
-		return this.operationId;
+		return this.storeId;
 	}
 	
 	public void setId(String operationId) {
-		this.operationId = operationId;
-		this.rootCatalog = new Catalog(this.branchId, this.operationId, this.operationId, this.operationId, this.systemCatalogId);
+		this.storeId = operationId;
+		this.rootCatalog = new Catalog(this.branchId, this.storeId, this.storeId, this.storeId, this.systemCatalogId);
 		createMemberPagingList();
 	}
 
@@ -285,6 +285,13 @@ public class Operation implements IOperation, Feed {
 	
 	public String getSyscatId() {
 		return rootCatalog.getSystemCatalogId();
+	}
+	
+	@Override
+	public void setSystemCatalogId(String syscatId) {
+		this.systemCatalogId = syscatId;
+		this.rootCatalog.setSystemCatalogId(syscatId);
+		this.promotions = createPromotionPagingList(branchId, storeId, this.systemCatalogId, gps);
 	}
 
 	/*@Override
@@ -349,8 +356,8 @@ public class Operation implements IOperation, Feed {
 	
 	public JsonObject generateFeedJson() {
 		JsonObject json = new JsonObject();
-		json.addProperty("id", this.operationId);
-		if (this.operationId.equals(this.branchId)) {
+		json.addProperty("id", this.storeId);
+		if (this.storeId.equals(this.branchId)) {
 			json.addProperty("type", IDetailManager.TYPENAME_BRANCH);
 		} else {
 			json.addProperty("type", IDetailManager.TYPENAME_STORE);
