@@ -223,7 +223,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			stmt = conn.createStatement();
 			createCatalogItemTable(stmt, spec.getSpecId(), spec, false);
 			if (createClusterTable) {
-				createCatalogItemTable(stmt, spec.getSpecId() + "_c", spec, true);
+				createCatalogItemTable(stmt, "x" + spec.getSpecId(), spec, true);
 			}
 			conn.commit();
 			success = true;

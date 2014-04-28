@@ -24,6 +24,7 @@ public class SystemCatalogGenrator {
 		//system catalog
 		systemUser = PartnerManager.instance.systemUser;
 		Catalog rootCat = PartnerManager.instance.getSystemRootCatalog();
+		rootCat = createCat(rootCat, "x", "All");
 		Catalog elec = createCat(rootCat, "elec", "Điện tử & Máy tính");
 		{
 			Catalog elecComp = createCat(elec, "comp", "Vi tính & viễn thông");

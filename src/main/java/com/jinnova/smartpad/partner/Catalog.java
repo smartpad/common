@@ -132,7 +132,11 @@ public class Catalog implements ICatalog, Feed {
 						throw new RuntimeException("CatalogSpec id can't contains special charaters");
 					}
 					newIdPrefix = null;
-					newIdGen[0] = catalogId + "_" + providedSyscatId;
+					if (IDetailManager.SYSTEM_BRANCH_ID.equals(catalogId)) {
+						newIdGen[0] = providedSyscatId;
+					} else {
+						newIdGen[0] = catalogId + "_" + providedSyscatId;
+					}
 					subCat.getCatalogSpec().setSpecId(newIdGen[0]);
 				}
 				new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat, createCatItemClusterTable);

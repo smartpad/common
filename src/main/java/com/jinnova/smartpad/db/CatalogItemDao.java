@@ -264,7 +264,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	public DbIterator<CatalogItem> iterateCatalogItems(int clusterId, ICatalogSpec spec, String syscatId, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + syscatId + "_c" +
+		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from x" + syscatId + 
 				" where cluster_id = " + clusterId +
 				" order by dist_grade asc, cluster_rank desc " + DaoSupport.buildLimit(offset, size);
 		System.out.println("SQL: " + sql);
