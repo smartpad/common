@@ -14,7 +14,7 @@ CREATE TABLE `sp_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `consumers` (
-  `login` varchar(32) NOT NULL,
+  `consumer_id` varchar(32) NOT NULL,
   `passhash` varchar(32) DEFAULT NULL,
   
   `cluster_id` int,
@@ -24,7 +24,7 @@ CREATE TABLE `consumers` (
   `create_by` varchar(32) NOT NULL,
   `update_by` varchar(32) DEFAULT NULL,
   
-  PRIMARY KEY (`login`)
+  PRIMARY KEY (`consumer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `operations` (
