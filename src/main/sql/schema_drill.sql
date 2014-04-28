@@ -65,8 +65,8 @@ CREATE TABLE `promos_clusters` (
   `master_d` boolean default false,
   `master_d_issuers` varchar(1024) default null,
   
-  `schedule_start` datetime default null,
-  `schedule_end` datetime default null,
+  --`schedule_start` datetime default null,
+  --`schedule_end` datetime default null,
   
   --identical to smartpad.promos
   `promo_id` varchar(32) NOT NULL,

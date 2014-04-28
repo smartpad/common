@@ -41,6 +41,8 @@ public class Catalog implements ICatalog, Feed {
 	
 	private CachedPagingList<ICatalogItem, ICatalogItemSort> catalogItemPagingList;
 	
+	private boolean createCatItemClusterTable = false;
+	
 	public Catalog(String branchId, String storeId, String catalogId, String parentCatalogId, String systemCatalogId) {
 		/*if (storeId == null) {
 			throw new NullPointerException();
@@ -59,12 +61,23 @@ public class Catalog implements ICatalog, Feed {
 	}
 	
 	private void createPagingLists() {
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, gps);
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, gps, createCatItemClusterTable);
 		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, systemCatalogId, gps);
 	}
 	
-	public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(
-			final String branchId, final String storeId, final String catalogId, final String systemCatalogId, final GPSInfo gps) {
+	public void setCreateCatItemClusterTable() {
+		this.createCatItemClusterTable = true;
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, gps, createCatItemClusterTable);
+	}
+	
+	public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
+			final String catalogId, final String systemCatalogId, final GPSInfo gps) {
+		
+		return createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, gps, false);
+	}
+	
+	private static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
+			final String catalogId, final String systemCatalogId, final GPSInfo gps, final boolean createCatItemClusterTable) {
 		
 		PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport = new PageEntrySupport<ICatalog, ICatalogSort>() {
 			
@@ -122,7 +135,7 @@ public class Catalog implements ICatalog, Feed {
 					newIdGen[0] = catalogId + "_" + providedSyscatId;
 					subCat.getCatalogSpec().setSpecId(newIdGen[0]);
 				}
-				new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat);
+				new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat, createCatItemClusterTable);
 				subCat.catalogId = newIdGen[0];
 				subCat.createPagingLists();
 				

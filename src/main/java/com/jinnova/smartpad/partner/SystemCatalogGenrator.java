@@ -4,9 +4,22 @@ import java.sql.SQLException;
 
 public class SystemCatalogGenrator {
 	
-	private static User systemUser;
+	private User systemUser;
 	
-	public static void generate() throws SQLException {
+	private boolean createClusterTable;
+	
+	/**
+	 * constructor for reflection
+	 */
+	public SystemCatalogGenrator() {
+		this.createClusterTable = false;
+	}
+	
+	public SystemCatalogGenrator(boolean createClusterTable) {
+		this.createClusterTable = createClusterTable;
+	}
+	
+	public void generate() throws SQLException {
 		
 		//system catalog
 		systemUser = PartnerManager.instance.systemUser;
@@ -46,7 +59,10 @@ public class SystemCatalogGenrator {
 		createCat(rootCat, "industrials", "Công nghiệp, xây dựng & Doanh nghiệp");
 	}
 	
-	private static Catalog createCat(Catalog parentCat, String catId, String catName, Object[]... fieldIDTypeNames) throws SQLException {
+	private Catalog createCat(Catalog parentCat, String catId, String catName, Object[]... fieldIDTypeNames) throws SQLException {
+		if (createClusterTable) {
+			parentCat.setCreateCatItemClusterTable();
+		}
 		ICatalog cat = parentCat.getSubCatalogPagingList().newEntryInstance(systemUser);
 		cat.getName().setName(catName);
 		cat.getCatalogSpec().setSpecId(catId); //table name

@@ -67,6 +67,10 @@ public class Promotion implements IPromotion, Feed {
 		return null;
 	}
 	
+	public Schedule getSchedule() {
+		return this.schedule;
+	}
+	
 	public boolean qualify(Consumer consumer) {
 		if (!consumer.qualify(branchId, storeId, requiredMemberLevel, requiredMemberPoint)) {
 			return false;

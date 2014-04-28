@@ -162,7 +162,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		return cat;
 	}
 
-	public void insert(String branchId, String storeId, String catalogIdPrefix, String[] catalogIdGen, String parentCatalogId, Catalog cat) throws SQLException {
+	public void insert(String branchId, String storeId, String catalogIdPrefix, 
+			String[] catalogIdGen, String parentCatalogId, Catalog cat, boolean createClusterTable) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -216,28 +217,14 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				success = true;
 				return;
 			}
-			String tableName = cat.getCatalogSpec().getSpecId();
-			if (tableName == null) {
+			if (spec.getSpecId() == null) {
 				throw new RuntimeException("Missing tableName for CatalogSpec");
 			}
-			StringBuffer tableSql = new StringBuffer();
-			tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + 
-					" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
-					"store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL, " +
-					"cluster_id varchar(32) default null, cluster_rank int default null, " +
-					"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
-			for (ICatalogField f : cat.getCatalogSpec().getAllFields()) {
-				tableSql.append(", ");
-				if (f.getId() == null) {
-					throw new RuntimeException("Missing columnName for CatalogField");
-				}
-				tableSql.append(f.getId() + " " + f.getFieldType().sqlType + " default null");
-			}
-			tableSql.append(", create_date datetime NOT NULL, update_date datetime DEFAULT NULL, create_by varchar(32) NOT NULL, " +
-					"update_by varchar(32) DEFAULT NULL, PRIMARY KEY (item_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-			System.out.println("SQL: " + tableSql.toString());
 			stmt = conn.createStatement();
-			stmt.executeUpdate(tableSql.toString());
+			createCatalogItemTable(stmt, spec.getSpecId(), spec);
+			if (createClusterTable) {
+				createCatalogItemTable(stmt, spec.getSpecId() + "_c", spec);
+			}
 			conn.commit();
 			success = true;
 			
@@ -261,6 +248,26 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				conn.close();
 			}
 		}
+	}
+	
+	private void createCatalogItemTable(Statement stmt, String tableName, CatalogSpec spec) throws SQLException {
+		StringBuffer tableSql = new StringBuffer();
+		tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + 
+				" (item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
+				"store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL, " +
+				"cluster_id varchar(32) default null, cluster_rank int default null, " +
+				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
+		for (ICatalogField f : spec.getAllFields()) {
+			tableSql.append(", ");
+			if (f.getId() == null) {
+				throw new RuntimeException("Missing columnName for CatalogField");
+			}
+			tableSql.append(f.getId() + " " + f.getFieldType().sqlType + " default null");
+		}
+		tableSql.append(", create_date datetime NOT NULL, update_date datetime DEFAULT NULL, create_by varchar(32) NOT NULL, " +
+				"update_by varchar(32) DEFAULT NULL, PRIMARY KEY (item_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		System.out.println("SQL: " + tableSql.toString());
+		stmt.executeUpdate(tableSql.toString());
 	}
 
 	public void update(String catalogId, Catalog cat) throws SQLException {
