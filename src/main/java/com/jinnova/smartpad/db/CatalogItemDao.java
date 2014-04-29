@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.db;
 
+import static com.jinnova.smartpad.partner.IDetailManager.CLUSPRE;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,7 +30,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	
 	private ICatalogSpec spec;
 	
-	private String syscatId;
+	//private String syscatId;
 	
 	/*public CatalogItemDao(ICatalogSpec spec) {
 		this.spec = spec;
@@ -72,11 +74,15 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			syscatId = spec.getSpecId();
-			ps = conn.prepareStatement("select * from " + /*CS +*/ syscatId + " where item_id = ?");
+			//syscatId = spec.getSpecId();
+			this.spec = spec;
+			ps = conn.prepareStatement("select * from " + /*CS +*/ spec.getSpecId() + " where item_id = ?");
 			ps.setString(1, catItemId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
+			if (!rs.next()) {
+				return null;
+			}
 			return populate(rs);
 		} finally {
 			if (rs != null) {
@@ -117,8 +123,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			syscatId = spec.getSpecId();
-			ps = conn.prepareStatement("select * from " + /*CS +*/ syscatId + " where catalog_id = ? " + orderLimitClause);
+			//syscatId = spec.getSpecId();
+			ps = conn.prepareStatement("select * from " + /*CS +*/ spec.getSpecId() + " where catalog_id = ? " + orderLimitClause);
 			ps.setString(1, catalogId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
@@ -149,7 +155,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	
 	@Override
 	public CatalogItem populate(ResultSet rs) throws SQLException {
-		CatalogItem item = new CatalogItem(rs.getString("branch_id"), rs.getString("store_id"), rs.getString("catalog_id"), syscatId, rs.getString("item_id"));
+		CatalogItem item = new CatalogItem(rs.getString("branch_id"), rs.getString("store_id"), 
+				rs.getString("catalog_id"), rs.getString("syscat_id"), rs.getString("item_id"));
 		DaoSupport.populateGps(rs, item.gps);
 		for (ICatalogField field : spec.getAllFields()) {
 			item.setField(field.getId(), rs.getString(field.getId()));
@@ -264,7 +271,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	public DbIterator<CatalogItem> iterateCatalogItems(int clusterId, ICatalogSpec spec, String syscatId, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from x" + syscatId + 
+		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + CLUSPRE + syscatId + 
 				" where cluster_id = " + clusterId +
 				" order by dist_grade asc, cluster_rank desc " + DaoSupport.buildLimit(offset, size);
 		System.out.println("SQL: " + sql);

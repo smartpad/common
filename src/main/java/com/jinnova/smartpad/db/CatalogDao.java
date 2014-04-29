@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.db;
 
+import static com.jinnova.smartpad.partner.IDetailManager.CLUSPRE;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -223,7 +225,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			stmt = conn.createStatement();
 			createCatalogItemTable(stmt, spec.getSpecId(), spec, false);
 			if (createClusterTable) {
-				createCatalogItemTable(stmt, "x" + spec.getSpecId(), spec, true);
+				createCatalogItemTable(stmt, CLUSPRE + spec.getSpecId(), spec, true);
 			}
 			conn.commit();
 			success = true;

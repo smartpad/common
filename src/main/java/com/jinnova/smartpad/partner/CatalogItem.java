@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.IDetailManager.*;
+
 import java.util.HashMap;
 
 import com.google.gson.JsonObject;
@@ -92,9 +94,10 @@ public class CatalogItem implements ICatalogItem, Feed {
 
 	public JsonObject generateFeedJson() {
 		JsonObject json = new JsonObject();
-		json.addProperty("id", this.itemId);
-		json.addProperty("type", IDetailManager.TYPENAME_CATITEM);
-		json.addProperty("name", this.getFieldValue(ICatalogField.ID_NAME));
+		json.addProperty(FIELD_ID, this.itemId);
+		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CATITEM);
+		json.addProperty(FIELD_SYSCATID, syscatId);
+		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.ID_NAME));
 		return json;
 	}
 	

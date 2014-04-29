@@ -199,8 +199,11 @@ public class PartnerManager implements IPartnerManager {
 	
 	@Override
 	public ICatalogSpec getCatalogSpec(String systemCatId) {
-		//return catalogSpecMap.get(specId);
-		return systemCatMap.get(systemCatId).getCatalogSpec();
+		Catalog cat = systemCatMap.get(systemCatId);
+		if (cat == null) {
+			throw new RuntimeException("Invalid syscat id: " + systemCatId);
+		}
+		return cat.getCatalogSpec();
 	}
 	
 	public LinkedList<Catalog> getSystemSubCatalog(String parentCatId) {

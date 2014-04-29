@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.IDetailManager.*;
+
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -382,9 +384,9 @@ public class Catalog implements ICatalog, Feed {
 
 	public JsonObject generateFeedJson() {
 		JsonObject json = new JsonObject();
-		json.addProperty("id", this.catalogId);
-		json.addProperty("type", IDetailManager.TYPENAME_CAT);
-		json.addProperty("name", this.name.getName());
+		json.addProperty(FIELD_ID, this.catalogId);
+		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CAT);
+		json.addProperty(FIELD_NAME, this.name.getName());
 		return json;
 	}
 }

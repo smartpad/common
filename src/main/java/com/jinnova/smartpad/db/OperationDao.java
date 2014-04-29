@@ -272,7 +272,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		StringBuffer sql = new StringBuffer("select * from operations where store_id = branch_id and syscat_id like '" + targetSyscatId + "'");
+		StringBuffer sql = new StringBuffer("select * from operations where store_id = branch_id and syscat_id like '" + targetSyscatId + "%'");
 		if (excludeBranchId != null) {
 			sql.append(" and branch_id != '" + excludeBranchId + "'");
 		}

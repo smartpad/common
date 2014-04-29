@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.IDetailManager.*;
+
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Comparator;
@@ -356,13 +358,14 @@ public class Operation implements IOperation, Feed {
 	
 	public JsonObject generateFeedJson() {
 		JsonObject json = new JsonObject();
-		json.addProperty("id", this.storeId);
+		json.addProperty(FIELD_ID, this.storeId);
 		if (this.storeId.equals(this.branchId)) {
-			json.addProperty("type", IDetailManager.TYPENAME_BRANCH);
+			json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_BRANCH);
 		} else {
-			json.addProperty("type", IDetailManager.TYPENAME_STORE);
+			json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_STORE);
 		}
-		json.addProperty("name", this.name.getName());
+		//json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
+		json.addProperty(FIELD_NAME, this.name.getName());
 		return json;
 	}
 
