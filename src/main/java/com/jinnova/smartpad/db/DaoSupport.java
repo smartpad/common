@@ -129,10 +129,18 @@ class DaoSupport {
 			return field + operator + "'" + value + "'";
 		}
 	}
+
+	static String buildConditionLike(String field, String value, boolean like) {
+		if (like) {
+			return field + " like '" + value + "%'";
+		} else {
+			return field + " = '" + value + "%'";
+		}
+	}
 	
 	static String buildDGradeField(BigDecimal lon, BigDecimal lat) {
 		String lonS = lon == null ? "null" : lon.toPlainString();
 		String latS = lat == null ? "null" : lat.toPlainString();
 		return "sp_dist_grade(gps_lon, gps_lat, " + lonS + ", " + latS + ")";
-	}
+	} 
 }

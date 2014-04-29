@@ -364,7 +364,7 @@ public class Operation implements IOperation, Feed {
 		} else {
 			json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_STORE);
 		}
-		//json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
+		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
 		json.addProperty(FIELD_NAME, this.name.getName());
 		return json;
 	}

@@ -1,6 +1,6 @@
 package com.jinnova.smartpad.db;
 
-import static com.jinnova.smartpad.partner.IDetailManager.CLUSPRE;
+import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -277,6 +277,21 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
 		this.spec = spec;
+		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
+	}
+
+	public DbIterator<CatalogItem> iterateItemsByCatalog(boolean recursive, String catId, 
+			String excludeItemId, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from z " + 
+				"where " + DaoSupport.buildConditionLike("catalog_id", catId, recursive) +
+				DaoSupport.buildConditionIfNotNull(" and item_id", "!=", excludeItemId) + 
+				" order by dist_grade asc " + DaoSupport.buildLimit(offset, size);
+		System.out.println("SQL: " + sql);
+		ResultSet rs = stmt.executeQuery(sql);
+		this.spec = PartnerManager.instance.getSystemCatalog(SYSTEM_CAT_ALL).getCatalogSpec();
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
