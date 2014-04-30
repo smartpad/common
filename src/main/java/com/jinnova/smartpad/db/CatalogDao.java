@@ -325,10 +325,21 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		}
 	}
 
-	public DbIterator<Catalog> iterateSubCatalogs(String parentCatalogId, String excludeCatId, int offset, int count) throws SQLException {
+	public DbIterator<Catalog> iterateCatalogs(String parentCatalogId, String excludeCatId, boolean recursive, int offset, int count) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		StringBuffer sql = new StringBuffer("select * from catalogs where parent_id = '" + parentCatalogId + "'");
+		StringBuffer sql = new StringBuffer("select * from catalogs where " + DaoSupport.buildConditionLike("parent_id", parentCatalogId, recursive));
+		sql.append(DaoSupport.buildConditionIfNotNull(" and catalog_id", "!=", excludeCatId));
+		sql.append(DaoSupport.buildLimit(offset, count));
+		System.out.println("SQL: " + sql.toString());
+		ResultSet rs = stmt.executeQuery(sql.toString());
+		return new DbIterator<Catalog>(conn, stmt, rs, this);
+	}
+
+	public DbIterator<Catalog> iterateCatalogsBySyscat(String syscatId, String excludeCatId, boolean recursive, int offset, int count) throws SQLException {
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		StringBuffer sql = new StringBuffer("select * from catalogs where " + DaoSupport.buildConditionLike("syscat_id", syscatId, recursive));
 		sql.append(DaoSupport.buildConditionIfNotNull(" and catalog_id", "!=", excludeCatId));
 		sql.append(DaoSupport.buildLimit(offset, count));
 		System.out.println("SQL: " + sql.toString());

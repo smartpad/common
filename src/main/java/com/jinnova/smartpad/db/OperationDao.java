@@ -255,24 +255,11 @@ public class OperationDao implements DbPopulator<Operation> {
 		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
-	public DbIterator<Operation> iterateBranchesBySyscatDirectly(String targetSyscatId, String excludeBranchId) throws SQLException {
+	public DbIterator<Operation> iterateBranchesBySyscat(String targetSyscatId, String excludeBranchId, boolean recursive) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		StringBuffer sql = new StringBuffer("select * from operations where store_id = branch_id and syscat_id = '" + targetSyscatId + "'");
-		if (excludeBranchId != null) {
-			sql.append(" and branch_id != '" + excludeBranchId + "'");
-		}
-		System.out.println("SQL: " + sql.toString());
-		ResultSet rs = stmt.executeQuery(sql.toString());
-		return new DbIterator<Operation>(conn, stmt, rs, this);
-	}
-
-	public DbIterator<Operation> iterateBranchesBySyscatRecursively(String targetSyscatId, String excludeBranchId) throws SQLException {
-		
-		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		Statement stmt = conn.createStatement();
-		StringBuffer sql = new StringBuffer("select * from operations where store_id = branch_id and syscat_id like '" + targetSyscatId + "%'");
+		StringBuffer sql = new StringBuffer("select * from operations where store_id = branch_id and " + DaoSupport.buildConditionLike("syscat_id", targetSyscatId, recursive));
 		if (excludeBranchId != null) {
 			sql.append(" and branch_id != '" + excludeBranchId + "'");
 		}

@@ -59,6 +59,9 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			ps.setString(1, promoId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
+			if (!rs.next()) {
+				return null;
+			}
 			parser = new JsonParser();
 			return populate(rs);
 		} finally {
@@ -215,7 +218,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 
-	public DbIterator<Promotion> iterateBranchPromos(String[] branchIds, String[] sortFieldAndDirections, int offset, int size) throws SQLException {
+	public DbIterator<Promotion> iteratePromosByBranch(String[] branchIds, String[] sortFieldAndDirections, int offset, int size) throws SQLException {
 		
 		String questionMarks = null;
 		for (int i = 0; i < branchIds.length; i++) {
@@ -236,9 +239,11 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		return new DbIterator<Promotion>(conn, ps, rs, this);
 	}
 
-	public DbIterator<Promotion> iteratePromosBySyscat(String syscatId) throws SQLException {
+	public DbIterator<Promotion> iteratePromosBySyscat(String syscatId, String excludePromoId, boolean recursive, Integer clusterId) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		String sql = "select * from promos where syscat_id = '" + syscatId + "'";
+		String tableName = clusterId != null ? "promos_clusters" : "promos";
+		String sql = "select * from " + tableName + " where " + DaoSupport.buildConditionLike("syscat_id", syscatId, recursive) +
+				DaoSupport.buildConditionIfNotNull(" and cluster_id", "=", clusterId) + DaoSupport.buildConditionIfNotNull(" and promo_id", "!=", excludePromoId);
 		Statement stmt = conn.createStatement();
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);

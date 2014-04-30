@@ -8,11 +8,25 @@ import com.google.gson.JsonParser;
 public class JsonSupport {
 
 	public static String getAsString(JsonObject json, String property) {
+		if (json == null) {
+			return null;
+		}
 		JsonElement e = json.get(property);
 		if (e == null || e.isJsonNull()) {
 			return null;
 		}
 		return e.getAsString();
+	}
+
+	public static JsonArray getAsJsonArray(JsonObject json, String property) {
+		if (json == null) {
+			return null;
+		}
+		JsonElement e = json.get(property);
+		if (e == null || e.isJsonNull()) {
+			return null;
+		}
+		return e.getAsJsonArray();
 	}
 
 	public static JsonArray parseJsonArray(JsonParser parser, String json) {

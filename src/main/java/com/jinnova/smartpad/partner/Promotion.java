@@ -1,5 +1,7 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.IDetailManager.*;
+
 import java.util.Date;
 
 import com.google.gson.JsonArray;
@@ -162,9 +164,9 @@ public class Promotion implements IPromotion, Feed {
 
 	public JsonObject generateFeedJson() {
 		JsonObject json = new JsonObject();
-		json.addProperty("id", this.promotionId);
-		json.addProperty("type", IDetailManager.TYPENAME_PROMO);
-		json.addProperty("name", name.getName());
+		json.addProperty(FIELD_ID, this.promotionId);
+		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_PROMO);
+		json.addProperty(FIELD_NAME, name.getName());
 		return json;
 	}
 }

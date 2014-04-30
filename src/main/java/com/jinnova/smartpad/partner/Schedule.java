@@ -89,7 +89,7 @@ public class Schedule implements ISchedule {
 	
 	public void readJson(JsonObject json) {
 		desc = JsonSupport.getAsString(json, "desc");
-		JsonArray ja = json.get("seqs").getAsJsonArray();
+		JsonArray ja = JsonSupport.getAsJsonArray(json, "seqs");
 		if (ja == null) {
 			return;
 		}

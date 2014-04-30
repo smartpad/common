@@ -268,20 +268,20 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
-	public DbIterator<CatalogItem> iterateCatalogItems(int clusterId, ICatalogSpec spec, String syscatId, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+	public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, int clusterId, boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + CLUSPRE + syscatId + 
-				" where cluster_id = " + clusterId +
+				" where cluster_id = " + clusterId + DaoSupport.buildConditionLike(" and syscat_id", syscatId, recursive) + 
 				" order by dist_grade asc, cluster_rank desc " + DaoSupport.buildLimit(offset, size);
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
-		this.spec = spec;
+		this.spec = PartnerManager.instance.getCatalogSpec(SYSTEM_CAT_ALL);
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
-	public DbIterator<CatalogItem> iterateItemsByCatalog(boolean recursive, String catId, 
-			String excludeItemId, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+	public DbIterator<CatalogItem> iterateItemsByCatalog(String catId, String excludeItemId, 
+			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();

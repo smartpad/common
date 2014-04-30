@@ -122,6 +122,13 @@ class DaoSupport {
 		return field + operator + "'" + value + "'";
 	}
 
+	static String buildConditionIfNotNull(String field, String operator, Integer value) {
+		if (value == null) {
+			return "";
+		}
+		return field + operator + value;
+	}
+
 	static String buildConditionWithProperNull(String field, String operator, String value) {
 		if (value == null) {
 			return field + " is null";
@@ -134,7 +141,7 @@ class DaoSupport {
 		if (like) {
 			return field + " like '" + value + "%'";
 		} else {
-			return field + " = '" + value + "%'";
+			return field + " = '" + value + "'";
 		}
 	}
 	
