@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.jinnova.smartpad.JsonSupport;
 
 public class CatalogField implements ICatalogField {
 
@@ -28,6 +29,7 @@ public class CatalogField implements ICatalogField {
 		json.addProperty("ft", fieldType.name());
 		json.addProperty("sn", sectionNumber);
 		json.addProperty("gn", groupNumber);
+		json.add("at", JsonSupport.toJson(attributes));
 		return json;
 	}
 
@@ -38,6 +40,7 @@ public class CatalogField implements ICatalogField {
 		this.fieldType = ICatalogFieldType.valueOf(json.get("ft").getAsString());
 		this.sectionNumber = json.get("sn").getAsInt();
 		this.groupNumber = json.get("gn").getAsInt();
+		this.attributes = JsonSupport.toHashmap(json.get("at").getAsJsonObject());
 	}
 
 	@Override
