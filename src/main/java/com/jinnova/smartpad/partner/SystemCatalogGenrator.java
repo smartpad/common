@@ -49,7 +49,10 @@ public class SystemCatalogGenrator {
 
 		Catalog entertain = createCat(rootCat, "entertain", "Du lịch, giải trí & ẩm thực");
 		{
-			createCat(entertain, "foods", "Foods");
+			Catalog foods = createCat(entertain, "foods", "Foods");
+			{
+				createCat(foods, "fastfoods", "Thức ăn nhanh");
+			}
 		}
 		createCat(rootCat, "sport", "Thể thao, văn hóa & Nghệ thuật");
 		//createmasterType(masterType, "Sách & Thiết bị trường học");
@@ -65,7 +68,7 @@ public class SystemCatalogGenrator {
 			parentCat.setCreateCatItemClusterTable();
 		}
 		ICatalog cat = parentCat.getSubCatalogPagingList().newEntryInstance(systemUser);
-		cat.getName().setName(catName);
+		cat.setName(catName);
 		cat.getCatalogSpec().setSpecId(catId); //table name
 		Object[][] nameDesc = new Object[][] {
 				{ICatalogField.ID_NAME, ICatalogFieldType.Text_Name, "Name"},

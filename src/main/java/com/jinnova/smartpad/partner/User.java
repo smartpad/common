@@ -40,7 +40,7 @@ public class User implements IUser {
 	}
 	
 	public static CachedPagingList<IOperation, IOperationSort> createStorePagingList(
-			final String branchId, final String branchSyscatId, final GPSInfo branchGps) {
+			final String branchId, final String branchSyscatId, final String branchName, final GPSInfo branchGps) {
 		
 		@SuppressWarnings("unchecked")
 		final Comparator<IOperation>[] storeComparators = new Comparator[IOperationSort.values().length];
@@ -59,7 +59,7 @@ public class User implements IUser {
 		storeComparators[IOperationSort.name.ordinal()] = new Comparator<IOperation>() {
 			@Override
 			public int compare(IOperation o1, IOperation o2) {
-				return o1.getName().getName().compareToIgnoreCase(o2.getName().getName());
+				return o1.getName().compareToIgnoreCase(o2.getName());
 			}
 		};
 		PageEntrySupport<IOperation, IOperationSort> storeMate = new PageEntrySupport<IOperation, IOperationSort>() {
@@ -68,7 +68,8 @@ public class User implements IUser {
 			public IOperation newEntryInstance(IUser authorizedUser) {
 				Operation op = new Operation(null, branchId, branchSyscatId,
 						branchGps.getLongitude(), branchGps.getLatitude(), GPSInfo.INHERIT_BRANCH, false);
-				//op.gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);
+				op.setBranchName(branchName);
+				//op.gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);				op.
 				return op;
 			}
 
@@ -202,7 +203,7 @@ public class User implements IUser {
 		
 		String syscatId = ((Catalog) branch.getRootCatalog()).getSystemCatalogId();
 		if (syscatId != null) {
-			this.storePagingList = createStorePagingList(branchId, syscatId, branch.gps);
+			this.storePagingList = createStorePagingList(branchId, syscatId, branch.getBranchName(), branch.gps);
 		}
 	}
 	

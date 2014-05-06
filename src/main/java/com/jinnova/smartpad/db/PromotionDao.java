@@ -10,6 +10,7 @@ import java.util.LinkedList;
 
 import com.google.gson.JsonParser;
 import com.jinnova.smartpad.JsonSupport;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IPromotion;
 import com.jinnova.smartpad.partner.IPromotionSort;
@@ -135,7 +136,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		
 		DaoSupport.populateGps(rs, promo.gps);
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
-		DaoSupport.populateName(rs, promo.getName());
+		DaoSupport.populateName(rs, (Name) promo.getDesc());
 		return promo;
 	}
 
@@ -173,7 +174,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		ps.setString(i++, p.getSchedule().writeJson());
 		i = DaoSupport.setGpsFields(ps, p.gps, i);
 		i = DaoSupport.setRecinfoFields(ps, p.getRecordInfo(), i);
-		i = DaoSupport.setNameFields(ps, p.getName(), i);
+		i = DaoSupport.setNameFields(ps, (Name) p.getDesc(), i);
 		return i;
 	}
 

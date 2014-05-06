@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import com.jinnova.smartpad.IName;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IRecordInfo;
@@ -17,14 +17,14 @@ class DaoSupport {
 
 	static final String NAME_FIELDS = "name=?, descript=?, images=?";
 	
-	static int setNameFields(PreparedStatement ps, IName name, int i) throws SQLException {
+	static int setNameFields(PreparedStatement ps, Name name, int i) throws SQLException {
 		ps.setString(i++, name.getName());
 		ps.setString(i++, name.getDescription());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(name.getImages()));
 		return i;
 	}
 	
-	static void populateName(ResultSet rs, IName name) throws SQLException {
+	static void populateName(ResultSet rs, Name name) throws SQLException {
 		name.setName(rs.getString("name"));
 		name.setDescription(rs.getString("descript"));
 		name.setImages(StringArrayUtils.stringArrayFromJson(rs.getString("images")));

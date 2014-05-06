@@ -12,6 +12,7 @@ import java.util.LinkedList;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.CatalogSpec;
 import com.jinnova.smartpad.partner.GPSInfo;
@@ -154,7 +155,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("store_id"), 
 				rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
 		DaoSupport.populateGps(rs, cat.gps);
-		DaoSupport.populateName(rs, cat.getName());
+		DaoSupport.populateName(rs, (Name) cat.getDesc());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
 		String spec = rs.getString("spec");
 		if (specParser != null && spec != null) {
@@ -191,7 +192,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				catalogIdGen[0] = catalogIdPrefix + "_" + partialId;
 			}
 			
-			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, partial_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, spec=?, " + 
+			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, partial_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, branch_name=?, spec=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			rollbackable = true;
 			int i = 1;
@@ -201,11 +202,12 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(i++, branchId);
 			ps.setString(i++, storeId);
 			ps.setString(i++, cat.getSystemCatalogId());
+			ps.setString(i++, cat.getBranchName());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, cat.getName(), i);
+			i = DaoSupport.setNameFields(ps, (Name) cat.getDesc(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 			
@@ -260,7 +262,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		}
 		tableSql.append("item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
 				"store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL, " +
-				//"cluster_id varchar(32) default null, cluster_rank int default null, " +
+				"branch_name varchar(2048) NOT NULL, cat_name varchar(2048) NOT NULL, " +
 				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 		for (ICatalogField f : spec.getAllFields()) {
 			tableSql.append(", ");
@@ -284,15 +286,16 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update catalogs set syscat_id=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " +
+			ps = conn.prepareStatement("update catalogs set syscat_id=?, branch_name=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " +
 					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS + " where catalog_id=?");
 			int i = 1;
 			ps.setString(i++, cat.getSystemCatalogId());
+			ps.setString(i++, cat.getBranchName());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, cat.getName(), i);
+			i = DaoSupport.setNameFields(ps, (Name) cat.getDesc(), i);
 			ps.setString(i++, catalogId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

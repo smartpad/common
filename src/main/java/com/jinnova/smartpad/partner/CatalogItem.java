@@ -26,6 +26,10 @@ public class CatalogItem implements ICatalogItem, Feed {
 	//private String unit;
 	
 	//private BigDecimal unitPrice;
+	
+	private String branchName;
+	
+	private String catName;
 
 	private final RecordInfo recordInfo = new RecordInfo();
 	
@@ -60,6 +64,22 @@ public class CatalogItem implements ICatalogItem, Feed {
 		return this.syscatId;
 	}
 	
+	public void setBranchName(String bn) {
+		this.branchName = bn;
+	}
+	
+	public String getBranchName() {
+		return this.branchName;
+	}
+	
+	public void setCatalogName(String catName) {
+		this.catName = catName;
+	}
+	
+	public String getCatalogName() {
+		return this.catName;
+	}
+	
 	@Override
 	public IGPSInfo getGps() {
 		return this.gps;
@@ -92,12 +112,24 @@ public class CatalogItem implements ICatalogItem, Feed {
 		fieldValuesMulti.put(fieldId, values);
 	}
 
-	public JsonObject generateFeedJson() {
+	@Override
+	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.itemId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CATITEM);
-		json.addProperty(FIELD_SYSCATID, syscatId);
 		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.ID_NAME));
+		json.addProperty(FIELD_SYSCATID, this.syscatId);
+		if ((LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
+			json.addProperty(FIELD_BRANCHID, this.branchId);
+			json.addProperty(FIELD_BRANCHNAME, this.branchName);
+		}
+		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT) {
+			json.addProperty(FIELD_CATID, this.catalogId);
+			json.addProperty(FIELD_CATNAME, this.catName);
+		}
+		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (layoutSyscat == null || !this.syscatId.equals(layoutSyscat))) {
+			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
+		}
 		return json;
 	}
 	

@@ -157,6 +157,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	public CatalogItem populate(ResultSet rs) throws SQLException {
 		CatalogItem item = new CatalogItem(rs.getString("branch_id"), rs.getString("store_id"), 
 				rs.getString("catalog_id"), rs.getString("syscat_id"), rs.getString("item_id"));
+		item.setBranchName(rs.getString("branch_name"));
+		item.setCatalogName(rs.getString("cat_name"));
 		DaoSupport.populateGps(rs, item.gps);
 		for (ICatalogField field : spec.getAllFields()) {
 			item.setField(field.getId(), rs.getString(field.getId()));
@@ -172,7 +174,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			//ICatalogSpec spec = item.catalog.getSystemCatalog().getCatalogSpec();
-			ps = conn.prepareStatement("insert into " + /*CS +*/ spec.getSpecId() + " set item_id=?, catalog_id=?, syscat_id=?, branch_id=?, store_id=?, " + 
+			ps = conn.prepareStatement("insert into " + /*CS +*/ spec.getSpecId() + 
+					" set item_id=?, catalog_id=?, syscat_id=?, branch_id=?, store_id=?, branch_name=?, cat_name=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + genSpecFields(spec));
 			int i = 1;
 			ps.setString(i++, itemId);
@@ -180,6 +183,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			ps.setString(i++, item.getSyscatId());
 			ps.setString(i++, item.branchId);
 			ps.setString(i++, item.storeId);
+			ps.setString(i++, item.getBranchName());
+			ps.setString(i++, item.getCatalogName());
 			i = setSpecFields(spec, item, ps, i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

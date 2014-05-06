@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 
 import com.google.gson.JsonParser;
+import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IOperation;
@@ -34,7 +35,8 @@ public class OperationDao implements DbPopulator<Operation> {
 	public Operation populate(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
 				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);
-		DaoSupport.populateName(rs, oper.getName());
+		oper.setBranchName(rs.getString("branch_name"));
+		DaoSupport.populateName(rs, (Name) oper.getDesc());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		//DaoSupport.populateGps(rs, oper.gps);
 		//oper.getOpenHours().setText(rs.getString("open_text"));
@@ -165,8 +167,6 @@ public class OperationDao implements DbPopulator<Operation> {
 			int i = 1;
 			ps.setString(i++, branchId);
 			ps.setString(i++, operId);
-			i = DaoSupport.setNameFields(ps, operation.getName(), i);
-			i = DaoSupport.setRecinfoFields(ps, operation.getRecordInfo(), i);
 			setFields(i, op, ps);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -180,7 +180,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 
-	public void updateOperation(String operId, IOperation operation) throws SQLException {
+	public void updateOperation(String operId, Operation operation) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -190,8 +190,6 @@ public class OperationDao implements DbPopulator<Operation> {
 					DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS + " where store_id = ?");
 			Operation op = (Operation) operation;
 			int i = 1;
-			i = DaoSupport.setNameFields(ps, operation.getName(), i);
-			i = DaoSupport.setRecinfoFields(ps, operation.getRecordInfo(), i);
 			i = setFields(i, op, ps);
 			ps.setString(i, operId);
 			i++;
@@ -208,9 +206,12 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 	
 	//TODO update store syscat / promotion syscat on changing in branch/store
-	private static final String OP_FIELDS = "syscat_id=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
+	private static final String OP_FIELDS = "branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
+		i = DaoSupport.setNameFields(ps, (Name) op.getDesc(), i);
+		i = DaoSupport.setRecinfoFields(ps, op.getRecordInfo(), i);
+		ps.setString(i++, op.getBranchName());
 		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
 		ps.setString(i++, op.getOpenHours().writeJson().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));

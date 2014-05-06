@@ -50,9 +50,12 @@ public class Operation implements IOperation, Feed {
 	//static final String CATALOG_ID_OPERROOT = "OPER_ROOT";
 	//private final Catalog rootCatalog = new Catalog(this.branchId, this.branchId, CATALOG_ID_OPERROOT);
 	private String systemCatalogId;
+	private final boolean branch;
 	private Catalog rootCatalog;
 	
 	//private String systemCatalogId;
+	
+	private String branchName;
 	
 	private CachedPagingList<IPromotion, IPromotionSort> promotions;
 	
@@ -96,22 +99,24 @@ public class Operation implements IOperation, Feed {
 		this.gps.setLatitude(gpsLat);
 		this.gps.setInheritFrom(gpsInherit);
 		
+		this.systemCatalogId = systemCatalogId;
+		this.branch = branch;
+		createRootCatalog();
+		
+		this.promotions = createPromotionPagingList(branchId, storeId, this.systemCatalogId, gps);
+		this.memberPagingList = createMemberPagingList();
+	}
+	
+	private void createRootCatalog() {
 		String rootCatInherit;
 		if (branch) {
 			rootCatInherit = GPSInfo.INHERIT_BRANCH;
 		} else {
 			rootCatInherit = GPSInfo.INHERIT_STORE;
 		}
-		
-		this.systemCatalogId = systemCatalogId;
 		this.rootCatalog = new Catalog(this.branchId, this.storeId, this.storeId, this.storeId, this.systemCatalogId);
+		this.rootCatalog.setBranchName(this.branchName);
 		this.rootCatalog.gps.inherit(this.gps, rootCatInherit);
-		/*this.rootCatalog.gps.setLongitude(gpsLon);
-		this.rootCatalog.gps.setLatitude(gpsLat);
-		this.rootCatalog.gps.setInheritFrom(gpsInherit);*/
-		
-		this.promotions = createPromotionPagingList(branchId, storeId, this.systemCatalogId, gps);
-		this.memberPagingList = createMemberPagingList();
 	}
 	
 	public static CachedPagingList<IPromotion, IPromotionSort> createPromotionPagingList(
@@ -134,7 +139,7 @@ public class Operation implements IOperation, Feed {
 		promoComparators[IPromotionSort.name.ordinal()] = new Comparator<IPromotion>() {
 			@Override
 			public int compare(IPromotion o1, IPromotion o2) {
-				return o1.getName().getName().compareTo(o2.getName().getName());
+				return o1.getName().compareTo(o2.getName());
 			}
 		};
 		
@@ -170,10 +175,10 @@ public class Operation implements IOperation, Feed {
 
 			@Override
 			public void insert(IUser authorizedUser, IPromotion t) throws SQLException {
-				if (t.getName().getName() == null || "".equals(t.getName().getName())) {
+				if (t.getName() == null || "".equals(t.getName())) {
 					throw new RuntimeException("Promotion name is missing");
 				}
-				String newId = SmartpadCommon.md5(branchId + storeId + t.getName().getName()); 
+				String newId = SmartpadCommon.md5(branchId + storeId + t.getName()); 
 				new PromotionDao().insert(newId, branchId, storeId, syscatId, (Promotion) t);
 			}
 
@@ -266,7 +271,7 @@ public class Operation implements IOperation, Feed {
 	
 	public void setId(String operationId) {
 		this.storeId = operationId;
-		this.rootCatalog = new Catalog(this.branchId, this.storeId, this.storeId, this.storeId, this.systemCatalogId);
+		createRootCatalog();
 		createMemberPagingList();
 	}
 
@@ -276,8 +281,30 @@ public class Operation implements IOperation, Feed {
 	}
 
 	@Override
-	public IName getName() {
+	public IName getDesc() {
 		return name;
+	}
+	
+	@Override
+	public String getName() {
+		return name.getName();
+	}
+	
+	@Override
+	public void setName(String name) {
+		this.name.setName(name);
+		if (this.branch) {
+			this.branchName = name;
+			createRootCatalog();
+		}
+	}
+	
+	public void setBranchName(String bn) {
+		this.branchName = bn;
+	}
+	
+	public String getBranchName() {
+		return this.branchName;
 	}
 
 	@Override
@@ -356,7 +383,8 @@ public class Operation implements IOperation, Feed {
 		return memberPagingList;
 	}
 	
-	public JsonObject generateFeedJson() {
+	@Override
+	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.storeId);
 		if (this.storeId.equals(this.branchId)) {
@@ -366,6 +394,10 @@ public class Operation implements IOperation, Feed {
 		}
 		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
 		json.addProperty(FIELD_NAME, this.name.getName());
+		
+		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT) {
+			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
+		}
 		return json;
 	}
 

@@ -13,12 +13,10 @@ public class Name implements IName {
 	
 	private final LinkedList<String> images = new LinkedList<String>();
 
-	@Override
 	public String getName() {
 		return name;
 	}
 
-	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

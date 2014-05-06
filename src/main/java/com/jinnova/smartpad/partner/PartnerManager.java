@@ -109,6 +109,7 @@ public class PartnerManager implements IPartnerManager {
 		
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
 		systemRootCatalog = new Catalog(SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, null, null);
+		systemRootCatalog.setBranchName(SYSTEM_BRANCH_ID);
 	}
 	
 	public static void initialize(String dbhost, String dbport, String dbname, String dblogin, String dbpass) throws SQLException {
@@ -150,8 +151,8 @@ public class PartnerManager implements IPartnerManager {
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
 		
-		Operation branch = new Operation(login, login, null, null, null, GPSInfo.INHERIT_PROVIDED, true);
-		branch.getName().setName("");
+		Operation branch = new Operation(login, login, null, null, null, GPSInfo.INHERIT_PROVIDED, true /*branch*/);
+		branch.setName("");
 		branch.getRootCatalog().setSystemCatalogId(systemRootCatalog.getId());
 		branch.getRecordInfo().setCreateBy(login);
 		branch.getRecordInfo().setCreateDate(new Date());

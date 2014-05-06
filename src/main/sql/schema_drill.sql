@@ -20,7 +20,9 @@ CREATE TABLE `operations_clusters` (
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
   
-  `name` varchar(1024) NOT NULL,
+  `branch_name` varchar(2048) NOT NULL,
+  
+  `name` varchar(2048) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
   

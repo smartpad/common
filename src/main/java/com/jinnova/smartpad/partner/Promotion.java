@@ -140,8 +140,18 @@ public class Promotion implements IPromotion, Feed {
 	}
 
 	@Override
-	public IName getName() {
+	public IName getDesc() {
 		return name;
+	}
+	
+	@Override
+	public String getName() {
+		return this.name.getName();
+	}
+	
+	@Override
+	public void setName(String s) {
+		this.name.setName(s);
 	}
 
 	@Override
@@ -162,7 +172,7 @@ public class Promotion implements IPromotion, Feed {
 		return mcardOffer;
 	}
 
-	public JsonObject generateFeedJson() {
+	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.promotionId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_PROMO);

@@ -33,7 +33,9 @@ CREATE TABLE `operations` (
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) NOT NULL,
   
-  `name` varchar(1024) NOT NULL,
+  `branch_name` varchar(2048) NOT NULL,
+  
+  `name` varchar(2048) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
   
@@ -71,6 +73,8 @@ CREATE TABLE `catalogs` (
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) DEFAULT NULL,
   `partial_id` int NOT NULL,
+  
+  `branch_name` varchar(2048) NOT NULL,
   
   `gps_lon` decimal(9,6) DEFAULT NULL,
   `gps_lat` decimal(9,6) DEFAULT NULL,
