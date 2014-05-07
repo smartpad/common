@@ -65,20 +65,25 @@ public class Catalog implements ICatalog, Feed {
 	}
 	
 	private void createPagingLists() {
+		//String syscatId = systemCatalogId;
 		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, gps, createCatItemClusterTable);
-		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps);
+		
+		String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
+		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, branchName, name.getName(), gps);
 	}
 	
 	public void setCreateCatItemClusterTable() {
 		this.createCatItemClusterTable = true;
+		//String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
+		//String syscatId = systemCatalogId;
 		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, gps, createCatItemClusterTable);
 	}
 	
-	public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
+	/*public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
 			final String catalogId, final String systemCatalogId, final String branchName, final GPSInfo gps) {
 		
 		return createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, gps, false);
-	}
+	}*/
 	
 	private static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
 			final String catalogId, final String systemCatalogId, final String branchName, final GPSInfo gps, final boolean createCatItemClusterTable) {
@@ -403,8 +408,20 @@ public class Catalog implements ICatalog, Feed {
 	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.catalogId);
-		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CAT);
+		json.addProperty(FIELD_TYPE, this.systemCatalogId != null ? TYPENAME_CAT : TYPENAME_SYSCAT);
 		json.addProperty(FIELD_NAME, this.name.getName());
+		
+		json.addProperty(FIELD_UP_ID, this.parentCatalogId);
+		json.addProperty(FIELD_UP_NAME, this.parentCatalogId);
+		
+		if (this.systemCatalogId != null && (LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
+			json.addProperty(FIELD_BRANCHID, this.branchId);
+			json.addProperty(FIELD_BRANCHNAME, this.branchName);
+		}
+		if (this.systemCatalogId != null && (LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (layoutSyscat == null || !this.systemCatalogId.equals(layoutSyscat))) {
+			json.addProperty(FIELD_SYSCATID, systemCatalogId);
+			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
+		}
 		return json;
 	}
 	

@@ -154,6 +154,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 	public Catalog populate(ResultSet rs) throws SQLException {
 		Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("store_id"), 
 				rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
+		cat.setBranchName(rs.getString("branch_name"));
 		DaoSupport.populateGps(rs, cat.gps);
 		DaoSupport.populateName(rs, (Name) cat.getDesc());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());

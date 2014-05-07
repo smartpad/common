@@ -394,9 +394,13 @@ public class Operation implements IOperation, Feed {
 		}
 		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
 		json.addProperty(FIELD_NAME, this.name.getName());
-		
+
 		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT) {
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
+		}
+		if ((layoutOptions & LAYOPT_WITHBRANCH) == LAYOPT_WITHBRANCH) {
+			json.addProperty(FIELD_BRANCHID, this.branchId);
+			json.addProperty(FIELD_BRANCHNAME, this.branchName);
 		}
 		return json;
 	}

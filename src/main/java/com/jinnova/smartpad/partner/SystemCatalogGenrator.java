@@ -38,7 +38,21 @@ public class SystemCatalogGenrator {
 			createCat(elec, "cam", "Máy ảnh & Máy quay phim");
 			createCat(elec, "av", "Âm thanh & Hình ảnh");
 		}
-		createCat(rootCat, "appliance", "Điện gia dụng");
+		Catalog appliance = createCat(rootCat, "appliance", "Điện gia dụng");
+		{
+			createCat(appliance, "washer", "Máy giặt", new Object[][] {
+				{"manu", ICatalogFieldType.Text_Name, "Hãng sản xuất"},
+				{"wash_type", ICatalogFieldType.Text_ID, "Kiểu máy giặt"},
+				{"wash_load", ICatalogFieldType.Decimal, "Khối lượng giặt"},
+				{"max_rpm", ICatalogFieldType.Int, "Tốc độ vắt tối đa (vòng/phút)"},
+				{"capacity", ICatalogFieldType.Int, "Dung tích thùng chứa (lít)"},
+				{"water", ICatalogFieldType.Int, "Lượng nước tiêu thụ (lít)"},
+				{"power", ICatalogFieldType.Int, "Điện năng tiêu thụ (W)"},
+				{"sizes", ICatalogFieldType.Text_Name, "Kích thước (mm)"},
+				{"weight", ICatalogFieldType.Int, "Trọng lượng (kg)"},
+				{"madein", ICatalogFieldType.Text_Name, "Xuất xứ"}});
+		}
+		
 		createCat(rootCat, "office", "Máy văn phòng & Văn phòng phẩm");
 		
 		createCat(rootCat, "fmcg", "Hàng tiêu dùng");
@@ -63,7 +77,11 @@ public class SystemCatalogGenrator {
 		createCat(rootCat, "industrials", "Công nghiệp, xây dựng & Doanh nghiệp");
 	}
 	
-	private Catalog createCat(Catalog parentCat, String catId, String catName, Object[]... fieldIDTypeNames) throws SQLException {
+	private Catalog createCat(Catalog parentCat, String catId, String catName) throws SQLException {
+		return createCat(parentCat, catId, catName, null);
+	}
+	
+	private Catalog createCat(Catalog parentCat, String catId, String catName, Object[][] fieldIDTypeNames) throws SQLException {
 		if (createClusterTable) {
 			parentCat.setCreateCatItemClusterTable();
 		}
@@ -89,6 +107,18 @@ public class SystemCatalogGenrator {
 			field.setFieldType((ICatalogFieldType) oneIDTypeName[1]);
 			field.setName((String) oneIDTypeName[2]);
 		}
+	}
+
+	public void createSystemItems() throws SQLException {
+		systemUser = PartnerManager.instance.systemUser;
+		ICatalog cat = PartnerManager.instance.getSystemCatalog("z_appliance_washer");
+		createWasher(cat, "Sanyo ASW-D90VT", "SANYO", "Máy giặt lồng đứng", 9, 850, 65, 122, 160, "590 x 564 x 988", 41, "Việt Nam");
+	}
+	
+	private void createWasher(ICatalog cat, Object... data) throws SQLException {
+		ICatalogItem item = cat.getCatalogItemPagingList().newEntryInstance(systemUser);
+		item.setField(ICatalogField.ID_NAME, String.valueOf(data[0]));
+		cat.getCatalogItemPagingList().put(systemUser, item);
 	}
 
 }
