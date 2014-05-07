@@ -25,10 +25,11 @@ public class CatalogField implements ICatalogField {
 	JsonObject toJson() {
 		JsonObject json = new JsonObject();
 		json.addProperty("id", id);
-		json.addProperty("mv", multivalue);
 		json.addProperty("ft", fieldType.name());
+		json.addProperty("mv", multivalue);
 		json.addProperty("sn", sectionNumber);
 		json.addProperty("gn", groupNumber);
+		json.addProperty("n", name);
 		json.add("at", JsonSupport.toJson(attributes));
 		return json;
 	}
@@ -36,10 +37,11 @@ public class CatalogField implements ICatalogField {
 	void populate(JsonElement jsonElement) {
 		JsonObject json = jsonElement.getAsJsonObject();
 		this.id = json.get("id").getAsString();
-		this.multivalue = json.get("mv").getAsBoolean();
 		this.fieldType = ICatalogFieldType.valueOf(json.get("ft").getAsString());
+		this.multivalue = json.get("mv").getAsBoolean();
 		this.sectionNumber = json.get("sn").getAsInt();
 		this.groupNumber = json.get("gn").getAsInt();
+		this.name = json.get("n").getAsString();
 		this.attributes = JsonSupport.toHashmap(json.get("at").getAsJsonObject());
 	}
 
