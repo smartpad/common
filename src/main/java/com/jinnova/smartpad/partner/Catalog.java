@@ -35,6 +35,8 @@ public class Catalog implements ICatalog, Feed {
 	
 	private String branchName;
 	
+	private String parentCatName;
+	
 	public final GPSInfo gps = new GPSInfo();
 	
 	private final Name name = new Name();
@@ -66,7 +68,7 @@ public class Catalog implements ICatalog, Feed {
 	
 	private void createPagingLists() {
 		//String syscatId = systemCatalogId;
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, gps, createCatItemClusterTable);
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps, createCatItemClusterTable);
 		
 		String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
 		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, branchName, name.getName(), gps);
@@ -76,7 +78,7 @@ public class Catalog implements ICatalog, Feed {
 		this.createCatItemClusterTable = true;
 		//String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
 		//String syscatId = systemCatalogId;
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, gps, createCatItemClusterTable);
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps, createCatItemClusterTable);
 	}
 	
 	/*public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
@@ -86,7 +88,8 @@ public class Catalog implements ICatalog, Feed {
 	}*/
 	
 	private static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
-			final String catalogId, final String systemCatalogId, final String branchName, final GPSInfo gps, final boolean createCatItemClusterTable) {
+			final String catalogId, final String systemCatalogId, final String branchName, final String catalogName, 
+			final GPSInfo gps, final boolean createCatItemClusterTable) {
 		
 		PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport = new PageEntrySupport<ICatalog, ICatalogSort>() {
 			
@@ -94,6 +97,7 @@ public class Catalog implements ICatalog, Feed {
 			public ICatalog newEntryInstance(IUser authorizedUser) {
 				Catalog subCat = new Catalog(branchId, storeId, null, catalogId, systemCatalogId);
 				subCat.setBranchName(branchName);
+				subCat.setParentCatName(catalogName);
 				subCat.gps.inherit(gps, null);
 				return subCat;
 			}
@@ -412,7 +416,7 @@ public class Catalog implements ICatalog, Feed {
 		json.addProperty(FIELD_NAME, this.name.getName());
 		
 		json.addProperty(FIELD_UP_ID, this.parentCatalogId);
-		json.addProperty(FIELD_UP_NAME, this.parentCatalogId);
+		json.addProperty(FIELD_UP_NAME, this.parentCatName);
 		
 		if (this.systemCatalogId != null && (LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
@@ -432,5 +436,14 @@ public class Catalog implements ICatalog, Feed {
 	
 	public String getBranchName() {
 		return this.branchName;
+	}
+	
+	public void setParentCatName(String n) {
+		this.parentCatName = n;
+		createPagingLists();
+	}
+	
+	public String getParentCatName() {
+		return this.parentCatName;
 	}
 }

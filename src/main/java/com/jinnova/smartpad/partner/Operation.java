@@ -116,6 +116,7 @@ public class Operation implements IOperation, Feed {
 		}
 		this.rootCatalog = new Catalog(this.branchId, this.storeId, this.storeId, this.storeId, this.systemCatalogId);
 		this.rootCatalog.setBranchName(this.branchName);
+		this.rootCatalog.setName("");
 		this.rootCatalog.gps.inherit(this.gps, rootCatInherit);
 	}
 	

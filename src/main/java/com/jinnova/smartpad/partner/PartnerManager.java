@@ -110,6 +110,7 @@ public class PartnerManager implements IPartnerManager {
 		userPagingList = new CachedPagingList<IUser, IUserSort>(memberMate, comparators, IUserSort.creation, new IUser[0]);
 		systemRootCatalog = new Catalog(SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, SYSTEM_BRANCH_ID, null, null);
 		systemRootCatalog.setBranchName(SYSTEM_BRANCH_ID);
+		systemRootCatalog.setName("");
 	}
 	
 	public static void initialize(String dbhost, String dbport, String dbname, String dblogin, String dbpass) throws SQLException {

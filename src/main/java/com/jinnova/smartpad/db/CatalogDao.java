@@ -155,6 +155,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		Catalog cat = new Catalog(rs.getString("branch_id"), rs.getString("store_id"), 
 				rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
 		cat.setBranchName(rs.getString("branch_name"));
+		cat.setParentCatName(rs.getString("parent_name"));
 		DaoSupport.populateGps(rs, cat.gps);
 		DaoSupport.populateName(rs, (Name) cat.getDesc());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
@@ -193,8 +194,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				catalogIdGen[0] = catalogIdPrefix + "_" + partialId;
 			}
 			
-			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, partial_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, branch_name=?, spec=?, " + 
-					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, partial_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, " +
+					"branch_name=?, parent_name=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
 			rollbackable = true;
 			int i = 1;
 			ps.setString(i++, catalogIdGen[0]);
@@ -204,6 +205,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(i++, storeId);
 			ps.setString(i++, cat.getSystemCatalogId());
 			ps.setString(i++, cat.getBranchName());
+			ps.setString(i++, cat.getParentCatName());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);

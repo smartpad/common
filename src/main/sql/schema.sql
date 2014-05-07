@@ -75,6 +75,7 @@ CREATE TABLE `catalogs` (
   `partial_id` int NOT NULL,
   
   `branch_name` varchar(2048) NOT NULL,
+  `parent_name` varchar(1024) NOT NULL,
   
   `gps_lon` decimal(9,6) DEFAULT NULL,
   `gps_lat` decimal(9,6) DEFAULT NULL,

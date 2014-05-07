@@ -1,28 +1,37 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.ICatalogFieldType.*;
+
 import java.sql.SQLException;
 
 public class SystemCatalogGenrator {
 	
-	private User systemUser;
+	private static User systemUser;
 	
-	private boolean createClusterTable;
+	private static boolean createClusterTable;
+
+	private static String[] clothFields;
+	
+	private static String[] washerFields;
+
+	private static String[] mattressFields;
 	
 	/**
 	 * constructor for reflection
 	 */
 	public SystemCatalogGenrator() {
-		this.createClusterTable = false;
+		createClusterTable = false;
 	}
 	
 	public SystemCatalogGenrator(boolean createClusterTable) {
-		this.createClusterTable = createClusterTable;
+		SystemCatalogGenrator.createClusterTable = createClusterTable;
 	}
 	
-	public void generate() throws SQLException {
+	public static void generate() throws SQLException {
 		
 		//system catalog
 		systemUser = PartnerManager.instance.systemUser;
+		int i;
 		Catalog rootCat = PartnerManager.instance.getSystemRootCatalog();
 		rootCat = createCat(rootCat, "z", "All");
 		Catalog elec = createCat(rootCat, "elec", "Điện tử & Máy tính");
@@ -37,29 +46,56 @@ public class SystemCatalogGenrator {
 			}
 			createCat(elec, "cam", "Máy ảnh & Máy quay phim");
 			createCat(elec, "av", "Âm thanh & Hình ảnh");
+			createCat(elec, "om", "Máy văn phòng");
 		}
 		Catalog appliance = createCat(rootCat, "appliance", "Điện gia dụng");
 		{
+			i = 0;
+			washerFields = new String[] {
+						"manu", "wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"};
 			createCat(appliance, "washer", "Máy giặt", new Object[][] {
-				{"manu", ICatalogFieldType.Text_Name, "Hãng sản xuất"},
-				{"wash_type", ICatalogFieldType.Text_ID, "Kiểu máy giặt"},
-				{"wash_load", ICatalogFieldType.Decimal, "Khối lượng giặt"},
-				{"max_rpm", ICatalogFieldType.Int, "Tốc độ vắt tối đa (vòng/phút)"},
-				{"capacity", ICatalogFieldType.Int, "Dung tích thùng chứa (lít)"},
-				{"water", ICatalogFieldType.Int, "Lượng nước tiêu thụ (lít)"},
-				{"power", ICatalogFieldType.Int, "Điện năng tiêu thụ (W)"},
-				{"sizes", ICatalogFieldType.Text_Name, "Kích thước (mm)"},
-				{"weight", ICatalogFieldType.Int, "Trọng lượng (kg)"},
-				{"madein", ICatalogFieldType.Text_Name, "Xuất xứ"}});
+				//"manu", "wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
+				{washerFields[i++], Text_Name, "Hãng sản xuất"}, {washerFields[i++], Text_ID, "Kiểu máy giặt"},
+				{washerFields[i++], Decimal, "Khối lượng giặt"}, {washerFields[i++], Int, "Tốc độ vắt tối đa (vòng/phút)"},
+				{washerFields[i++], Int, "Dung tích thùng chứa (lít)"}, {washerFields[i++], Int, "Lượng nước tiêu thụ (lít)"},
+				{washerFields[i++], Int, "Điện năng tiêu thụ (W)"}, {washerFields[i++], Text_Name, "Kích thước (mm)"},
+				{washerFields[i++], Int, "Trọng lượng (kg)"}, {washerFields[i++], Text_Name, "Xuất xứ"}});
 		}
 		
-		createCat(rootCat, "office", "Máy văn phòng & Văn phòng phẩm");
+		//createCat(rootCat, "office", "Máy văn phòng & Văn phòng phẩm");
 		
-		createCat(rootCat, "fmcg", "Hàng tiêu dùng");
-		createCat(rootCat, "clothes", "Quần áo, giầy dép & Trang sức");
+		//createCat(rootCat, "fmcg", "Hàng tiêu dùng");
+		Catalog fashion = createCat(rootCat, "fashion", "Quần áo, giầy dép & Trang sức");
+		{
+			i = 0;
+			clothFields = new String[] {"trademark", "material", "color", "style", "size", "madein", "sex"};
+			createCat(fashion, "clothes", "Quần áo", new Object[][] {
+				{clothFields[i++], Text_Name, "Nhãn hiệu"},
+				{clothFields[i++], Text_Name, "Chất liệu"},
+				{clothFields[i++], Text_Name, "Màu"},
+				{clothFields[i++], Text_Name, "Thể loại"},
+				{clothFields[i++], Text_Name, "Kích cỡ"},
+				{clothFields[i++], Text_Name, "Xuất xứ"},
+				{clothFields[i++], Text_Name, "Nam/nữ"}
+			});
+		}
 		createCat(rootCat, "kids", "Trẻ em & Đồ chơi");
 		createCat(rootCat, "health", "Y tế, sức khỏe & Làm đẹp");
-		createCat(rootCat, "home", "Gia đình & Nội ngoại thất");
+		Catalog homeCat = createCat(rootCat, "home", "Gia đình & Nội ngoại thất");
+		{
+			createCat(homeCat, "fmcg", "Hàng tiêu dùng");
+			
+			i = 0;
+			mattressFields = new String[] {"manu", "material", "length", "width", "thick", "madein"};
+			createCat(homeCat, "mattress", "Nệm", new Object[][] {
+				{mattressFields[i++], Text_Name, "Hãng sản xuất"},
+				{mattressFields[i++], Text_Name, "Chất liệu"},
+				{mattressFields[i++], Int, "Dài"},
+				{mattressFields[i++], Int, "Rộng"},
+				{mattressFields[i++], Int, "Dày"},
+				{mattressFields[i++], Text_Name, "Xuất xứ"}
+			});
+		}
 
 		Catalog entertain = createCat(rootCat, "entertain", "Du lịch, giải trí & ẩm thực");
 		{
@@ -67,8 +103,17 @@ public class SystemCatalogGenrator {
 			{
 				createCat(foods, "fastfoods", "Thức ăn nhanh");
 			}
+			
+			createCat(entertain, "resort", "Khách sạn / resort");
+			createCat(entertain, "event", "Sự kiện");
 		}
-		createCat(rootCat, "sport", "Thể thao, văn hóa & Nghệ thuật");
+		
+		Catalog sportCulture = createCat(rootCat, "sport", "Thể thao, văn hóa & Nghệ thuật");
+		{
+			createCat(sportCulture, "book", "Sách");
+			createCat(sportCulture, "stanary", "Văn phòng phẩm");
+		}
+		
 		//createmasterType(masterType, "Sách & Thiết bị trường học");
 		createCat(rootCat, "edu", "Giáo dục, đào tạo & Việc làm");
 		
@@ -77,11 +122,11 @@ public class SystemCatalogGenrator {
 		createCat(rootCat, "industrials", "Công nghiệp, xây dựng & Doanh nghiệp");
 	}
 	
-	private Catalog createCat(Catalog parentCat, String catId, String catName) throws SQLException {
+	private static Catalog createCat(Catalog parentCat, String catId, String catName) throws SQLException {
 		return createCat(parentCat, catId, catName, null);
 	}
 	
-	private Catalog createCat(Catalog parentCat, String catId, String catName, Object[][] fieldIDTypeNames) throws SQLException {
+	private static Catalog createCat(Catalog parentCat, String catId, String catName, Object[][] fieldIDTypeNames) throws SQLException {
 		if (createClusterTable) {
 			parentCat.setCreateCatItemClusterTable();
 		}
@@ -89,8 +134,8 @@ public class SystemCatalogGenrator {
 		cat.setName(catName);
 		cat.getCatalogSpec().setSpecId(catId); //table name
 		Object[][] nameDesc = new Object[][] {
-				{ICatalogField.ID_NAME, ICatalogFieldType.Text_Name, "Name"},
-				{ICatalogField.ID_DESC, ICatalogFieldType.Text_Desc, "Description"}};
+				{ICatalogField.ID_NAME, Text_Name, "Name"},
+				{ICatalogField.ID_DESC, Text_Desc, "Description"}};
 		createColumns(cat, nameDesc);
 		if (fieldIDTypeNames != null) {
 			createColumns(cat, fieldIDTypeNames);
@@ -109,15 +154,47 @@ public class SystemCatalogGenrator {
 		}
 	}
 
-	public void createSystemItems() throws SQLException {
+	public static void createSystemItems() throws SQLException {
+		
 		systemUser = PartnerManager.instance.systemUser;
+		//"manu", "wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
 		ICatalog cat = PartnerManager.instance.getSystemCatalog("z_appliance_washer");
-		createWasher(cat, "Sanyo ASW-D90VT", "SANYO", "Máy giặt lồng đứng", 9, 850, 65, 122, 160, "590 x 564 x 988", 41, "Việt Nam");
+		createItem(cat, washerFields, "Sanyo ASW-D90VT", "SANYO", "Máy giặt lồng đứng", 9,   850, 65, 122, 160, "590 x 564 x 988", 41, "Việt Nam");
+		createItem(cat, washerFields, "LG WFD8525DD",    "LG",    "Máy giặt lồng đứng", 8.5, 850, 79, 410, 0,   "540 x 910 x 540", 39, null);
+		createItem(cat, washerFields, "Sanyo ASW-U850HT", "Sanyo","Máy giặt lồng nghiêng",8.5,840,62, 410, 0,   "589 x 620 x 988", 43, null);
+		
+		//"manu", "material", "length", "width", "thick", "madein"
+		cat = PartnerManager.instance.getSystemCatalog("z_home_mattress");
+		createItem(cat, mattressFields, "Nệm cao su Vạn Thành", "Vạn Thành", "Cao su", 160, 200, 5, "Việt Nam");
+		createItem(cat, mattressFields, "Nệm cao su Liên Á Classic 180x200x10cm", "Liên Á", "Cao su", 180, 200, 10, "Việt Nam");
+		createItem(cat, mattressFields, "Nệm cao su Venus Vạn Thành 100x200x10cm", "Vạn Thành", "Cao su", 100, 200, 10, "Việt Nam");
+		createItem(cat, mattressFields, "Nệm bông ép Hàn Quốc Cuscino 140x200x5cm", null, "Bông tấm PE ép", 140, 200, 5, "Hàn Quốc");
+		
+		//resort
+		cat = PartnerManager.instance.getSystemCatalog("z_entertain_resort");
+		createItem(cat, null, "Thiên Ý Resort");
+		createItem(cat, null, "Vinpearl Resort");
+		
+		//áo quần
+		//"trademark", "material", "color", "style", "size", "madein", "sex"
+		cat = PartnerManager.instance.getSystemCatalog("z_fashion_clothes");
+		createItem(cat, clothFields, "Váy đầm dạ hội trẻ trung quyến rũ,đa dạng cho phụ nữ Việt Nam DV144",
+				null, "Thun", "Đen/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
+		createItem(cat, clothFields, "Đầm body Ngọc Trinh 2 dây đơn giản sang trọng DV145", 
+				null, "Thun", "Đỏ/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
 	}
 	
-	private void createWasher(ICatalog cat, Object... data) throws SQLException {
+	private static void createItem(ICatalog cat, String[] fieldNames, Object... data) throws SQLException {
 		ICatalogItem item = cat.getCatalogItemPagingList().newEntryInstance(systemUser);
 		item.setField(ICatalogField.ID_NAME, String.valueOf(data[0]));
+		
+		if (fieldNames == null) {
+			return;
+		}
+		int offset = 1;
+		for (int i = 0; i < fieldNames.length; i++) {
+			item.setField(fieldNames[i], String.valueOf(data[offset + i]));
+		}
 		cat.getCatalogItemPagingList().put(systemUser, item);
 	}
 
