@@ -264,8 +264,8 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			tableSql.append("cluster_id int default null, cluster_rank int default null, ");
 		}
 		tableSql.append("item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
-				"store_id varchar(32) NOT NULL, branch_id varchar(32) NOT NULL, " +
-				"branch_name varchar(2048) NOT NULL, cat_name varchar(2048) NOT NULL, " +
+				"store_id varchar(32) NOT NULL, branch_id varchar(32) DEFAULT NULL, " +
+				"branch_name varchar(2048) DEFAULT NULL, cat_name varchar(2048) NOT NULL, " +
 				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 		for (ICatalogField f : spec.getAllFields()) {
 			tableSql.append(", ");

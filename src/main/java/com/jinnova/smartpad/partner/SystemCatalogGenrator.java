@@ -1,5 +1,6 @@
 package com.jinnova.smartpad.partner;
 
+import static com.jinnova.smartpad.partner.ICatalogField.*;
 import static com.jinnova.smartpad.partner.ICatalogFieldType.*;
 
 import java.sql.SQLException;
@@ -40,13 +41,13 @@ public class SystemCatalogGenrator {
 		rootCat = createCat(rootCat, "z", "All");
 		Catalog elec = createCat(rootCat, "elec", "Điện tử & Máy tính");
 		{
-			Catalog elecComp = createCat(elec, "comp", "Vi tính & viễn thông");
+			Catalog elecComp = createCat(elec, "comp", "Điện thoại, máy tính");
 			{
 				createCat(elecComp, "phone", "Điện thoại di động");
 				createCat(elecComp, "tablet", "Máy tính bảng");
 				createCat(elecComp, "laptop", "Máy tính xách tay");
 				createCat(elecComp, "desktop", "Máy tính để bàn");
-				createCat(elecComp, "item", "Thiết bị ngoại vi");
+				createCat(elecComp, "periph", "Thiết bị ngoại vi");
 			}
 			createCat(elec, "cam", "Máy ảnh & Máy quay phim");
 			createCat(elec, "av", "Âm thanh & Hình ảnh");
@@ -56,10 +57,11 @@ public class SystemCatalogGenrator {
 		{
 			i = 0;
 			washerFields = new String[] {
-						"manu", "wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"};
+						"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"};
 			createCat(appliance, "washer", "Máy giặt", new Object[][] {
-				//"manu", "wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
-				{washerFields[i++], Text_Name, "Hãng sản xuất"}, {washerFields[i++], Text_ID, "Kiểu máy giặt"},
+				//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
+				//{washerFields[i++], Text_Name, "Hãng sản xuất"}, 
+				{washerFields[i++], Text_ID, "Kiểu máy giặt"},
 				{washerFields[i++], Decimal, "Khối lượng giặt"}, {washerFields[i++], Int, "Tốc độ vắt tối đa (vòng/phút)"},
 				{washerFields[i++], Int, "Dung tích thùng chứa (lít)"}, {washerFields[i++], Int, "Lượng nước tiêu thụ (lít)"},
 				{washerFields[i++], Int, "Điện năng tiêu thụ (W)"}, {washerFields[i++], Text_Name, "Kích thước (mm)"},
@@ -72,9 +74,9 @@ public class SystemCatalogGenrator {
 		Catalog fashion = createCat(rootCat, "fashion", "Quần áo, giầy dép & Trang sức");
 		{
 			i = 0;
-			clothFields = new String[] {"trademark", "material", "color", "style", "size", "madein", "sex"};
+			clothFields = new String[] {"material", "color", "style", "size", "madein", "sex"};
 			createCat(fashion, "clothes", "Quần áo", new Object[][] {
-				{clothFields[i++], Text_Name, "Nhãn hiệu"},
+				//{clothFields[i++], Text_Name, "Nhãn hiệu"},
 				{clothFields[i++], Text_Name, "Chất liệu"},
 				{clothFields[i++], Text_Name, "Màu"},
 				{clothFields[i++], Text_Name, "Thể loại"},
@@ -85,14 +87,14 @@ public class SystemCatalogGenrator {
 		}
 		createCat(rootCat, "kids", "Trẻ em & Đồ chơi");
 		createCat(rootCat, "health", "Y tế, sức khỏe & Làm đẹp");
-		Catalog homeCat = createCat(rootCat, "home", "Gia đình & Nội ngoại thất");
+		Catalog homeCat = createCat(rootCat, "home", "Đồ dùng gia đình");
 		{
 			createCat(homeCat, "fmcg", "Hàng tiêu dùng");
 			
 			i = 0;
-			mattressFields = new String[] {"manu", "material", "length", "width", "thick", "madein"};
+			mattressFields = new String[] {"material", "length", "width", "thick", "madein"};
 			createCat(homeCat, "mattress", "Nệm", new Object[][] {
-				{mattressFields[i++], Text_Name, "Hãng sản xuất"},
+				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
 				{mattressFields[i++], Text_Name, "Chất liệu"},
 				{mattressFields[i++], Int, "Dài"},
 				{mattressFields[i++], Int, "Rộng"},
@@ -101,18 +103,18 @@ public class SystemCatalogGenrator {
 			});
 			
 			i = 0;
-			drapFields = new String[] {"manu", "material", "width", "madein"};
+			drapFields = new String[] {"material", "width", "madein"};
 			createCat(homeCat, "draps", "Draps", new Object[][] {
-				{mattressFields[i++], Text_Name, "Hãng sản xuất"},
+				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
 				{mattressFields[i++], Text_Name, "Chất liệu"},
 				{mattressFields[i++], Int, "Rộng"},
 				{mattressFields[i++], Text_Name, "Xuất xứ"}
 			});
 			
 			i = 0;
-			pillowFields = new String[] {"manu", "material", "style", "madein"};
+			pillowFields = new String[] {"material", "style", "madein"};
 			createCat(homeCat, "pillow", "Mềm / gối", new Object[][] {
-				{mattressFields[i++], Text_Name, "Hãng sản xuất"},
+				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
 				{mattressFields[i++], Text_Name, "Chất liệu"},
 				{mattressFields[i++], Text_Name, "Loại"},
 				{mattressFields[i++], Text_Name, "Xuất xứ"}
@@ -156,8 +158,8 @@ public class SystemCatalogGenrator {
 		cat.setName(catName);
 		cat.getCatalogSpec().setSpecId(catId); //table name
 		Object[][] nameDesc = new Object[][] {
-				{ICatalogField.ID_NAME, Text_Name, "Name"},
-				{ICatalogField.ID_DESC, Text_Desc, "Description"}};
+				{F_NAME, Text_Name, "Name"},
+				{F_DESC, Text_Desc, "Description"}};
 		createColumns(cat, nameDesc);
 		if (fieldIDTypeNames != null) {
 			createColumns(cat, fieldIDTypeNames);
@@ -176,44 +178,45 @@ public class SystemCatalogGenrator {
 		}
 	}
 
-	public static void createSystemItems() throws SQLException {
+	public static void createItems() throws SQLException {
 		
 		systemUser = PartnerManager.instance.systemUser;
-		//"manu", "wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
+		//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
 		ICatalog cat = PartnerManager.instance.getSystemCatalog("z_appliance_washer");
 		createItem(cat, washerFields, "Sanyo ASW-D90VT", "SANYO", "Máy giặt lồng đứng", 9,   850, 65, 122, 160, "590 x 564 x 988", 41, "Việt Nam");
 		createItem(cat, washerFields, "LG WFD8525DD",    "LG",    "Máy giặt lồng đứng", 8.5, 850, 79, 410, 0,   "540 x 910 x 540", 39, null);
 		createItem(cat, washerFields, "Sanyo ASW-U850HT", "Sanyo","Máy giặt lồng nghiêng",8.5,840,62, 410, 0,   "589 x 620 x 988", 43, null);
 		
-		//"manu", "material", "length", "width", "thick", "madein"
+		//"material", "length", "width", "thick", "madein"
 		cat = PartnerManager.instance.getSystemCatalog("z_home_mattress");
 		createItem(cat, mattressFields, "Nệm cao su Vạn Thành", "Vạn Thành", "Cao su", 160, 200, 5, "Việt Nam");
 		createItem(cat, mattressFields, "Nệm cao su Liên Á Classic 180x200x10cm", "Liên Á", "Cao su", 180, 200, 10, "Việt Nam");
 		createItem(cat, mattressFields, "Nệm cao su Venus Vạn Thành 100x200x10cm", "Vạn Thành", "Cao su", 100, 200, 10, "Việt Nam");
-		createItem(cat, mattressFields, "Nệm bông ép Hàn Quốc Cuscino 140x200x5cm", null, "Bông tấm PE ép", 140, 200, 5, "Hàn Quốc");
+		createItem(cat, mattressFields, "Nệm bông ép Hàn Quốc Cuscino 140x200x5cm", "Cuscino", "Bông tấm PE ép", 140, 200, 5, "Hàn Quốc");
 		
 		//resort
 		cat = PartnerManager.instance.getSystemCatalog("z_entertain_resort");
-		createItem(cat, null, "Thiên Ý Resort");
-		createItem(cat, null, "Vinpearl Resort");
+		createItem(cat, null, "Thiên Ý Resort", "Thiên Ý Resort");
+		createItem(cat, null, "Vinpearl Resort", "Vinpearl Resort");
 		
 		//áo quần
 		//"trademark", "material", "color", "style", "size", "madein", "sex"
 		cat = PartnerManager.instance.getSystemCatalog("z_fashion_clothes");
 		createItem(cat, clothFields, "Váy đầm dạ hội trẻ trung quyến rũ,đa dạng cho phụ nữ Việt Nam DV144",
-				null, "Thun", "Đen/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
+				"DV", "Thun", "Đen/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
 		createItem(cat, clothFields, "Đầm body Ngọc Trinh 2 dây đơn giản sang trọng DV145", 
-				null, "Thun", "Đỏ/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
+				"DV", "Thun", "Đỏ/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
 	}
 	
 	private static void createItem(ICatalog cat, String[] fieldNames, Object... data) throws SQLException {
-		ICatalogItem item = cat.getCatalogItemPagingList().newEntryInstance(systemUser);
-		item.setField(ICatalogField.ID_NAME, String.valueOf(data[0]));
+		CatalogItem item = (CatalogItem) cat.getCatalogItemPagingList().newEntryInstance(systemUser);
+		item.setField(F_NAME, String.valueOf(data[0]));
+		item.setBranchName((String) data[1]);
 		
 		if (fieldNames == null) {
 			return;
 		}
-		int offset = 1;
+		int offset = 2;
 		for (int i = 0; i < fieldNames.length; i++) {
 			item.setField(fieldNames[i], String.valueOf(data[offset + i]));
 		}

@@ -181,7 +181,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			ps.setString(i++, itemId);
 			ps.setString(i++, item.getCatalogId());
 			ps.setString(i++, item.getSyscatId());
-			ps.setString(i++, item.branchId);
+			ps.setString(i++, item.getBranchId());
 			ps.setString(i++, item.storeId);
 			ps.setString(i++, item.getBranchName());
 			ps.setString(i++, item.getCatalogName());

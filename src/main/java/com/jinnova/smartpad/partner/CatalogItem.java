@@ -10,7 +10,7 @@ import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem, Feed {
 	
-	public final String branchId;
+	private String branchId;
 	
 	public final String storeId;
 	
@@ -60,14 +60,28 @@ public class CatalogItem implements ICatalogItem, Feed {
 		return this.catalogId;
 	}
 	
+	public void setCatalogId(String catId) {
+		this.catalogId = catId;
+	}
+	
 	public String getSyscatId() {
 		return this.syscatId;
 	}
 	
+	public String getBranchId() {
+		return this.branchId;
+	}
+	
+	public void setBranchId(String id) {
+		this.branchId = id;
+	}
+
+	@Override
 	public void setBranchName(String bn) {
 		this.branchName = bn;
 	}
 	
+	@Override
 	public String getBranchName() {
 		return this.branchName;
 	}
@@ -117,13 +131,13 @@ public class CatalogItem implements ICatalogItem, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.itemId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CATITEM);
-		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.ID_NAME));
+		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
 		json.addProperty(FIELD_SYSCATID, this.syscatId);
 		if ((LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
 		}
-		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT) {
+		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId)) {
 			json.addProperty(FIELD_CATID, this.catalogId);
 			json.addProperty(FIELD_CATNAME, this.catName);
 		}

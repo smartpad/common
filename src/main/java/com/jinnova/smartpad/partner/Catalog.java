@@ -4,6 +4,7 @@ import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -18,6 +19,7 @@ import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.CatalogDao;
 import com.jinnova.smartpad.db.CatalogItemDao;
+import com.jinnova.smartpad.db.OperationDao;
 
 public class Catalog implements ICatalog, Feed {
 	
@@ -256,10 +258,32 @@ public class Catalog implements ICatalog, Feed {
 			@Override
 			public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
 				CatalogItem item = (CatalogItem) newMember;
-				String name = item.getFieldValue(ICatalogField.ID_NAME);
+				String name = item.getFieldValue(ICatalogField.F_NAME);
 				if (name == null || "".equals(name.trim())) {
 					throw new RuntimeException("CatalogItem's name unset");
 				}
+				
+				//branch
+				if (IDetailManager.SYSTEM_BRANCH_ID.equals(branchId)) {
+					String branchName = item.getBranchName();
+					/*if (branchName == null) {
+						branchName = "unset";
+						item.setBranchName(branchName);
+					}*/
+					String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(branchName));
+					Operation unmanageBranch = new OperationDao().loadBranch(unmanagedBranchId);
+					if (unmanageBranch == null) {
+						unmanageBranch = new Operation(unmanagedBranchId, unmanagedBranchId, systemCatalogId, null, null, GPSInfo.INHERIT_PROVIDED, true);
+						unmanageBranch.getRecordInfo().setCreateBy(PartnerManager.instance.systemUser.getLogin());
+						unmanageBranch.getRecordInfo().setCreateDate(new Date());
+						unmanageBranch.setName(branchName);
+						new OperationDao().createOperation(unmanagedBranchId, unmanagedBranchId, unmanageBranch);
+						unmanageBranch.setId(unmanagedBranchId);
+					}
+					item.setBranchId(unmanagedBranchId);
+					item.setCatalogId(unmanagedBranchId);
+				}
+				
 				String newId = SmartpadCommon.md5(branchId + catalogId + name);
 				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
 				while (syscat != null) {
@@ -325,7 +349,7 @@ public class Catalog implements ICatalog, Feed {
 			
 			@Override
 			public int compare(ICatalogItem o1, ICatalogItem o2) {
-				return StringArrayUtils.compare(o1, o2, ICatalogField.ID_NAME);
+				return StringArrayUtils.compare(o1, o2, ICatalogField.F_NAME);
 			}
 		};
 		
