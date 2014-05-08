@@ -162,7 +162,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		String spec = rs.getString("spec");
 		if (specParser != null && spec != null) {
 			JsonObject json = specParser.parse(spec).getAsJsonObject();
-			((CatalogSpec) cat.getCatalogSpec()).populate(json);
+			cat.populateSpec(json);
 		}
 		return cat;
 	}
@@ -206,7 +206,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(i++, cat.getSystemCatalogId());
 			ps.setString(i++, cat.getBranchName());
 			ps.setString(i++, cat.getParentCatName());
-			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
+			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpecUnresoved();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
@@ -219,7 +219,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			System.out.println("SQL: " + sql);
 			stmtSubcount.executeUpdate(sql);*/
 			
-			if (spec == null) {
+			if (spec == null || spec.getReferTo() != null) {
 				conn.commit();
 				success = true;
 				return;
@@ -294,7 +294,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			int i = 1;
 			ps.setString(i++, cat.getSystemCatalogId());
 			ps.setString(i++, cat.getBranchName());
-			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpec();
+			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpecUnresoved();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);

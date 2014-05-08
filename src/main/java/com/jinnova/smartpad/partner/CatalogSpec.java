@@ -5,8 +5,11 @@ import java.util.LinkedList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.jinnova.smartpad.JsonSupport;
 
 public class CatalogSpec implements ICatalogSpec {
+	
+	private String referTo;
 	
 	private String specId;
 	
@@ -28,6 +31,15 @@ public class CatalogSpec implements ICatalogSpec {
 	@Override
 	public void setSpecId(String specId) {
 		this.specId = specId;
+	}
+	
+	@Override
+	public void setReferTo(String referTo) {
+		this.referTo = referTo;
+	}
+	
+	public String getReferTo() {
+		return this.referTo;
 	}
 
 	@Override
@@ -53,6 +65,12 @@ public class CatalogSpec implements ICatalogSpec {
 	}
 	
 	public JsonObject toJson() {
+		
+		if (referTo != null) {
+			JsonObject json = new JsonObject();
+			json.addProperty("referTo", referTo);
+			return json;
+		}
 		
 		if (allFields.isEmpty()) {
 			return null;
@@ -83,8 +101,12 @@ public class CatalogSpec implements ICatalogSpec {
 	
 	public void populate(JsonObject json) {
 		
-		specId = json.get("sid").getAsString();
+		referTo = JsonSupport.getAsString(json, "referTo");
+		if (referTo != null) {
+			return;
+		}
 		
+		specId = json.get("sid").getAsString();
 		JsonArray ja = json.get("sNames").getAsJsonArray();
 		for (int i = 0; i < ja.size(); i++) {
 			sectionNames.add(ja.get(i).getAsString());

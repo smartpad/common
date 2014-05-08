@@ -8,13 +8,17 @@ public class SystemCatalogGenrator {
 	
 	private static User systemUser;
 	
-	private static boolean createClusterTable;
+	public static boolean createClusterTable = false;
 
 	private static String[] clothFields;
 	
 	private static String[] washerFields;
 
 	private static String[] mattressFields;
+
+	private static String[] drapFields;
+
+	private static String[] pillowFields;
 	
 	/**
 	 * constructor for reflection
@@ -93,6 +97,24 @@ public class SystemCatalogGenrator {
 				{mattressFields[i++], Int, "Dài"},
 				{mattressFields[i++], Int, "Rộng"},
 				{mattressFields[i++], Int, "Dày"},
+				{mattressFields[i++], Text_Name, "Xuất xứ"}
+			});
+			
+			i = 0;
+			drapFields = new String[] {"manu", "material", "width", "madein"};
+			createCat(homeCat, "draps", "Draps", new Object[][] {
+				{mattressFields[i++], Text_Name, "Hãng sản xuất"},
+				{mattressFields[i++], Text_Name, "Chất liệu"},
+				{mattressFields[i++], Int, "Rộng"},
+				{mattressFields[i++], Text_Name, "Xuất xứ"}
+			});
+			
+			i = 0;
+			pillowFields = new String[] {"manu", "material", "style", "madein"};
+			createCat(homeCat, "pillow", "Mềm / gối", new Object[][] {
+				{mattressFields[i++], Text_Name, "Hãng sản xuất"},
+				{mattressFields[i++], Text_Name, "Chất liệu"},
+				{mattressFields[i++], Text_Name, "Loại"},
 				{mattressFields[i++], Text_Name, "Xuất xứ"}
 			});
 		}

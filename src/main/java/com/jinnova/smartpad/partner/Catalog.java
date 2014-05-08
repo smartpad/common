@@ -70,6 +70,7 @@ public class Catalog implements ICatalog, Feed {
 		//String syscatId = systemCatalogId;
 		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps, createCatItemClusterTable);
 		
+		//this is for syscat to have system items
 		String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
 		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, branchName, name.getName(), gps);
 	}
@@ -166,6 +167,7 @@ public class Catalog implements ICatalog, Feed {
 			public void update(IUser authorizedUser, ICatalog member) throws SQLException {
 				Catalog subCat = (Catalog) member;
 				new CatalogDao().update(subCat.catalogId, subCat);
+				//TODO need to alter item table
 			}
 			
 			@Override
@@ -282,7 +284,8 @@ public class Catalog implements ICatalog, Feed {
 				CatalogItem item = (CatalogItem) member;
 				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
 				while (syscat != null) {
-					new CatalogItemDao().delete(item.getId());
+					String specId = PartnerManager.instance.getCatalogSpec(systemCatalogId).getSpecId();
+					new CatalogItemDao().delete(item.getId(), specId);
 					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
 				}
 			}
@@ -374,9 +377,21 @@ public class Catalog implements ICatalog, Feed {
 	public IRecordInfo getRecordInfo() {
 		return recordInfo;
 	}
+	
+	public void populateSpec(JsonObject json) {
+		catalogSpec.populate(json);
+	}
 
 	@Override
 	public ICatalogSpec getCatalogSpec() {
+		if (catalogSpec.getReferTo() == null) {
+			return catalogSpec;
+		}
+		
+		return PartnerManager.instance.getCatalogSpec(catalogSpec.getReferTo());
+	}
+	
+	public CatalogSpec getCatalogSpecUnresoved() {
 		return catalogSpec;
 	}
 
