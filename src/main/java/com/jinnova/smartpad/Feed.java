@@ -9,6 +9,6 @@ public interface Feed {
 	static final int LAYOPT_WITHCAT = 2;
 	static final int LAYOPT_WITHSYSCAT = 4;
 
-	JsonObject generateFeedJson(int layoutOptions, String layoutSyscat);
+	JsonObject generateFeedJson(int layoutOptions, String unshownSyscat);
 
 }

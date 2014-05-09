@@ -396,7 +396,7 @@ public class Operation implements IOperation, Feed {
 		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
 		json.addProperty(FIELD_NAME, this.name.getName());
 
-		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT) {
+		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(layoutSyscat)) {
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
 		}
 		if ((layoutOptions & LAYOPT_WITHBRANCH) == LAYOPT_WITHBRANCH) {
