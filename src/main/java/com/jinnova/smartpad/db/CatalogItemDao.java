@@ -8,10 +8,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 
 import com.jinnova.smartpad.partner.Catalog;
+import com.jinnova.smartpad.partner.CatalogField;
 import com.jinnova.smartpad.partner.CatalogItem;
+import com.jinnova.smartpad.partner.CatalogSpec;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.ICatalog;
 import com.jinnova.smartpad.partner.ICatalogField;
@@ -21,11 +25,13 @@ import com.jinnova.smartpad.partner.ICatalogSpec;
 import com.jinnova.smartpad.partner.IOperation;
 import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.PartnerManager;
+import com.jinnova.smartpad.partner.SmartpadCommon;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.User;
 
 public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	
+	public static final String GROUPING_POSTFIX = "_id";
 	//static final String CS = "cs_";
 	
 	private ICatalogSpec spec;
@@ -207,6 +213,10 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 				buffer.append(", ");
 			}
 			buffer.append(field.getId() + "=?");
+			
+			if (((CatalogField) field).getGroupingType() != ICatalogField.GROUPING_NONE) {
+				buffer.append(", " + field.getId() + GROUPING_POSTFIX + "=?");
+			}
 		}
 		return buffer.toString();
 	}
@@ -216,9 +226,45 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		i = DaoSupport.setGpsFields(ps, item.gps, i);
 		i = DaoSupport.setRecinfoFields(ps, item.getRecordInfo(), i);
 		for (ICatalogField field : spec.getAllFields()) {
-			ps.setString(i++, item.getFieldValue(field.getId()));
+			String value = item.getFieldValue(field.getId());
+			ps.setString(i++, value);
+			
+			if (((CatalogField) field).getGroupingType() != ICatalogField.GROUPING_NONE) {
+				ps.setString(i++, SmartpadCommon.md5(value));
+			}
 		}
 		return i;
+	}
+	
+	static void createCatalogItemTable(Statement stmt, String tableName, CatalogSpec spec, boolean withClusterColumns) throws SQLException {
+		StringBuffer tableSql = new StringBuffer();
+		tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + "(");
+		if (withClusterColumns) {
+			tableSql.append("cluster_id int default null, cluster_rank int default null, ");
+		}
+		tableSql.append("item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
+				"store_id varchar(32) NOT NULL, branch_id varchar(32) DEFAULT NULL, " +
+				"branch_name varchar(2048) DEFAULT NULL, cat_name varchar(2048) NOT NULL, " +
+				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
+		for (ICatalogField f : spec.getAllFields()) {
+			tableSql.append(", ");
+			if (f.getId() == null) {
+				throw new RuntimeException("Missing columnName for CatalogField");
+			}
+			tableSql.append(f.getId() + " " + f.getFieldType().sqlType + " default null");
+			CatalogField cf = (CatalogField) f;
+			if (cf.getGroupingType() != ICatalogField.GROUPING_NONE) {
+				tableSql.append(", " + f.getId() + GROUPING_POSTFIX + " varchar(32) default null");
+			}
+		}
+		tableSql.append(", create_date datetime NOT NULL, update_date datetime DEFAULT NULL, create_by varchar(32) NOT NULL, " +
+				"update_by varchar(32) DEFAULT NULL");
+		if (!withClusterColumns) {
+			tableSql.append(", PRIMARY KEY (item_id)");
+		}
+		tableSql.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		System.out.println("SQL: " + tableSql.toString());
+		stmt.executeUpdate(tableSql.toString());
 	}
 
 	public void update(String itemId, ICatalogSpec spec, CatalogItem item) throws SQLException {
@@ -263,16 +309,34 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, int clusterId, boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+	public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, String specId, int clusterId,
+			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String specId = PartnerManager.instance.getCatalogSpec(syscatId).getSpecId();
 		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + CLUSPRE + specId + 
 				" where cluster_id = " + clusterId + DaoSupport.buildConditionLike(" and syscat_id", syscatId, recursive) + 
 				" order by dist_grade asc, cluster_rank desc " + DaoSupport.buildLimit(offset, size);
 		System.out.println("SQL: " + sql);
 		ResultSet rs = stmt.executeQuery(sql);
-		this.spec = PartnerManager.instance.getCatalogSpec(SYSTEM_CAT_ALL);
+		this.spec = PartnerManager.instance.getCatalogSpec(specId);
+		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
+	}
+
+	public DbIterator<CatalogItem> iterateItemsBySegment(String syscatId, String specId, HashMap<String, String> segments,
+			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+		
+		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+		Statement stmt = conn.createStatement();
+		StringBuffer sql = new StringBuffer( "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + specId + 
+				" where " + DaoSupport.buildConditionLike("syscat_id", syscatId, recursive));
+		for (Entry<String, String> entry : segments.entrySet()) {
+			sql.append(" and " + entry.getKey() + GROUPING_POSTFIX + "='" + entry.getValue() + "'");
+		} 
+		sql.append(" order by dist_grade asc " + DaoSupport.buildLimit(offset, size));
+		System.out.println("SQL: " + sql.toString());
+		ResultSet rs = stmt.executeQuery(sql.toString());
+		this.spec = PartnerManager.instance.getCatalogSpec(specId);
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 

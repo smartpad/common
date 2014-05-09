@@ -95,7 +95,7 @@ public class SystemCatalogGenrator {
 			mattressFields = new String[] {"material", "length", "width", "thick", "madein"};
 			createCat(homeCat, "mattress", "Nệm", new Object[][] {
 				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
-				{mattressFields[i++], Text_Name, "Chất liệu"},
+				{mattressFields[i++], Text_Name, "Chất liệu", GROUPING_DISTINCT},
 				{mattressFields[i++], Int, "Dài"},
 				{mattressFields[i++], Int, "Rộng"},
 				{mattressFields[i++], Int, "Dày"},
@@ -175,6 +175,10 @@ public class SystemCatalogGenrator {
 			field.setId((String) oneIDTypeName[0]); //column name
 			field.setFieldType((ICatalogFieldType) oneIDTypeName[1]);
 			field.setName((String) oneIDTypeName[2]);
+			if (oneIDTypeName.length < 4) {
+				continue;
+			}
+			field.setGroupingType((int) oneIDTypeName[3]);
 		}
 	}
 

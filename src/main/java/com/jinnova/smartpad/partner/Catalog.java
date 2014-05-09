@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPage;
 import com.jinnova.smartpad.CachedPagingList;
@@ -448,9 +449,28 @@ public class Catalog implements ICatalog, Feed {
 		json.addProperty(FIELD_TYPE, this.systemCatalogId != null ? TYPENAME_CAT : TYPENAME_SYSCAT);
 		json.addProperty(FIELD_NAME, this.name.getName());
 		
-		json.addProperty(FIELD_UP_ID, this.parentCatalogId);
-		json.addProperty(FIELD_UP_NAME, this.parentCatName);
-		
+		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT) {
+			json.addProperty(FIELD_UP_ID, this.parentCatalogId);
+			json.addProperty(FIELD_UP_NAME, this.parentCatName);
+		}
+		if ((LAYOPT_WITHSEGMENTS & layoutOptions) == LAYOPT_WITHSEGMENTS) {
+			CatalogSpec spec = (CatalogSpec) getCatalogSpec();
+			LinkedList<CatalogField> groupingFields = spec.getGroupingFields();
+			if (groupingFields != null) {
+				JsonObject segmentJson = new JsonObject();
+				for (CatalogField f : groupingFields) {
+					System.out.println("Grouping: " + f.getAttributeObject(CatalogField.ATT_GROUPING));
+					JsonElement je = (JsonElement) f.getAttributeObject(CatalogField.ATT_GROUPING);
+					if (je == null || je.isJsonNull()) {
+						continue;
+					}
+					segmentJson.add(f.getId(), je);
+				}
+				json.add("segments", segmentJson);
+			}
+			json.addProperty(FIELD_BRANCHID, this.branchId);
+			json.addProperty(FIELD_BRANCHNAME, this.branchName);
+		}
 		if (this.systemCatalogId != null && (LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);

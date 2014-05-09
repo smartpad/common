@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 public class JsonSupport {
 
@@ -46,32 +47,65 @@ public class JsonSupport {
 		return parser.parse(json).getAsJsonObject();
 	}
 	
-	public static JsonObject toJson(HashMap<String, String> map) {
+	public static JsonObject toJson(HashMap<String, ?> map) {
 		if (map == null) {
 			return null;
 		}
 		
 		JsonObject json = new JsonObject();
-		for (Entry<String, String> entry : map.entrySet()) {
-			json.addProperty(entry.getKey(), entry.getValue());
+		for (Entry<String, ?> entry : map.entrySet()) {
+			Object v = entry.getValue();
+			if (v instanceof String) {
+				json.addProperty(entry.getKey(), (String) v);
+			} else {
+				json.add(entry.getKey(), (JsonElement) v);
+			}
 		}
 		return json;
 	}
 	
-	public static HashMap<String, String> toHashmap(JsonObject json) {
+	public static HashMap<String, Object> toHashmap(JsonObject json) {
 		if (json == null || json.isJsonNull()) {
 			return null;
 		}
 		
-		HashMap<String, String> map = new HashMap<>();
+		HashMap<String, Object> map = new HashMap<>();
 		for (Entry<String, JsonElement> entry : json.entrySet()) {
 			JsonElement e = entry.getValue();
 			if (e.isJsonPrimitive()) {
 				map.put(entry.getKey(), e.getAsString());
 			} else {
-				map.put(entry.getKey(), e.toString());
+				map.put(entry.getKey(), e);
 			}
 		}
 		return map;
+	}
+	
+	public static JsonArray toJsonArray(int[] array) {
+		if (array == null) {
+			return null;
+		}
+		
+		JsonArray ja = new JsonArray();
+		for (int n : array) {
+			ja.add(new JsonPrimitive(String.valueOf(n)));
+		}
+		return ja;
+	}
+
+	public static int[] toArray(JsonObject json, String memberName) {
+		if (json == null) {
+			return null;
+		}
+		JsonElement je = json.get(memberName);
+		if (je == null || je.isJsonNull()) {
+			return null;
+		}
+		JsonArray ja = je.getAsJsonArray();
+		int[] array = new int[ja.size()];
+		for (int i = 0; i < ja.size(); i++) {
+			array[i] = ja.get(i).getAsInt();
+		}
+		return array;
 	}
 }

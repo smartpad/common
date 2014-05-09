@@ -56,6 +56,17 @@ public class CatalogSpec implements ICatalogSpec {
 	public ICatalogField[] getAllFields() {
 		return allFields.toArray(new ICatalogField[allFields.size()]);
 	}
+	
+	public LinkedList<CatalogField> getGroupingFields() {
+		LinkedList<CatalogField> fields = new LinkedList<>();
+		for (ICatalogField f : allFields) {
+			CatalogField cf = (CatalogField) f;
+			if (cf.getGroupingType() != ICatalogField.GROUPING_NONE) {
+				fields.add(cf);
+			}
+		}
+		return fields;
+	}
 
 	@Override
 	public ICatalogField createField() {

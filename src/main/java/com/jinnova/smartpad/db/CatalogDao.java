@@ -17,7 +17,6 @@ import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.CatalogSpec;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.ICatalog;
-import com.jinnova.smartpad.partner.ICatalogField;
 import com.jinnova.smartpad.partner.ICatalogSort;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
@@ -228,9 +227,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				throw new RuntimeException("Missing tableName for CatalogSpec");
 			}
 			stmt = conn.createStatement();
-			createCatalogItemTable(stmt, spec.getSpecId(), spec, false);
+			CatalogItemDao.createCatalogItemTable(stmt, spec.getSpecId(), spec, false);
 			if (createClusterTable) {
-				createCatalogItemTable(stmt, CLUSPRE + spec.getSpecId(), spec, true);
+				CatalogItemDao.createCatalogItemTable(stmt, CLUSPRE + spec.getSpecId(), spec, true);
 			}
 			conn.commit();
 			success = true;
@@ -256,33 +255,6 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			}
 		}
 	}
-	
-	private void createCatalogItemTable(Statement stmt, String tableName, CatalogSpec spec, boolean withClusterColumns) throws SQLException {
-		StringBuffer tableSql = new StringBuffer();
-		tableSql.append("create table " + /*CatalogItemDao.CS +*/ tableName + "(");
-		if (withClusterColumns) {
-			tableSql.append("cluster_id int default null, cluster_rank int default null, ");
-		}
-		tableSql.append("item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
-				"store_id varchar(32) NOT NULL, branch_id varchar(32) DEFAULT NULL, " +
-				"branch_name varchar(2048) DEFAULT NULL, cat_name varchar(2048) NOT NULL, " +
-				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
-		for (ICatalogField f : spec.getAllFields()) {
-			tableSql.append(", ");
-			if (f.getId() == null) {
-				throw new RuntimeException("Missing columnName for CatalogField");
-			}
-			tableSql.append(f.getId() + " " + f.getFieldType().sqlType + " default null");
-		}
-		tableSql.append(", create_date datetime NOT NULL, update_date datetime DEFAULT NULL, create_by varchar(32) NOT NULL, " +
-				"update_by varchar(32) DEFAULT NULL");
-		if (!withClusterColumns) {
-			tableSql.append(", PRIMARY KEY (item_id)");
-		}
-		tableSql.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8");
-		System.out.println("SQL: " + tableSql.toString());
-		stmt.executeUpdate(tableSql.toString());
-	}
 
 	public void update(String catalogId, Catalog cat) throws SQLException {
 		Connection conn = null;
@@ -299,6 +271,28 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
 			i = DaoSupport.setNameFields(ps, (Name) cat.getDesc(), i);
+			ps.setString(i++, catalogId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public void updateSpec(String catalogId, Catalog cat) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update catalogs set spec=? where catalog_id=?");
+			int i = 1;
+			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpecUnresoved();
+			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			ps.setString(i++, catalogId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
