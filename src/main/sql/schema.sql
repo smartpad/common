@@ -69,6 +69,7 @@ CREATE TABLE `operations` (
 CREATE TABLE `catalogs` (
   `catalog_id` varchar(32) NOT NULL,
   `parent_id` varchar(32) NOT NULL,
+  `parent_cross_id` varchar(32) DEFAULT NULL,
   `store_id` varchar(32) NOT NULL,
   `branch_id` varchar(32) NOT NULL,
   `syscat_id` varchar(32) DEFAULT NULL,

@@ -247,7 +247,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		StringBuffer sql = new StringBuffer();
 		sql.append("select * from operations where store_id != branch_id and branch_id = '" + branchId + "' ");
 		if (excludeStoreId != null) {
-			sql.append("and store_id != '" + excludeStoreId + "'");
+			sql.append("and store_id != '" + excludeStoreId + "' ");
 		}
 		sql.append(DaoSupport.buildLimit(offset, size));
 		Statement stmt = conn.createStatement();
