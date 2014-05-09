@@ -162,6 +162,16 @@ public class PartnerManager implements IPartnerManager {
 		u.setBranch(branch);
 		return u;
 	}
+	
+	public Operation createUnmanagedBranch(String unmanagedBranchId, String systemCatalogId, String branchName) throws SQLException {
+		Operation unmanagedBranch = new Operation(unmanagedBranchId, unmanagedBranchId, systemCatalogId, null, null, GPSInfo.INHERIT_PROVIDED, true);
+		unmanagedBranch.getRecordInfo().setCreateBy(PartnerManager.instance.systemUser.getLogin());
+		unmanagedBranch.getRecordInfo().setCreateDate(new Date());
+		unmanagedBranch.setName(branchName);
+		new OperationDao().createOperation(unmanagedBranchId, unmanagedBranchId, unmanagedBranch);
+		unmanagedBranch.setId(unmanagedBranchId);
+		return unmanagedBranch;
+	}
 
 	@Override
 	public IUser login(String login, String password) throws SQLException {

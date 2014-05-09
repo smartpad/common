@@ -4,7 +4,6 @@ import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.sql.SQLException;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -273,12 +272,7 @@ public class Catalog implements ICatalog, Feed {
 					String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(branchName));
 					Operation unmanageBranch = new OperationDao().loadBranch(unmanagedBranchId);
 					if (unmanageBranch == null) {
-						unmanageBranch = new Operation(unmanagedBranchId, unmanagedBranchId, systemCatalogId, null, null, GPSInfo.INHERIT_PROVIDED, true);
-						unmanageBranch.getRecordInfo().setCreateBy(PartnerManager.instance.systemUser.getLogin());
-						unmanageBranch.getRecordInfo().setCreateDate(new Date());
-						unmanageBranch.setName(branchName);
-						new OperationDao().createOperation(unmanagedBranchId, unmanagedBranchId, unmanageBranch);
-						unmanageBranch.setId(unmanagedBranchId);
+						unmanageBranch = PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, branchName);
 					}
 					item.setBranchId(unmanagedBranchId);
 					item.setCatalogId(unmanagedBranchId);

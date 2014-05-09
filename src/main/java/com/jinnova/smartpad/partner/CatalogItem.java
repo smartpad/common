@@ -137,7 +137,8 @@ public class CatalogItem implements ICatalogItem, Feed {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
 		}
-		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId)) {
+		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId) &&
+				!this.catalogId.equals(this.branchId)) {
 			json.addProperty(FIELD_CATID, this.catalogId);
 			json.addProperty(FIELD_CATNAME, this.catName);
 		}
