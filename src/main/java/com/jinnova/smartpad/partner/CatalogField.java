@@ -27,8 +27,9 @@ public class CatalogField implements ICatalogField {
 	private HashMap<String, Object> attributes = new HashMap<>();
 	
 	public static final String ATT_GROUPING = "gdata";
-	public static final String ATT_GROUPING_VALUE = "v";
-	public static final String ATT_GROUPING_VID = "vid";
+	public static final String ATT_GROUPING_FIELD = "gf";
+	public static final String ATT_GROUPING_VALUE = "gv";
+	public static final String ATT_GROUPING_VALUEID = "gvid";
 
 	JsonObject toJson() {
 		JsonObject json = new JsonObject();

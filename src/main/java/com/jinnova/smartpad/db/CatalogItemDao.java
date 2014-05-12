@@ -1,7 +1,5 @@
 package com.jinnova.smartpad.db;
 
-import static com.jinnova.smartpad.partner.IDetailManager.*;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -309,7 +307,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, String specId, int clusterId,
+	/*public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, String specId, int clusterId,
 			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
@@ -321,18 +319,29 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		ResultSet rs = stmt.executeQuery(sql);
 		this.spec = PartnerManager.instance.getCatalogSpec(specId);
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
-	}
+	}*/
 
-	public DbIterator<CatalogItem> iterateItemsBySegment(String syscatId, String specId, HashMap<String, String> segments,
+	public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, String specId, int clusterId, HashMap<String, LinkedList<String>> segments,
 			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		StringBuffer sql = new StringBuffer( "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + specId + 
 				" where " + DaoSupport.buildConditionLike("syscat_id", syscatId, recursive));
-		for (Entry<String, String> entry : segments.entrySet()) {
-			sql.append(" and " + entry.getKey() + GROUPING_POSTFIX + "='" + entry.getValue() + "'");
-		} 
+		
+		if (segments != null) {
+			for (Entry<String, LinkedList<String>> entry : segments.entrySet()) {
+				String orTerms = null;
+				for (String one : entry.getValue()) {
+					if (orTerms == null) {
+						orTerms = entry.getKey() + GROUPING_POSTFIX + "='" + one + "'";
+					} else {
+						orTerms = orTerms + " or " + entry.getKey() + GROUPING_POSTFIX + "='" + one + "'";
+					}
+				}
+				sql.append(" and (" + orTerms + ")");
+			}
+		}
 		sql.append(" order by dist_grade asc " + DaoSupport.buildLimit(offset, size));
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());

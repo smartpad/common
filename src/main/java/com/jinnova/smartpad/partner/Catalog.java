@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPage;
 import com.jinnova.smartpad.CachedPagingList;
@@ -457,16 +457,28 @@ public class Catalog implements ICatalog, Feed {
 			CatalogSpec spec = (CatalogSpec) getCatalogSpec();
 			LinkedList<CatalogField> groupingFields = spec.getGroupingFields();
 			if (groupingFields != null) {
-				JsonObject segmentJson = new JsonObject();
+				JsonArray fieldArray = new JsonArray();
 				for (CatalogField f : groupingFields) {
 					System.out.println("Grouping: " + f.getAttributeObject(CatalogField.ATT_GROUPING));
-					JsonElement je = (JsonElement) f.getAttributeObject(CatalogField.ATT_GROUPING);
-					if (je == null || je.isJsonNull()) {
+					JsonArray ja = (JsonArray) f.getAttributeObject(CatalogField.ATT_GROUPING);
+					if (ja == null || ja.isJsonNull()) {
 						continue;
 					}
-					segmentJson.add(f.getId(), je);
+					JsonObject fieldJson = new JsonObject();
+					fieldJson.addProperty(CatalogField.ATT_GROUPING_FIELD, f.getId());
+					JsonArray segmentArray = new JsonArray();
+					for (int i = 0; i < ja.size(); i++) {
+						JsonObject segmentJson = new JsonObject();
+						JsonObject o = ja.get(i).getAsJsonObject();
+						segmentJson.addProperty(CatalogField.ATT_GROUPING_VALUEID, o.get(CatalogField.ATT_GROUPING_VALUEID).getAsString());
+						segmentJson.addProperty(CatalogField.ATT_GROUPING_VALUE, o.get(CatalogField.ATT_GROUPING_VALUE).getAsString());
+						segmentJson.addProperty(CatalogField.ATT_GROUPING_FIELD, f.getId());
+						segmentArray.add(segmentJson);
+					}
+					fieldJson.add("values", segmentArray);
+					fieldArray.add(fieldJson);
 				}
-				json.add("segments", segmentJson);
+				json.add("segments", fieldArray);
 			}
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
