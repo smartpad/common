@@ -163,6 +163,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			JsonObject json = specParser.parse(spec).getAsJsonObject();
 			cat.populateSpec(json);
 		}
+		cat.createPagingLists(); //TODO do this more properly?
 		return cat;
 	}
 

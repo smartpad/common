@@ -68,7 +68,7 @@ public class Catalog implements ICatalog, Feed {
 		createPagingLists();
 	}
 	
-	private void createPagingLists() {
+	public void createPagingLists() {
 		//String syscatId = systemCatalogId;
 		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps, createCatItemClusterTable);
 		
