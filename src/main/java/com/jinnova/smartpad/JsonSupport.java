@@ -92,6 +92,18 @@ public class JsonSupport {
 		}
 		return ja;
 	}
+	
+	public static JsonArray toJsonArray(String[] array) {
+		if (array == null) {
+			return null;
+		}
+		
+		JsonArray ja = new JsonArray();
+		for (String s : array) {
+			ja.add(new JsonPrimitive(s));
+		}
+		return ja;
+	}
 
 	public static int[] toArray(JsonObject json, String memberName) {
 		if (json == null) {

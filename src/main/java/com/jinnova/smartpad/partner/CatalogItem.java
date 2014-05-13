@@ -3,9 +3,11 @@ package com.jinnova.smartpad.partner;
 import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.Feed;
+import com.jinnova.smartpad.JsonSupport;
 import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem, Feed {
@@ -131,8 +133,10 @@ public class CatalogItem implements ICatalogItem, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.itemId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CATITEM);
-		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
 		json.addProperty(FIELD_SYSCATID, this.syscatId);
+		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
+		json.addProperty(FIELD_DESC, this.getFieldValue(ICatalogField.F_DESC));
+		
 		if ((LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
@@ -147,6 +151,22 @@ public class CatalogItem implements ICatalogItem, Feed {
 		}
 		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (layoutSyscat == null || !this.syscatId.equals(layoutSyscat))) {
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
+		}
+		
+		for (Entry<String, String> fieldValue : this.fieldValuesSingle.entrySet()) {
+			String fn = fieldValue.getKey();
+			if (fn.equals(ICatalogField.F_NAME) || fn.equals(ICatalogField.F_DESC)) {
+				continue;
+			}
+			json.addProperty(fn, fieldValue.getValue());
+		}
+		
+		for (Entry<String, String[]> fieldValues : this.fieldValuesMulti.entrySet()) {
+			String fn = fieldValues.getKey();
+			if (fn.equals(ICatalogField.F_NAME) || fn.equals(ICatalogField.F_DESC)) {
+				continue;
+			}
+			json.add(fn, JsonSupport.toJsonArray(fieldValues.getValue()));
 		}
 		return json;
 	}

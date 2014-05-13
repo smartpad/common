@@ -20,6 +20,7 @@ import com.jinnova.smartpad.partner.ICatalogField;
 import com.jinnova.smartpad.partner.ICatalogItem;
 import com.jinnova.smartpad.partner.ICatalogItemSort;
 import com.jinnova.smartpad.partner.ICatalogSpec;
+import com.jinnova.smartpad.partner.IDetailManager;
 import com.jinnova.smartpad.partner.IOperation;
 import com.jinnova.smartpad.partner.Operation;
 import com.jinnova.smartpad.partner.PartnerManager;
@@ -33,6 +34,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	//static final String CS = "cs_";
 	
 	private ICatalogSpec spec;
+	
+	private boolean popNameDescOnly = false;
 	
 	//private String syscatId;
 	
@@ -87,6 +90,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			if (!rs.next()) {
 				return null;
 			}
+			popNameDescOnly = false;
 			return populate(rs);
 		} finally {
 			if (rs != null) {
@@ -134,6 +138,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			rs = ps.executeQuery();
 			LinkedList<ICatalogItem> catalogItems = new LinkedList<ICatalogItem>();
 			this.spec = spec;
+			popNameDescOnly = false;
 			while (rs.next()) {
 				CatalogItem item = populate(rs);
 				catalogItems.add(item);
@@ -163,6 +168,12 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 				rs.getString("catalog_id"), rs.getString("syscat_id"), rs.getString("item_id"));
 		item.setBranchName(rs.getString("branch_name"));
 		item.setCatalogName(rs.getString("cat_name"));
+		if (popNameDescOnly) {
+			item.setField(ICatalogField.F_NAME, rs.getString(ICatalogField.F_NAME));
+			item.setField(ICatalogField.F_DESC, rs.getString(ICatalogField.F_DESC));
+			//item.setImages(StringArrayUtils.stringArrayFromJson(rs.getString("images")));
+			return item;
+		}
 		DaoSupport.populateGps(rs, item.gps);
 		for (ICatalogField field : spec.getAllFields()) {
 			item.setField(field.getId(), rs.getString(field.getId()));
@@ -307,27 +318,39 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	/*public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, String specId, int clusterId,
-			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+	/**
+	 * @param catId
+	 * @param specId
+	 * @param excludeItemId
+	 * @param segments
+	 * @param bySyscat
+	 * @param clusterId null if not bySyscat
+	 * @param recursive
+	 * @param lon
+	 * @param lat
+	 * @param offset
+	 * @param size
+	 * @return
+	 * @throws SQLException
+	 */
+	public DbIterator<CatalogItem> iterateItems(String catId, String specId, String excludeItemId, HashMap<String, LinkedList<String>> segments,
+			boolean bySyscat, Integer clusterId, boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		String sql = "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + CLUSPRE + specId + 
-				" where cluster_id = " + clusterId + DaoSupport.buildConditionLike(" and syscat_id", syscatId, recursive) + 
-				" order by dist_grade asc, cluster_rank desc " + DaoSupport.buildLimit(offset, size);
-		System.out.println("SQL: " + sql);
-		ResultSet rs = stmt.executeQuery(sql);
-		this.spec = PartnerManager.instance.getCatalogSpec(specId);
-		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
-	}*/
-
-	public DbIterator<CatalogItem> iterateItemsBySyscat(String syscatId, String specId, int clusterId, HashMap<String, LinkedList<String>> segments,
-			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
-		
-		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		Statement stmt = conn.createStatement();
-		StringBuffer sql = new StringBuffer( "select *, " + DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + specId + 
-				" where " + DaoSupport.buildConditionLike("syscat_id", syscatId, recursive));
+		String catField, fromTable;
+		if (bySyscat) {
+			catField = "syscat_id";
+			fromTable = IDetailManager.CLUSPRE + specId;
+		} else {
+			catField = "catalog_id";
+			fromTable = specId;
+		}
+		StringBuffer sql = new StringBuffer("select item_id, catalog_id, syscat_id, store_id, branch_id, gps_lon, gps_lat, branch_name, cat_name, name, descript, " + 
+				DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + fromTable + 
+				" where " + DaoSupport.buildConditionLike(catField, catId, recursive) +
+				DaoSupport.buildConditionIfNotNull(" and item_id", "!=", excludeItemId) +
+				DaoSupport.buildConditionIfNotNull(" and cluster_id", "=", clusterId));
 		
 		if (segments != null) {
 			for (Entry<String, LinkedList<String>> entry : segments.entrySet()) {
@@ -346,20 +369,11 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
 		this.spec = PartnerManager.instance.getCatalogSpec(specId);
+		this.popNameDescOnly = true;
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
 	}
 
-	/*public DbIterator<CatalogItem> iterateCatalogItems(ICatalogSpec spec, String specId, String catalogId) throws SQLException {
-		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-		Statement stmt = conn.createStatement();
-		String sql = "select * from " + CS + specId + " where catalog_id = '" + catalogId + "'";
-		System.out.println("SQL: " + sql);
-		ResultSet rs = stmt.executeQuery(sql);
-		this.spec = spec;
-		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
-	}*/
-
-	public DbIterator<CatalogItem> iterateItemsByCatalog(String catId, String specId, String excludeItemId, 
+	/*public DbIterator<CatalogItem> iterateItemsByCatalog(String catId, String specId, String excludeItemId, 
 			boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
@@ -372,7 +386,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		ResultSet rs = stmt.executeQuery(sql);
 		this.spec = PartnerManager.instance.getCatalogSpec(specId);
 		return new DbIterator<CatalogItem>(conn, stmt, rs, this);
-	}
+	}*/
 
 	public void updateBranchGps(User primaryUser, BigDecimal gpsLon, BigDecimal gpsLat) throws SQLException {
 		Operation branch = (Operation) primaryUser.getBranch();
