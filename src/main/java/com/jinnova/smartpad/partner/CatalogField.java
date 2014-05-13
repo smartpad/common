@@ -14,7 +14,7 @@ public class CatalogField implements ICatalogField {
 	
 	private boolean multivalue;
 	
-	private int groupingType = GROUPING_NONE;
+	private int groupingType = SEGMENT_NONE;
 	
 	private int[] groupingRange;
 	
@@ -26,10 +26,7 @@ public class CatalogField implements ICatalogField {
 	
 	private HashMap<String, Object> attributes = new HashMap<>();
 	
-	public static final String ATT_GROUPING = "gdata";
-	public static final String ATT_GROUPING_FIELD = "gf";
-	public static final String ATT_GROUPING_VALUE = "gv";
-	public static final String ATT_GROUPING_VALUEID = "gvid";
+	//public static final String ATT_GROUPING = "gdata";
 
 	JsonObject toJson() {
 		JsonObject json = new JsonObject();

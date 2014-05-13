@@ -29,8 +29,6 @@ import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.User;
 
 public class CatalogItemDao implements DbPopulator<CatalogItem> {
-	
-	public static final String GROUPING_POSTFIX = "_id";
 	//static final String CS = "cs_";
 	
 	private ICatalogSpec spec;
@@ -223,8 +221,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			}
 			buffer.append(field.getId() + "=?");
 			
-			if (((CatalogField) field).getGroupingType() != ICatalogField.GROUPING_NONE) {
-				buffer.append(", " + field.getId() + GROUPING_POSTFIX + "=?");
+			if (((CatalogField) field).getGroupingType() != ICatalogField.SEGMENT_NONE) {
+				buffer.append(", " + field.getId() + ICatalogField.SEGMENT_POSTFIX + "=?");
 			}
 		}
 		return buffer.toString();
@@ -238,7 +236,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			String value = item.getFieldValue(field.getId());
 			ps.setString(i++, value);
 			
-			if (((CatalogField) field).getGroupingType() != ICatalogField.GROUPING_NONE) {
+			if (((CatalogField) field).getGroupingType() != ICatalogField.SEGMENT_NONE) {
 				ps.setString(i++, SmartpadCommon.md5(value));
 			}
 		}
@@ -262,8 +260,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			}
 			tableSql.append(f.getId() + " " + f.getFieldType().sqlType + " default null");
 			CatalogField cf = (CatalogField) f;
-			if (cf.getGroupingType() != ICatalogField.GROUPING_NONE) {
-				tableSql.append(", " + f.getId() + GROUPING_POSTFIX + " varchar(32) default null");
+			if (cf.getGroupingType() != ICatalogField.SEGMENT_NONE) {
+				tableSql.append(", " + f.getId() + ICatalogField.SEGMENT_POSTFIX + " varchar(32) default null");
 			}
 		}
 		tableSql.append(", create_date datetime NOT NULL, update_date datetime DEFAULT NULL, create_by varchar(32) NOT NULL, " +
@@ -357,9 +355,9 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 				String orTerms = null;
 				for (String one : entry.getValue()) {
 					if (orTerms == null) {
-						orTerms = entry.getKey() + GROUPING_POSTFIX + "='" + one + "'";
+						orTerms = entry.getKey() + ICatalogField.SEGMENT_POSTFIX + "='" + one + "'";
 					} else {
-						orTerms = orTerms + " or " + entry.getKey() + GROUPING_POSTFIX + "='" + one + "'";
+						orTerms = orTerms + " or " + entry.getKey() + ICatalogField.SEGMENT_POSTFIX + "='" + one + "'";
 					}
 				}
 				sql.append(" and (" + orTerms + ")");

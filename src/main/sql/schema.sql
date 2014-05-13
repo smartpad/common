@@ -77,6 +77,7 @@ CREATE TABLE `catalogs` (
   
   `branch_name` varchar(2048) NOT NULL,
   `parent_name` varchar(1024) NOT NULL,
+  `segments` text DEFAULT NULL,
   
   `gps_lon` decimal(9,6) DEFAULT NULL,
   `gps_lat` decimal(9,6) DEFAULT NULL,

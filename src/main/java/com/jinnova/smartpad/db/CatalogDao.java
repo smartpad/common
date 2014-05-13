@@ -12,6 +12,7 @@ import java.util.LinkedList;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.jinnova.smartpad.JsonSupport;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.partner.Catalog;
 import com.jinnova.smartpad.partner.CatalogSpec;
@@ -162,6 +163,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		if (specParser != null && spec != null) {
 			JsonObject json = specParser.parse(spec).getAsJsonObject();
 			cat.populateSpec(json);
+			
+			json = JsonSupport.parseJsonObject(specParser, rs.getString("segments"));
+			cat.populateSegments(json);
 		}
 		cat.createPagingLists(); //TODO do this more properly?
 		return cat;
@@ -295,6 +299,27 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpecUnresoved();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			ps.setString(i++, catalogId);
+			System.out.println("SQL: " + ps);
+			ps.executeUpdate();
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	public void updateSegments(Catalog cat) throws SQLException {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("update catalogs set segments=? where catalog_id=?");
+			int i = 1;
+			ps.setString(i++, cat.getSegmentJson());
+			ps.setString(i++, cat.getId());
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 		} finally {

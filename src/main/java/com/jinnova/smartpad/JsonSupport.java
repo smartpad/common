@@ -1,6 +1,7 @@
 package com.jinnova.smartpad;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonArray;
@@ -47,6 +48,7 @@ public class JsonSupport {
 		return parser.parse(json).getAsJsonObject();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static JsonObject toJson(HashMap<String, ?> map) {
 		if (map == null) {
 			return null;
@@ -57,6 +59,8 @@ public class JsonSupport {
 			Object v = entry.getValue();
 			if (v instanceof String) {
 				json.addProperty(entry.getKey(), (String) v);
+			} else if (v instanceof Map<?, ?>) {
+				json.add(entry.getKey(), toJson((HashMap<String, ?>) v));
 			} else {
 				json.add(entry.getKey(), (JsonElement) v);
 			}
@@ -64,18 +68,21 @@ public class JsonSupport {
 		return json;
 	}
 	
-	public static HashMap<String, Object> toHashmap(JsonObject json) {
+	@SuppressWarnings("unchecked")
+	public static <T> HashMap<String, T> toHashmap(JsonObject json) {
 		if (json == null || json.isJsonNull()) {
 			return null;
 		}
 		
-		HashMap<String, Object> map = new HashMap<>();
+		HashMap<String, T> map = new HashMap<>();
 		for (Entry<String, JsonElement> entry : json.entrySet()) {
 			JsonElement e = entry.getValue();
 			if (e.isJsonPrimitive()) {
-				map.put(entry.getKey(), e.getAsString());
+				map.put(entry.getKey(), (T) e.getAsString());
+			} else if (e.isJsonObject()) {
+				map.put(entry.getKey(), (T) toHashmap(e.getAsJsonObject()));
 			} else {
-				map.put(entry.getKey(), e);
+				map.put(entry.getKey(), (T) e);
 			}
 		}
 		return map;

@@ -92,15 +92,20 @@ public class SystemCatalogGenrator {
 			createCat(homeCat, "fmcg", "Hàng tiêu dùng");
 			
 			i = 0;
-			mattressFields = new String[] {"material", "length", "width", "thick", "madein"};
-			createCat(homeCat, "mattress", "Nệm", new Object[][] {
+			mattressFields = new String[] {"material", "width", "length", "thick", "madein"};
+			Catalog mattressCat = createCat(homeCat, "mattress", "Nệm", new Object[][] {
 				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
-				{mattressFields[i++], Text_Name, "Chất liệu", GROUPING_DISTINCT},
-				{mattressFields[i++], Int, "Dài"},
-				{mattressFields[i++], Int, "Rộng"},
-				{mattressFields[i++], Int, "Dày"},
-				{mattressFields[i++], Text_Name, "Xuất xứ"}
+				{mattressFields[i++], Text_Name, "Chất liệu", SEGMENT_DISTINCT},
+				{mattressFields[i++], Int, "Rộng", SEGMENT_DISTINCT},
+				{mattressFields[i++], Int, "Dài", SEGMENT_DISTINCT},
+				{mattressFields[i++], Int, "Dày", SEGMENT_DISTINCT},
+				{mattressFields[i++], Text_Name, "Xuất xứ", SEGMENT_DISTINCT}
 			});
+			mattressCat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_SEGMENTS_HIDDEN, "length, thick");
+			mattressCat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_DETAIL, 
+					"<div>Chất liệu: <b>{material}</b></div><div>Xuất xứ: <b>{madein}</b></div>" +
+					"<div>Quy cách: <b><a href='{segmentLink:length,width,thick}'>{-length} x {-width} x {-thick}</a></b></div>");
+			homeCat.getSubCatalogPagingList().put(systemUser, mattressCat);
 			
 			i = 0;
 			drapFields = new String[] {"material", "width", "madein"};
@@ -171,8 +176,8 @@ public class SystemCatalogGenrator {
 	private static void createColumns(ICatalog cat, Object[][] fieldIDTypeNames) {
 
 		for (Object[] oneIDTypeName : fieldIDTypeNames) {
-			ICatalogField field = cat.getCatalogSpec().createField();
-			field.setId((String) oneIDTypeName[0]); //column name
+			ICatalogField field = cat.getCatalogSpec().createField((String) oneIDTypeName[0]);
+			//field.setId((String) oneIDTypeName[0]); //column name
 			field.setFieldType((ICatalogFieldType) oneIDTypeName[1]);
 			field.setName((String) oneIDTypeName[2]);
 			if (oneIDTypeName.length < 4) {

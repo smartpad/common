@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -14,6 +15,7 @@ import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.Feed;
 import com.jinnova.smartpad.IName;
 import com.jinnova.smartpad.IPagingList;
+import com.jinnova.smartpad.JsonSupport;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
@@ -50,6 +52,9 @@ public class Catalog implements ICatalog, Feed {
 	private CachedPagingList<ICatalogItem, ICatalogItemSort> catalogItemPagingList;
 	
 	private boolean createCatItemClusterTable = false;
+	
+	//				<fieldId, <segmentValue, segmentId>>
+	private HashMap<String, HashMap<String, String>> segments;
 	
 	public Catalog(String branchId, String storeId, String catalogId, String parentCatalogId, String systemCatalogId) {
 		/*if (storeId == null) {
@@ -441,6 +446,34 @@ public class Catalog implements ICatalog, Feed {
 			}
 		}
 	}
+	
+	public String getSegmentJson() {
+		if (segments == null) {
+			return null;
+		}
+		
+		return JsonSupport.toJson(segments).toString();
+	}
+	
+	public void populateSegments(JsonObject json) {
+		this.segments = JsonSupport.toHashmap(json);
+	}
+	
+	public void addSegment(String fieldId, String segmentId, String segmentValue) {
+		
+		if (segments == null) {
+			segments = new HashMap<>();
+		}
+		
+		//segments: <fieldId, <segmentValue, segmentId>>
+		HashMap<String, String> oneSegment = segments.get(fieldId);
+		if (oneSegment == null) {
+			oneSegment = new HashMap<>();
+			segments.put(fieldId, oneSegment);
+		}
+		
+		oneSegment.put(segmentId, segmentValue);
+	}
 
 	@Override
 	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
@@ -455,30 +488,39 @@ public class Catalog implements ICatalog, Feed {
 		}
 		if ((LAYOPT_WITHSEGMENTS & layoutOptions) == LAYOPT_WITHSEGMENTS) {
 			CatalogSpec spec = (CatalogSpec) getCatalogSpec();
-			LinkedList<CatalogField> groupingFields = spec.getGroupingFields();
-			if (groupingFields != null) {
+			//LinkedList<CatalogField> groupingFields = spec.getGroupingFields();
+			if (segments != null) {
 				JsonArray fieldArray = new JsonArray();
-				for (CatalogField f : groupingFields) {
-					System.out.println("Grouping: " + f.getAttributeObject(CatalogField.ATT_GROUPING));
+				for (Entry<String, HashMap<String, String>> entry : segments.entrySet()) {
+					/*System.out.println("Grouping: " + f.getAttributeObject(CatalogField.ATT_GROUPING));
 					JsonArray ja = (JsonArray) f.getAttributeObject(CatalogField.ATT_GROUPING);
 					if (ja == null || ja.isJsonNull()) {
 						continue;
+					}*/
+					
+					String segmentField = entry.getKey();
+					if (spec.isSegmentHidden(segmentField)) {
+						continue;
 					}
 					JsonObject fieldJson = new JsonObject();
-					fieldJson.addProperty(CatalogField.ATT_GROUPING_FIELD, f.getId());
+					//fieldJson.addProperty(CatalogField.ATT_GROUPING_FIELD, f.getId());
+					fieldJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
+					fieldJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
 					JsonArray segmentArray = new JsonArray();
-					for (int i = 0; i < ja.size(); i++) {
+					//for (int i = 0; i < ja.size(); i++) {
+					for (Entry<String, String> segmentEntry : entry.getValue().entrySet()) {
 						JsonObject segmentJson = new JsonObject();
-						JsonObject o = ja.get(i).getAsJsonObject();
-						segmentJson.addProperty(CatalogField.ATT_GROUPING_VALUEID, o.get(CatalogField.ATT_GROUPING_VALUEID).getAsString());
-						segmentJson.addProperty(CatalogField.ATT_GROUPING_VALUE, o.get(CatalogField.ATT_GROUPING_VALUE).getAsString());
-						segmentJson.addProperty(CatalogField.ATT_GROUPING_FIELD, f.getId());
+						//JsonObject o = ja.get(i).getAsJsonObject();
+						segmentJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
+						fieldJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
+						segmentJson.addProperty(FIELD_SEGMENT_VALUEID, segmentEntry.getKey());
+						segmentJson.addProperty(FIELD_SEGMENT_VALUE, segmentEntry.getValue());
 						segmentArray.add(segmentJson);
 					}
 					fieldJson.add("values", segmentArray);
 					fieldArray.add(fieldJson);
 				}
-				json.add("segments", fieldArray);
+				json.add(FIELD_SEGMENT, fieldArray);
 			}
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);

@@ -3,11 +3,10 @@ package com.jinnova.smartpad.partner;
 import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.Feed;
-import com.jinnova.smartpad.JsonSupport;
 import com.jinnova.smartpad.RecordInfo;
 
 public class CatalogItem implements ICatalogItem, Feed {
@@ -153,7 +152,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
 		}
 		
-		for (Entry<String, String> fieldValue : this.fieldValuesSingle.entrySet()) {
+		/*for (Entry<String, String> fieldValue : this.fieldValuesSingle.entrySet()) {
 			String fn = fieldValue.getKey();
 			if (fn.equals(ICatalogField.F_NAME) || fn.equals(ICatalogField.F_DESC)) {
 				continue;
@@ -167,6 +166,52 @@ public class CatalogItem implements ICatalogItem, Feed {
 				continue;
 			}
 			json.add(fn, JsonSupport.toJsonArray(fieldValues.getValue()));
+		}*/
+		
+		if ((LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS) {
+			final ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(syscatId);
+			String displayPattern = spec.getAttribute(ICatalogSpec.ATT_DISP_DETAIL);
+			if (displayPattern != null) {
+				displayPattern = SmartpadCommon.replace(displayPattern, new ReplaceSupport() {
+					
+					@Override
+					public String getTerm(String fieldId) {
+	
+						String fieldValue;
+						if (fieldId.startsWith("-")) {
+							fieldId = fieldId.substring(1);
+							fieldValue = getFieldValue(fieldId);
+						} else if (fieldId.startsWith("segmentLink:")) {
+							fieldId = fieldId.substring("segmentLink:".length());
+							StringTokenizer tokens = new StringTokenizer(fieldId, ",");
+							String segmentParam = null;
+							while (tokens.hasMoreTokens()) {
+								String oneSegmentField = tokens.nextToken();
+								String oneParam = "segments=" + oneSegmentField + 
+										ICatalogField.SEGMENT_PARAM_SEP + SmartpadCommon.md5(getFieldValue(oneSegmentField));
+								if (segmentParam == null) {
+									segmentParam = oneParam;
+								} else {
+									segmentParam = segmentParam + "&" + oneParam;
+								}
+							}
+							fieldValue = "/w/syscat/" + syscatId + "/drill?" + segmentParam;
+						} else {
+							fieldValue = getFieldValue(fieldId);
+							CatalogField field = (CatalogField) spec.getField(fieldId);
+							if (field.getGroupingType() != ICatalogField.SEGMENT_NONE) {
+								//String segmentId = getFieldValue(fieldId + ICatalogField.GROUPING_POSTFIX);
+								String segmentId = SmartpadCommon.md5(fieldValue);
+								fieldValue = "<a href='/w/syscat/" + syscatId + "/drill?segments=" + 
+										fieldId + ICatalogField.SEGMENT_PARAM_SEP + segmentId + "'>" +
+										fieldValue + "</a>";
+							}
+						}
+						return fieldValue;
+					}
+				});
+				json.addProperty(FIELD_DISP, displayPattern);
+			}
 		}
 		return json;
 	}

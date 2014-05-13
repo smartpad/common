@@ -1,6 +1,10 @@
 package com.jinnova.smartpad.partner;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -13,11 +17,15 @@ public class CatalogSpec implements ICatalogSpec {
 	
 	private String specId;
 	
-	private final LinkedList<ICatalogField> allFields = new LinkedList<>();
+	private final TreeMap<String, ICatalogField> allFields = new TreeMap<>();
 	
 	private final LinkedList<String> sectionNames = new LinkedList<>();
 	
 	private final LinkedList<String> groupNames = new LinkedList<>();
+	
+	private HashMap<String, String> attributes = new HashMap<>();
+	
+	private HashSet<String> attributeHiddenSegments;
 	
 	public CatalogSpec() {
 		
@@ -54,14 +62,19 @@ public class CatalogSpec implements ICatalogSpec {
 
 	@Override
 	public ICatalogField[] getAllFields() {
-		return allFields.toArray(new ICatalogField[allFields.size()]);
+		return allFields.values().toArray(new ICatalogField[allFields.size()]);
+	}
+
+	@Override
+	public ICatalogField getField(String fieldId) {
+		return allFields.get(fieldId);
 	}
 	
 	public LinkedList<CatalogField> getGroupingFields() {
 		LinkedList<CatalogField> fields = new LinkedList<>();
-		for (ICatalogField f : allFields) {
+		for (ICatalogField f : allFields.values()) {
 			CatalogField cf = (CatalogField) f;
-			if (cf.getGroupingType() != ICatalogField.GROUPING_NONE) {
+			if (cf.getGroupingType() != ICatalogField.SEGMENT_NONE) {
 				fields.add(cf);
 			}
 		}
@@ -69,9 +82,10 @@ public class CatalogSpec implements ICatalogSpec {
 	}
 
 	@Override
-	public ICatalogField createField() {
+	public ICatalogField createField(String fieldId) {
 		CatalogField field = new CatalogField();
-		allFields.add(field);
+		field.setId(fieldId);
+		allFields.put(fieldId, field);
 		return field;
 	}
 	
@@ -103,10 +117,12 @@ public class CatalogSpec implements ICatalogSpec {
 		json.add("gNames", ja);
 		
 		ja = new JsonArray();
-		for (ICatalogField f : allFields) {
+		for (ICatalogField f : allFields.values()) {
 			ja.add(((CatalogField) f).toJson());
 		}
 		json.add("fields", ja);
+		
+		json.add("atts", JsonSupport.toJson(attributes));
 		return json;
 	}
 	
@@ -130,7 +146,33 @@ public class CatalogSpec implements ICatalogSpec {
 		for (int i = 0; i < ja.size(); i++) {
 			CatalogField field = new CatalogField();
 			field.populate(ja.get(i));
-			allFields.add(field);
+			allFields.put(field.getId(), field);
 		}
+		this.attributes = JsonSupport.toHashmap(json.get("atts").getAsJsonObject());
+	}
+
+	public boolean isSegmentHidden(String segmentField) {
+		if (attributeHiddenSegments == null) {
+			attributeHiddenSegments = new HashSet<>();
+			String hiddenSegmentFields = attributes.get(ICatalogSpec.ATT_DISP_SEGMENTS_HIDDEN);
+			if (hiddenSegmentFields != null) {
+				StringTokenizer tokens = new StringTokenizer(hiddenSegmentFields, ", ");
+				while (tokens.hasMoreTokens()) {
+					String one = tokens.nextToken();
+					attributeHiddenSegments.add(one);
+				}
+			}
+		}
+		return attributeHiddenSegments.contains(segmentField);
+	}
+
+	@Override
+	public String getAttribute(String attributeId) {
+		return attributes.get(attributeId);
+	}
+
+	@Override
+	public void setAttribute(String attributeId, String value) {
+		attributes.put(attributeId, value);
 	}
 }
