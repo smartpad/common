@@ -5,7 +5,9 @@ import static com.jinnova.smartpad.partner.IDetailManager.*;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonArray;
@@ -476,7 +478,7 @@ public class Catalog implements ICatalog, Feed {
 	}
 
 	@Override
-	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
+	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.catalogId);
 		json.addProperty(FIELD_TYPE, this.systemCatalogId != null ? TYPENAME_CAT : TYPENAME_SYSCAT);
@@ -512,9 +514,25 @@ public class Catalog implements ICatalog, Feed {
 						JsonObject segmentJson = new JsonObject();
 						//JsonObject o = ja.get(i).getAsJsonObject();
 						segmentJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
-						fieldJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
+						segmentJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
 						segmentJson.addProperty(FIELD_SEGMENT_VALUEID, segmentEntry.getKey());
 						segmentJson.addProperty(FIELD_SEGMENT_VALUE, segmentEntry.getValue());
+						
+						@SuppressWarnings("unchecked")
+						List<String> segmentParamList = (List<String>) layoutParams.get(Feed.LAYOUT_PARAM_SEGMENTS);
+						HashSet<String> segmentParamSet = new HashSet<>();
+						segmentParamSet.addAll(segmentParamList);
+						segmentParamSet.add(segmentField + ":" + segmentEntry.getKey());
+						StringBuffer buffer = null;
+						for (String one : segmentParamSet) {
+							if (buffer == null) {
+								buffer = new StringBuffer();
+								buffer.append("segments=" + one);
+							} else {
+								buffer.append("&segments=" + one);
+							}
+						}
+						segmentJson.addProperty(FIELD_SEGMENT_LINK, "/syscat/" + catalogId + "/drill?" + buffer.toString());
 						segmentArray.add(segmentJson);
 					}
 					fieldJson.add("values", segmentArray);
@@ -529,7 +547,10 @@ public class Catalog implements ICatalog, Feed {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
 		}
-		if (this.systemCatalogId != null && (LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (layoutSyscat == null || !this.systemCatalogId.equals(layoutSyscat))) {
+		
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		if (this.systemCatalogId != null && (LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && 
+				(excludeSyscat == null || !this.systemCatalogId.equals(excludeSyscat))) {
 			json.addProperty(FIELD_SYSCATID, systemCatalogId);
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
 		}

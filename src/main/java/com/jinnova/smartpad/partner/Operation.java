@@ -5,6 +5,7 @@ import static com.jinnova.smartpad.partner.IDetailManager.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import com.google.gson.JsonObject;
@@ -385,7 +386,7 @@ public class Operation implements IOperation, Feed {
 	}
 	
 	@Override
-	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
+	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.storeId);
 		if (this.storeId.equals(this.branchId)) {
@@ -396,7 +397,8 @@ public class Operation implements IOperation, Feed {
 		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
 		json.addProperty(FIELD_NAME, this.name.getName());
 
-		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(layoutSyscat)) {
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
 		}
 		if ((layoutOptions & LAYOPT_WITHBRANCH) == LAYOPT_WITHBRANCH) {

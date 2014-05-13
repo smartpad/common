@@ -128,7 +128,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 	}
 
 	@Override
-	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
+	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.itemId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CATITEM);
@@ -148,7 +148,9 @@ public class CatalogItem implements ICatalogItem, Feed {
 			json.addProperty(FIELD_CATID, this.catalogId);
 			json.addProperty(FIELD_CATNAME, this.catName);
 		}
-		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (layoutSyscat == null || !this.syscatId.equals(layoutSyscat))) {
+		
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (excludeSyscat == null || !this.syscatId.equals(excludeSyscat))) {
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
 		}
 		

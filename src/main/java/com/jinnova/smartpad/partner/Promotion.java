@@ -3,6 +3,7 @@ package com.jinnova.smartpad.partner;
 import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -172,7 +173,7 @@ public class Promotion implements IPromotion, Feed {
 		return mcardOffer;
 	}
 
-	public JsonObject generateFeedJson(int layoutOptions, String layoutSyscat) {
+	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.promotionId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_PROMO);
