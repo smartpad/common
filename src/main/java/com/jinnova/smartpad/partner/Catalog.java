@@ -483,6 +483,7 @@ public class Catalog implements ICatalog, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.catalogId);
 		json.addProperty(FIELD_TYPE, this.systemCatalogId != null ? TYPENAME_CAT : TYPENAME_SYSCAT);
+		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
 		json.addProperty(FIELD_NAME, this.name.getName());
 		
 		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT) {

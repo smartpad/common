@@ -131,7 +131,8 @@ public class CatalogItem implements ICatalogItem, Feed {
 	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.itemId);
-		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_CATITEM);
+		json.addProperty(FIELD_TYPE, TYPENAME_CATITEM);
+		json.addProperty(FIELD_TYPENUM, TYPE_CATITEM);
 		json.addProperty(FIELD_SYSCATID, this.syscatId);
 		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
 		json.addProperty(FIELD_DESC, this.getFieldValue(ICatalogField.F_DESC));

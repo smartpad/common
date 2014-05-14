@@ -390,9 +390,11 @@ public class Operation implements IOperation, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.storeId);
 		if (this.storeId.equals(this.branchId)) {
-			json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_BRANCH);
+			json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
+			json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
 		} else {
-			json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_STORE);
+			json.addProperty(FIELD_TYPE, TYPENAME_STORE);
+			json.addProperty(FIELD_TYPENUM, TYPE_STORE);
 		}
 		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
 		json.addProperty(FIELD_NAME, this.name.getName());

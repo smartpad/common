@@ -177,6 +177,7 @@ public class Promotion implements IPromotion, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.promotionId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_PROMO);
+		json.addProperty(FIELD_TYPENUM, IDetailManager.TYPE_PROMO);
 		json.addProperty(FIELD_NAME, name.getName());
 		return json;
 	}
