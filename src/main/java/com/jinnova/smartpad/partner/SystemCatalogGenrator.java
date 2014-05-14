@@ -39,7 +39,7 @@ public class SystemCatalogGenrator {
 		int i;
 		Catalog rootCat = PartnerManager.instance.getSystemRootCatalog();
 		rootCat = createCat(rootCat, "z", "All");
-		Catalog elec = createCat(rootCat, "elec", "Điện tử & Máy tính");
+		Catalog elec = createCat(rootCat, "elec", "Điện tử, điện gia dụng  & Máy tính");
 		{
 			Catalog elecComp = createCat(elec, "comp", "Điện thoại, máy tính");
 			{
@@ -52,26 +52,25 @@ public class SystemCatalogGenrator {
 			createCat(elec, "cam", "Máy ảnh & Máy quay phim");
 			createCat(elec, "av", "Âm thanh & Hình ảnh");
 			createCat(elec, "om", "Máy văn phòng");
+			
+			Catalog appliance = createCat(elec, "appliance", "Điện gia dụng");
+			{
+				i = 0;
+				washerFields = new String[] {
+							"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"};
+				createCat(appliance, "washer", "Máy giặt", new Object[][] {
+					//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
+					//{washerFields[i++], Text_Name, "Hãng sản xuất"}, 
+					{washerFields[i++], Text_ID, "Kiểu máy giặt", SEGMENT_DISTINCT},
+					{washerFields[i++], Decimal, "Khối lượng giặt", SEGMENT_DISTINCT}, 
+					{washerFields[i++], Int, "Tốc độ vắt tối đa (vòng/phút)"},
+					{washerFields[i++], Int, "Dung tích thùng chứa (lít)"}, 
+					{washerFields[i++], Int, "Lượng nước tiêu thụ (lít)"},
+					{washerFields[i++], Int, "Điện năng tiêu thụ (W)"}, 
+					{washerFields[i++], Text_Name, "Kích thước (mm)"},
+					{washerFields[i++], Int, "Trọng lượng (kg)"}, {washerFields[i++], Text_Name, "Xuất xứ"}});
+			}
 		}
-		Catalog appliance = createCat(rootCat, "appliance", "Điện gia dụng");
-		{
-			i = 0;
-			washerFields = new String[] {
-						"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"};
-			createCat(appliance, "washer", "Máy giặt", new Object[][] {
-				//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
-				//{washerFields[i++], Text_Name, "Hãng sản xuất"}, 
-				{washerFields[i++], Text_ID, "Kiểu máy giặt", SEGMENT_DISTINCT},
-				{washerFields[i++], Decimal, "Khối lượng giặt", SEGMENT_DISTINCT}, 
-				{washerFields[i++], Int, "Tốc độ vắt tối đa (vòng/phút)"},
-				{washerFields[i++], Int, "Dung tích thùng chứa (lít)"}, 
-				{washerFields[i++], Int, "Lượng nước tiêu thụ (lít)"},
-				{washerFields[i++], Int, "Điện năng tiêu thụ (W)"}, 
-				{washerFields[i++], Text_Name, "Kích thước (mm)"},
-				{washerFields[i++], Int, "Trọng lượng (kg)"}, {washerFields[i++], Text_Name, "Xuất xứ"}});
-		}
-		
-		//createCat(rootCat, "office", "Máy văn phòng & Văn phòng phẩm");
 		
 		//createCat(rootCat, "fmcg", "Hàng tiêu dùng");
 		Catalog fashion = createCat(rootCat, "fashion", "Quần áo, giầy dép & Trang sức");
@@ -88,10 +87,11 @@ public class SystemCatalogGenrator {
 				{clothFields[i++], Text_Name, "Nam/nữ", SEGMENT_DISTINCT}
 			});
 		}
-		createCat(rootCat, "kids", "Trẻ em & Đồ chơi");
+		
 		createCat(rootCat, "health", "Y tế, sức khỏe & Làm đẹp");
-		Catalog homeCat = createCat(rootCat, "home", "Đồ dùng gia đình");
+		Catalog homeCat = createCat(rootCat, "household", "Gia đình & Trẻ em");
 		{
+			createCat(homeCat, "kids", "Trẻ em & Đồ chơi");
 			createCat(homeCat, "fmcg", "Hàng tiêu dùng");
 			
 			i = 0;
@@ -129,7 +129,7 @@ public class SystemCatalogGenrator {
 			});
 		}
 
-		Catalog entertain = createCat(rootCat, "entertain", "Du lịch, giải trí & ẩm thực");
+		Catalog entertain = createCat(rootCat, "entertain", "Thể thao, văn hóa, du lịch & ẩm thực");
 		{
 			Catalog foods = createCat(entertain, "foods", "Foods");
 			{
@@ -138,20 +138,15 @@ public class SystemCatalogGenrator {
 			
 			createCat(entertain, "resort", "Khách sạn / resort");
 			createCat(entertain, "event", "Sự kiện");
-		}
-		
-		Catalog sportCulture = createCat(rootCat, "sport", "Thể thao, văn hóa & Nghệ thuật");
-		{
-			createCat(sportCulture, "book", "Sách");
-			createCat(sportCulture, "stanary", "Văn phòng phẩm");
+			createCat(entertain, "book", "Sách");
+			createCat(entertain, "stationery", "Văn phòng phẩm");
 		}
 		
 		//createmasterType(masterType, "Sách & Thiết bị trường học");
 		createCat(rootCat, "edu", "Giáo dục, đào tạo & Việc làm");
-		
-		createCat(rootCat, "transport", "Ô tô & Phương tiện vận tải");
+
 		createCat(rootCat, "realestate", "Địa ốc & Bất động sản");
-		createCat(rootCat, "industrials", "Công nghiệp, xây dựng & Doanh nghiệp");
+		createCat(rootCat, "transport", "Ô tô, vận tải & Công nghiệp");
 	}
 	
 	private static Catalog createCat(Catalog parentCat, String catId, String catName) throws SQLException {
@@ -168,25 +163,35 @@ public class SystemCatalogGenrator {
 		Object[][] nameDesc = new Object[][] {
 				{F_NAME, Text_Name, "Name"},
 				{F_DESC, Text_Desc, "Description"}};
-		createColumns(cat, nameDesc);
+		createColumns(cat, nameDesc, false);
 		if (fieldIDTypeNames != null) {
-			createColumns(cat, fieldIDTypeNames);
+			createColumns(cat, fieldIDTypeNames, true);
 		}
 		parentCat.getSubCatalogPagingList().put(systemUser, cat);
 		return (Catalog) cat;
 	}
 	
-	private static void createColumns(ICatalog cat, Object[][] fieldIDTypeNames) {
+	private static void createColumns(ICatalog cat, Object[][] fieldIDTypeNames, boolean generateDetailsAtt) {
 
+		StringBuffer displayDetails = new StringBuffer();
 		for (Object[] oneIDTypeName : fieldIDTypeNames) {
 			ICatalogField field = cat.getCatalogSpec().createField((String) oneIDTypeName[0]);
-			//field.setId((String) oneIDTypeName[0]); //column name
 			field.setFieldType((ICatalogFieldType) oneIDTypeName[1]);
 			field.setName((String) oneIDTypeName[2]);
+			
+			if (generateDetailsAtt) {
+				//"<div>Chất liệu: <b>{material}</b></div>
+				displayDetails.append("<div>" + oneIDTypeName[2] + ": <b>{" + oneIDTypeName[0] + "}</b></div>");
+			}
+			
 			if (oneIDTypeName.length < 4) {
 				continue;
 			}
 			field.setGroupingType((int) oneIDTypeName[3]);
+		}
+		
+		if (generateDetailsAtt) {
+			cat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_DETAIL, displayDetails.toString());
 		}
 	}
 
@@ -194,13 +199,13 @@ public class SystemCatalogGenrator {
 		
 		systemUser = PartnerManager.instance.systemUser;
 		//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
-		ICatalog cat = PartnerManager.instance.getSystemCatalog("z_appliance_washer");
+		ICatalog cat = PartnerManager.instance.getSystemCatalog("z_elec_appliance_washer");
 		createItem(cat, washerFields, "Sanyo ASW-D90VT", "SANYO", "Máy giặt lồng đứng", 9,   850, 65, 122, 160, "590 x 564 x 988", 41, "Việt Nam");
 		createItem(cat, washerFields, "LG WFD8525DD",    "LG",    "Máy giặt lồng đứng", 8.5, 850, 79, 410, 0,   "540 x 910 x 540", 39, null);
 		createItem(cat, washerFields, "Sanyo ASW-U850HT", "Sanyo","Máy giặt lồng nghiêng",8.5,840,62, 410, 0,   "589 x 620 x 988", 43, null);
 		
 		//"material", "length", "width", "thick", "madein"
-		cat = PartnerManager.instance.getSystemCatalog("z_home_mattress");
+		cat = PartnerManager.instance.getSystemCatalog("z_household_mattress");
 		createItem(cat, mattressFields, "Nệm cao su Vạn Thành", "Vạn Thành", "Cao su", 160, 200, 5, "Việt Nam");
 		createItem(cat, mattressFields, "Nệm cao su Liên Á Classic 180x200x10cm", "Liên Á", "Cao su", 180, 200, 10, "Việt Nam");
 		createItem(cat, mattressFields, "Nệm cao su Venus Vạn Thành 100x200x10cm", "Vạn Thành", "Cao su", 100, 200, 10, "Việt Nam");
