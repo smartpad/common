@@ -61,10 +61,13 @@ public class SystemCatalogGenrator {
 			createCat(appliance, "washer", "Máy giặt", new Object[][] {
 				//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
 				//{washerFields[i++], Text_Name, "Hãng sản xuất"}, 
-				{washerFields[i++], Text_ID, "Kiểu máy giặt"},
-				{washerFields[i++], Decimal, "Khối lượng giặt"}, {washerFields[i++], Int, "Tốc độ vắt tối đa (vòng/phút)"},
-				{washerFields[i++], Int, "Dung tích thùng chứa (lít)"}, {washerFields[i++], Int, "Lượng nước tiêu thụ (lít)"},
-				{washerFields[i++], Int, "Điện năng tiêu thụ (W)"}, {washerFields[i++], Text_Name, "Kích thước (mm)"},
+				{washerFields[i++], Text_ID, "Kiểu máy giặt", SEGMENT_DISTINCT},
+				{washerFields[i++], Decimal, "Khối lượng giặt", SEGMENT_DISTINCT}, 
+				{washerFields[i++], Int, "Tốc độ vắt tối đa (vòng/phút)"},
+				{washerFields[i++], Int, "Dung tích thùng chứa (lít)"}, 
+				{washerFields[i++], Int, "Lượng nước tiêu thụ (lít)"},
+				{washerFields[i++], Int, "Điện năng tiêu thụ (W)"}, 
+				{washerFields[i++], Text_Name, "Kích thước (mm)"},
 				{washerFields[i++], Int, "Trọng lượng (kg)"}, {washerFields[i++], Text_Name, "Xuất xứ"}});
 		}
 		
@@ -79,10 +82,10 @@ public class SystemCatalogGenrator {
 				//{clothFields[i++], Text_Name, "Nhãn hiệu"},
 				{clothFields[i++], Text_Name, "Chất liệu"},
 				{clothFields[i++], Text_Name, "Màu"},
-				{clothFields[i++], Text_Name, "Thể loại"},
+				{clothFields[i++], Text_Name, "Thể loại", SEGMENT_DISTINCT},
 				{clothFields[i++], Text_Name, "Kích cỡ"},
 				{clothFields[i++], Text_Name, "Xuất xứ"},
-				{clothFields[i++], Text_Name, "Nam/nữ"}
+				{clothFields[i++], Text_Name, "Nam/nữ", SEGMENT_DISTINCT}
 			});
 		}
 		createCat(rootCat, "kids", "Trẻ em & Đồ chơi");
@@ -101,7 +104,7 @@ public class SystemCatalogGenrator {
 				{mattressFields[i++], Int, "Dày", SEGMENT_DISTINCT},
 				{mattressFields[i++], Text_Name, "Xuất xứ", SEGMENT_DISTINCT}
 			});
-			mattressCat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_SEGMENTS_HIDDEN, "length, thick");
+			//mattressCat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_SEGMENTS_HIDDEN, "length, thick");
 			mattressCat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_DETAIL, 
 					"<div>Chất liệu: <b>{material}</b></div><div>Xuất xứ: <b>{madein}</b></div>" +
 					"<div>Quy cách: <b><a href='{segmentLink:length,width,thick}'>{-length} x {-width} x {-thick}</a></b></div>");
@@ -111,18 +114,18 @@ public class SystemCatalogGenrator {
 			drapFields = new String[] {"material", "width", "madein"};
 			createCat(homeCat, "draps", "Draps", new Object[][] {
 				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
-				{mattressFields[i++], Text_Name, "Chất liệu"},
-				{mattressFields[i++], Int, "Rộng"},
-				{mattressFields[i++], Text_Name, "Xuất xứ"}
+				{mattressFields[i++], Text_Name, "Chất liệu", SEGMENT_DISTINCT},
+				{mattressFields[i++], Int, "Rộng", SEGMENT_DISTINCT},
+				{mattressFields[i++], Text_Name, "Xuất xứ", SEGMENT_DISTINCT}
 			});
 			
 			i = 0;
 			pillowFields = new String[] {"material", "style", "madein"};
 			createCat(homeCat, "pillow", "Mềm / gối", new Object[][] {
 				//{mattressFields[i++], Text_Name, "Hãng sản xuất"},
-				{mattressFields[i++], Text_Name, "Chất liệu"},
-				{mattressFields[i++], Text_Name, "Loại"},
-				{mattressFields[i++], Text_Name, "Xuất xứ"}
+				{mattressFields[i++], Text_Name, "Chất liệu", SEGMENT_DISTINCT},
+				{mattressFields[i++], Text_Name, "Loại", SEGMENT_DISTINCT},
+				{mattressFields[i++], Text_Name, "Xuất xứ", SEGMENT_DISTINCT}
 			});
 		}
 

@@ -496,7 +496,7 @@ public class Catalog implements ICatalog, Feed {
 			}
 		}
 		if ((LAYOPT_WITHSEGMENTS & layoutOptions) == LAYOPT_WITHSEGMENTS) {
-			if (segments != null) {
+			if (segments != null && segments.size() > 1) {
 				JsonArray segmentArray = buildSegmentJson(layoutParams);
 				if (segmentArray != null && segmentArray.size() > 0) {
 					json.add(FIELD_SEGMENT, segmentArray);
