@@ -12,7 +12,8 @@ public interface Feed {
 	static final int LAYOPT_WITHSYSCAT = 4;
 	static final int LAYOPT_WITHPARENT = 8;
 	static final int LAYOPT_WITHSEGMENTS = 16;
-	static final int LAYOPT_WITHDETAILS = 32;
+	static final int LAYOPT_WITHSEGMENTS_REMOVER = 32;
+	static final int LAYOPT_WITHDETAILS = 64;
 	
 	static final String LAYOUT_PARAM_SYSCAT_EXCLUDE = "syscatExclude";
 	static final String LAYOUT_PARAM_SEGMENTS = "segments";
