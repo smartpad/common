@@ -17,6 +17,7 @@ public interface Feed {
 	
 	static final String LAYOUT_PARAM_SYSCAT_EXCLUDE = "syscatExclude";
 	static final String LAYOUT_PARAM_SEGMENTS = "segments";
+	static final String LAYOUT_PARAM_LINKPREFIX = "linkp";
 
 	JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams);
 

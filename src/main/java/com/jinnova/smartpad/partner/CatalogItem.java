@@ -134,29 +134,54 @@ public class CatalogItem implements ICatalogItem, Feed {
 		json.addProperty(FIELD_TYPE, TYPENAME_CATITEM);
 		json.addProperty(FIELD_TYPENUM, TYPE_CATITEM);
 		json.addProperty(FIELD_SYSCATID, this.syscatId);
-		json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
+		//json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
 		json.addProperty(FIELD_DESC, this.getFieldValue(ICatalogField.F_DESC));
 		
 		if ((LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
 		}
+		
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
+		String catTypeName = null;
+		String catId = null;
+		String catalogName = null;
+		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (excludeSyscat == null || !this.syscatId.equals(excludeSyscat))) {
+
+			catTypeName = TYPENAME_SYSCAT;
+			catId = syscatId;
+			catalogName = PartnerManager.instance.getSystemCatalog(syscatId).getName();
+			
+			//either catname or syscat name, never both
+			json.addProperty(FIELD_SYSCATNAME, catName);
+			//json.addProperty(FIELD_CATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
+		}
+		
 		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId) &&
 				
 				//not showing catalog link if items is on branch/store's root catalog
 				!this.catalogId.equals(this.branchId)) {
 			
+			catTypeName = TYPENAME_CAT;
+			catId = catalogId;
+			catalogName = this.catName;
+			
 			json.addProperty(FIELD_CATID, this.catalogId);
 			json.addProperty(FIELD_CATNAME, this.catName);
 		}
 		
-		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
-		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (excludeSyscat == null || !this.syscatId.equals(excludeSyscat))) {
-			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
+		String nameAndCat = "<a href='" + linkPrefix + "/" + TYPENAME_CATITEM + "/" + this.syscatId + "/" +
+				this.itemId + "/" + REST_DRILL + "'>" + this.getFieldValue(ICatalogField.F_NAME) + "</a>";
+		if (catTypeName != null) {
+			nameAndCat += " (<a href='" + linkPrefix + "/" + catTypeName + "/" + catId + "/" + REST_DRILL + "'>" +
+							catalogName + "</a>)";
 		}
+		json.addProperty(FIELD_NAME, nameAndCat);
+		
 		
 		if ((LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS) {
-			String details = generateDetails();
+			String details = generateDetails(linkPrefix);
 			if (details != null) {
 				json.addProperty(FIELD_DISP, details);
 			}
@@ -164,7 +189,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 		return json;
 	}
 	
-	private String generateDetails() {
+	private String generateDetails(final String linkPrefix) {
 		final ICatalogSpec spec = PartnerManager.instance.getCatalogSpec(syscatId);
 		String displayPattern = spec.getAttribute(ICatalogSpec.ATT_DISP_DETAIL);
 		if (displayPattern != null) {
@@ -191,16 +216,15 @@ public class CatalogItem implements ICatalogItem, Feed {
 								segmentParam = segmentParam + "&" + oneParam;
 							}
 						}
-						fieldValue = "/w/syscat/" + syscatId + "/drill?" + segmentParam;
+						fieldValue = linkPrefix + "/" + TYPENAME_SYSCAT + "/" + syscatId + "/" + REST_DRILL + "?" + segmentParam;
 					} else {
 						fieldValue = getFieldValue(fieldId);
 						CatalogField field = (CatalogField) spec.getField(fieldId);
 						if (field.getGroupingType() != ICatalogField.SEGMENT_NONE) {
 							//String segmentId = getFieldValue(fieldId + ICatalogField.GROUPING_POSTFIX);
 							String segmentId = SmartpadCommon.md5(fieldValue);
-							fieldValue = "<a href='/w/syscat/" + syscatId + "/drill?segments=" + 
-									fieldId + ICatalogField.SEGMENT_PARAM_SEP + segmentId + "'>" +
-									fieldValue + "</a>";
+							fieldValue = "<a href='" + linkPrefix + "/" + TYPENAME_SYSCAT + "/" + syscatId + "/" + REST_DRILL + 
+									"?segments=" + fieldId + ICatalogField.SEGMENT_PARAM_SEP + segmentId + "'>" + fieldValue + "</a>";
 						}
 					}
 					return fieldValue;
