@@ -171,11 +171,16 @@ public class CatalogItem implements ICatalogItem, Feed {
 			json.addProperty(FIELD_CATNAME, this.catName);
 		}
 		
-		String nameAndCat = "<a href='" + linkPrefix + "/" + TYPENAME_CATITEM + "/" + this.syscatId + "/" +
+		/*String nameAndCat = "<a href='" + linkPrefix + "/" + TYPENAME_CATITEM + "/" + this.syscatId + "/" +
 				this.itemId + "/" + REST_DRILL + "'>" + this.getFieldValue(ICatalogField.F_NAME) + "</a>";
 		if (catTypeName != null) {
 			nameAndCat += " (<a href='" + linkPrefix + "/" + catTypeName + "/" + catId + "/" + REST_DRILL + "'>" +
 							catalogName + "</a>)";
+		}*/
+		String nameAndCat = SmartpadCommon.makeDrillLink(linkPrefix + "/" + TYPENAME_CATITEM, 
+				this.syscatId, this.itemId, this.getFieldValue(ICatalogField.F_NAME), null);
+		if (catTypeName != null) {
+			nameAndCat += " (" + SmartpadCommon.makeDrillLink(linkPrefix, catTypeName, catId, catalogName, null) + ")";
 		}
 		json.addProperty(FIELD_NAME, nameAndCat);
 		

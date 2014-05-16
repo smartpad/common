@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.jinnova.smartpad.CachedPage;
 import com.jinnova.smartpad.CachedPagingList;
@@ -451,7 +450,7 @@ public class Catalog implements ICatalog, Feed {
 	}
 	
 	public String getSegmentJson() {
-		if (segments == null) {
+		if (segments == null || segments.size() < 2) {
 			return null;
 		}
 		
@@ -482,35 +481,51 @@ public class Catalog implements ICatalog, Feed {
 	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.catalogId);
-		json.addProperty(FIELD_TYPE, this.systemCatalogId != null ? TYPENAME_CAT : TYPENAME_SYSCAT);
+		
+		boolean syscat = this.systemCatalogId == null;
+		String typeName = syscat ? TYPENAME_SYSCAT : TYPENAME_CAT;
+		json.addProperty(FIELD_TYPE, typeName);
 		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
-		json.addProperty(FIELD_NAME, this.name.getName());
+		
+		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
+		String nameAndUp = this.name.getName();
 		
 		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT) {
 			json.addProperty(FIELD_UP_ID, this.parentCatalogId);
 			json.addProperty(FIELD_UP_NAME, this.parentCatName);
+			
+			String upLink = SmartpadCommon.makeDrillLink(linkPrefix, typeName, this.parentCatalogId, this.parentCatName, null);
+			if (upLink != null && !"".equals(upLink)) {
+				nameAndUp += " (" + upLink + ")";
+			}
 		}
-		if ((LAYOPT_WITHSEGMENTS_REMOVER & layoutOptions) == LAYOPT_WITHSEGMENTS_REMOVER) {
+		json.addProperty(FIELD_NAME, nameAndUp);
+		
+		/*if ((LAYOPT_WITHSEGMENTS_REMOVER & layoutOptions) == LAYOPT_WITHSEGMENTS_REMOVER) {
 			JsonArray segmentRemoverArray = buildSegmentRemoverJson(layoutParams);
 			if (segmentRemoverArray != null) {
 				json.add(FIELD_SEGMENT_REMOVER, segmentRemoverArray);
 			}
-		}
+		}*/
 		if ((LAYOPT_WITHSEGMENTS & layoutOptions) == LAYOPT_WITHSEGMENTS) {
-			if (segments != null && segments.size() > 1) {
-				JsonArray segmentArray = buildSegmentJson(layoutParams);
+			if (segments != null /*&& segments.size() > 1*/) {
+				/*JsonArray segmentArray = buildSegmentJson(layoutParams);
 				if (segmentArray != null && segmentArray.size() > 0) {
 					json.add(FIELD_SEGMENT, segmentArray);
+				}*/
+				String segmentDisplay = buildSegmentDisplay(layoutParams);
+				if (segmentDisplay != null && !segmentDisplay.isEmpty()) {
+					json.addProperty(FIELD_SEGMENT, segmentDisplay);
 				}
 			}
 		}
-		if (this.systemCatalogId != null && (LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
+		if (!syscat && (LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
 		}
 		
 		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
-		if (this.systemCatalogId != null && (LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && 
+		if (!syscat && (LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && 
 				(excludeSyscat == null || !this.systemCatalogId.equals(excludeSyscat))) {
 			json.addProperty(FIELD_SYSCATID, systemCatalogId);
 			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
@@ -518,7 +533,7 @@ public class Catalog implements ICatalog, Feed {
 		return json;
 	}
 	
-	private JsonArray buildSegmentRemoverJson(HashMap<String, Object> layoutParams) {
+	/*private JsonArray buildSegmentRemoverJson(HashMap<String, Object> layoutParams) {
 
 		@SuppressWarnings("unchecked")
 		List<String> segmentParamList = (List<String>) layoutParams.get(Feed.LAYOUT_PARAM_SEGMENTS);
@@ -552,9 +567,78 @@ public class Catalog implements ICatalog, Feed {
 			segmentRemoverArray.add(segmentJson);
 		}
 		return segmentRemoverArray;
+	}*/
+	
+	private String buildOneSegmentRemover(String linkPrefix, List<String> existingParams, String oneExistingParam) {
+		
+		int index = oneExistingParam.indexOf(ICatalogField.SEGMENT_PARAM_SEP);
+		if (index >= oneExistingParam.length()) {
+			return null;
+		}
+		String segmentField = oneExistingParam.substring(0, index);
+		String segmentValueId = oneExistingParam.substring(index + 1);
+		String segmentValue = segments.get(segmentField).get(segmentValueId);
+		
+		SortedSet<String> segmentParamSet = new TreeSet<>();
+		segmentParamSet.addAll(existingParams);
+		segmentParamSet.remove(oneExistingParam);
+		String segmentParams = buildSegmentParams(segmentParamSet);
+		return SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_SYSCAT, this.catalogId, segmentValue, segmentParams);
+		/*JsonObject segmentJson = new JsonObject();
+		segmentJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
+		segmentJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
+		segmentJson.addProperty(FIELD_SEGMENT_VALUEID, segmentValueId);
+		segmentJson.addProperty(FIELD_SEGMENT_VALUE, segmentValue);
+		segmentJson.addProperty(FIELD_SEGMENT_LINK, "/syscat/" + catalogId + "/drill" + segmentParams);
+		segmentRemoverArray.add(segmentJson);*/
 	}
 	
-	private JsonArray buildSegmentJson(HashMap<String, Object> layoutParams) {
+	private String buildSegmentDisplay(HashMap<String, Object> layoutParams) {
+		
+		@SuppressWarnings("unchecked")
+		List<String> existingSegmentParamList = (List<String>) layoutParams.get(Feed.LAYOUT_PARAM_SEGMENTS);
+		CatalogSpec spec = (CatalogSpec) getCatalogSpec();
+		String linkPrefix = (String) layoutParams.get(Feed.LAYOUT_PARAM_LINKPREFIX);
+		StringBuffer buffer = new StringBuffer();
+		for (Entry<String, HashMap<String, String>> entry : segments.entrySet()) {
+			
+			String segmentField = entry.getKey();
+			if (spec.isSegmentHidden(segmentField)) {
+				continue;
+			}
+			
+			String segmentFieldName = spec.getField(segmentField).getName();
+			buffer.append("<div>" + segmentFieldName + ": ");
+			boolean first = true;
+			for (Entry<String, String> segmentEntry : entry.getValue().entrySet()) {
+				
+				String segmentValueId = segmentEntry.getKey();
+				String oneSegmentParam = segmentField + ":" + segmentValueId;
+				
+				if (!first) {
+					buffer.append(" | ");
+				}
+				first = false;
+				
+				if (existingSegmentParamList.contains(oneSegmentParam)) {
+					String removalLink = buildOneSegmentRemover(linkPrefix, existingSegmentParamList, oneSegmentParam);
+					if (removalLink != null) {
+						buffer.append("<b>" + removalLink + "</b>");
+					}
+					continue;
+				}
+				
+				SortedSet<String> segmentParamSet = new TreeSet<>();
+				segmentParamSet.addAll(existingSegmentParamList);
+				segmentParamSet.add(oneSegmentParam);
+				buffer.append(SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_SYSCAT, catalogId, segmentEntry.getValue(), buildSegmentParams(segmentParamSet)));
+			}
+			buffer.append("</div");
+		}
+		return buffer.toString();
+	}
+	
+	/*private JsonArray buildSegmentJson(HashMap<String, Object> layoutParams) {
 		
 		@SuppressWarnings("unchecked")
 		List<String> existingSegmentParamList = (List<String>) layoutParams.get(Feed.LAYOUT_PARAM_SEGMENTS);
@@ -600,7 +684,7 @@ public class Catalog implements ICatalog, Feed {
 			}
 		}
 		return fieldArray;
-	}
+	}*/
 	
 	private static String buildSegmentParams(SortedSet<String> segmentParamSet) {
 		

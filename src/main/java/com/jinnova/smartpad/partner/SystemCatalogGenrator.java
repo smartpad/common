@@ -2,6 +2,7 @@ package com.jinnova.smartpad.partner;
 
 import static com.jinnova.smartpad.partner.ICatalogField.*;
 import static com.jinnova.smartpad.partner.ICatalogFieldType.*;
+import static com.jinnova.smartpad.partner.IDetailManager.*;
 
 import java.sql.SQLException;
 
@@ -38,7 +39,7 @@ public class SystemCatalogGenrator {
 		systemUser = PartnerManager.instance.systemUser;
 		int i;
 		Catalog rootCat = PartnerManager.instance.getSystemRootCatalog();
-		rootCat = createCat(rootCat, "z", "All");
+		rootCat = createCat(rootCat, SYSTEM_CAT_ALL, "Tất cả");
 		Catalog elec = createCat(rootCat, "elec", "Điện tử, điện gia dụng  & Máy tính");
 		{
 			Catalog elecComp = createCat(elec, "comp", "Điện thoại, máy tính");
@@ -131,7 +132,7 @@ public class SystemCatalogGenrator {
 
 		Catalog entertain = createCat(rootCat, "entertain", "Thể thao, văn hóa, du lịch & ẩm thực");
 		{
-			Catalog foods = createCat(entertain, "foods", "Foods");
+			Catalog foods = createCat(entertain, "foods", "Ẩm thực");
 			{
 				createCat(foods, "fastfoods", "Thức ăn nhanh");
 			}
