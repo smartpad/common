@@ -181,7 +181,7 @@ public class SystemCatalogGenrator {
 			
 			if (generateDetailsAtt) {
 				//"<div>Chất liệu: <b>{material}</b></div>
-				displayDetails.append("<div>" + oneIDTypeName[2] + ": <b>{" + oneIDTypeName[0] + "}</b></div>");
+				displayDetails.append("<div>" + oneIDTypeName[2] + ": <b>{" + oneIDTypeName[0] + "}</b></div>" + SmartpadCommon.SUBSTITUTION_SEP);
 			}
 			
 			if (oneIDTypeName.length < 4) {
@@ -235,7 +235,7 @@ public class SystemCatalogGenrator {
 		}
 		int offset = 2;
 		for (int i = 0; i < fieldNames.length; i++) {
-			item.setField(fieldNames[i], String.valueOf(data[offset + i]));
+			item.setField(fieldNames[i], data[offset + i] == null ? null : String.valueOf(data[offset + i]));
 		}
 		cat.getCatalogItemPagingList().put(systemUser, item);
 	}
