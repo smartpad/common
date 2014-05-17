@@ -1,6 +1,7 @@
 package com.jinnova.smartpad.partner;
 
 import static com.jinnova.smartpad.partner.IDetailManager.*;
+import static com.jinnova.smartpad.LinkSupport.*;
 
 import java.sql.SQLException;
 import java.util.Comparator;
@@ -501,7 +502,7 @@ public class Catalog implements ICatalog, Feed {
 			json.addProperty(FIELD_UP_ID, this.parentCatalogId);
 			json.addProperty(FIELD_UP_NAME, this.parentCatName);
 			
-			String upLink = SmartpadCommon.makeDrillLink(linkPrefix, typeName, this.parentCatalogId, this.parentCatName, null);
+			String upLink = makeDrillLink(linkPrefix, typeName, this.parentCatalogId, this.parentCatName, null);
 			if (upLink != null && !"".equals(upLink)) {
 				nameAndUp += " (" + upLink + ")";
 			}
@@ -589,8 +590,8 @@ public class Catalog implements ICatalog, Feed {
 		SortedSet<String> segmentParamSet = new TreeSet<>();
 		segmentParamSet.addAll(existingParams);
 		segmentParamSet.remove(oneExistingParam);
-		String segmentParams = buildSegmentParams(segmentParamSet);
-		return SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_SYSCAT, this.catalogId, segmentValue, segmentParams);
+		String segmentParams = buildParamSet("segments", segmentParamSet);
+		return makeDrillLink(linkPrefix, TYPENAME_SYSCAT, this.catalogId, segmentValue, "?" + segmentParams);
 		/*JsonObject segmentJson = new JsonObject();
 		segmentJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
 		segmentJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
@@ -638,77 +639,12 @@ public class Catalog implements ICatalog, Feed {
 				SortedSet<String> segmentParamSet = new TreeSet<>();
 				segmentParamSet.addAll(existingSegmentParamList);
 				segmentParamSet.add(oneSegmentParam);
-				buffer.append(SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_SYSCAT, catalogId, segmentEntry.getValue(), buildSegmentParams(segmentParamSet)));
+				buffer.append(makeDrillLink(linkPrefix, TYPENAME_SYSCAT, catalogId, 
+						segmentEntry.getValue(), "?" + buildParamSet("segments", segmentParamSet)));
 			}
 			buffer.append("</div");
 		}
 		return buffer.toString();
-	}
-	
-	/*private JsonArray buildSegmentJson(HashMap<String, Object> layoutParams) {
-		
-		@SuppressWarnings("unchecked")
-		List<String> existingSegmentParamList = (List<String>) layoutParams.get(Feed.LAYOUT_PARAM_SEGMENTS);
-		CatalogSpec spec = (CatalogSpec) getCatalogSpec();
-		JsonArray fieldArray = new JsonArray();
-		for (Entry<String, HashMap<String, String>> entry : segments.entrySet()) {
-			
-			String segmentField = entry.getKey();
-			if (spec.isSegmentHidden(segmentField)) {
-				continue;
-			}
-			JsonObject fieldJson = new JsonObject();
-			//fieldJson.addProperty(CatalogField.ATT_GROUPING_FIELD, f.getId());
-			fieldJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
-			fieldJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
-			
-			JsonArray segmentArray = new JsonArray();
-			//for (int i = 0; i < ja.size(); i++) {
-			for (Entry<String, String> segmentEntry : entry.getValue().entrySet()) {
-				
-				String segmentValueId = segmentEntry.getKey();
-				String oneSegmentParam = segmentField + ":" + segmentValueId;
-				if (existingSegmentParamList.contains(oneSegmentParam)) {
-					continue;
-				}
-				JsonObject segmentJson = new JsonObject();
-				//JsonObject o = ja.get(i).getAsJsonObject();
-				segmentJson.addProperty(FIELD_SEGMENT_FIELDID, segmentField);
-				segmentJson.addProperty(FIELD_SEGMENT_FIELDNAME, spec.getField(segmentField).getName());
-				segmentJson.addProperty(FIELD_SEGMENT_VALUEID, segmentValueId);
-				segmentJson.addProperty(FIELD_SEGMENT_VALUE, segmentEntry.getValue());
-				
-				SortedSet<String> segmentParamSet = new TreeSet<>();
-				segmentParamSet.addAll(existingSegmentParamList);
-				segmentParamSet.add(oneSegmentParam);
-				segmentJson.addProperty(FIELD_SEGMENT_LINK, "/syscat/" + catalogId + "/drill" + buildSegmentParams(segmentParamSet));
-				segmentArray.add(segmentJson);
-			}
-			
-			if (segmentArray.size() > 0) {
-				fieldJson.add("values", segmentArray);
-				fieldArray.add(fieldJson);
-			}
-		}
-		return fieldArray;
-	}*/
-	
-	private static String buildSegmentParams(SortedSet<String> segmentParamSet) {
-		
-		if (segmentParamSet == null || segmentParamSet.isEmpty()) {
-			return "";
-		}
-		
-		StringBuffer buffer = null;
-		for (String one : segmentParamSet) {
-			if (buffer == null) {
-				buffer = new StringBuffer();
-				buffer.append("segments=" + one);
-			} else {
-				buffer.append("&segments=" + one);
-			}
-		}
-		return "?" + buffer.toString();
 	}
 	
 	public void setBranchName(String bn) {

@@ -1,6 +1,7 @@
 package com.jinnova.smartpad.partner;
 
 import static com.jinnova.smartpad.partner.IDetailManager.*;
+import static com.jinnova.smartpad.LinkSupport.*;
 
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -142,7 +143,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 		if ((LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
-			branchCaption = SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, this.branchName, null);
+			branchCaption = makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, this.branchName, null);
 		}
 		
 		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
@@ -159,7 +160,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 			json.addProperty(FIELD_SYSCATNAME, catName);
 			//json.addProperty(FIELD_CATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
 			
-			String syscatCaption = SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_SYSCAT, syscatId, catalogName, null);
+			String syscatCaption = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, syscatId, catalogName, null);
 			if (branchCaption == null) {
 				branchCaption = syscatCaption;
 			} else {
@@ -181,7 +182,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 			catalogName = this.catName;
 			
 			json.addProperty(FIELD_CATID, this.catalogId);
-			json.addProperty(FIELD_CATNAME, SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_CAT, catalogId, catName, null));
+			json.addProperty(FIELD_CATNAME, makeDrillLink(linkPrefix, TYPENAME_CAT, catalogId, catName, null));
 		}
 		
 		boolean withDetails = (LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS;
@@ -189,7 +190,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 		if (withDetails) {
 			nameCaption = this.getFieldValue(ICatalogField.F_NAME);
 		} else {
-			nameCaption = SmartpadCommon.makeDrillLink(linkPrefix + "/" + TYPENAME_CATITEM, 
+			nameCaption = makeDrillLink(linkPrefix + "/" + TYPENAME_CATITEM, 
 					this.syscatId, this.itemId, this.getFieldValue(ICatalogField.F_NAME), null);
 		}
 		/*if (catTypeName != null) {
