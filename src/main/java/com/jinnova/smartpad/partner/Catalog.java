@@ -450,11 +450,18 @@ public class Catalog implements ICatalog, Feed {
 	}
 	
 	public String getSegmentJson() {
-		if (segments == null || segments.size() < 2) {
+		if (segments == null) {
 			return null;
 		}
 		
-		return JsonSupport.toJson(segments).toString();
+		HashMap<String, HashMap<String, String>> segmentCopy = new HashMap<String, HashMap<String,String>>();
+		for (Entry<String, HashMap<String, String>> entry : segments.entrySet()) {
+			if (entry.getValue().size() < 2) {
+				continue;
+			}
+			segmentCopy.put(entry.getKey(), entry.getValue());
+		}
+		return JsonSupport.toJson(segmentCopy).toString();
 	}
 	
 	public void populateSegments(JsonObject json) {
