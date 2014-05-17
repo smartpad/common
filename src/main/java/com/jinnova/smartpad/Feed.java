@@ -16,6 +16,7 @@ public interface Feed {
 	static final int LAYOPT_WITHDETAILS = 64;
 	
 	static final String LAYOUT_PARAM_SYSCAT_EXCLUDE = "syscatExclude";
+	static final String LAYOUT_PARAM_CAT_EXCLUDE = "catExclude";
 	static final String LAYOUT_PARAM_SEGMENTS = "segments";
 	static final String LAYOUT_PARAM_LINKPREFIX = "linkp";
 

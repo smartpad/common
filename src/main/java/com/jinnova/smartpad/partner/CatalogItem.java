@@ -149,40 +149,57 @@ public class CatalogItem implements ICatalogItem, Feed {
 		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
 		//String catTypeName = null;
 		//String catId = null;
-		String catalogName = null;
-		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (excludeSyscat == null || !this.syscatId.equals(excludeSyscat))) {
+		String syscatCaption = null;
+		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && 
+				(excludeSyscat == null || !this.syscatId.equals(excludeSyscat))) {
 
 			//catTypeName = TYPENAME_SYSCAT;
 			//catId = syscatId;
-			catalogName = PartnerManager.instance.getSystemCatalog(syscatId).getName();
+			String catalogName = PartnerManager.instance.getSystemCatalog(syscatId).getName();
 			
 			//either catname or syscat name, never both
-			json.addProperty(FIELD_SYSCATNAME, catName);
+			//json.addProperty(FIELD_SYSCATNAME, catName);
 			//json.addProperty(FIELD_CATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
 			
-			String syscatCaption = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, syscatId, catalogName, null);
-			if (branchCaption == null) {
-				branchCaption = syscatCaption;
-			} else {
-				branchCaption += " (" + syscatCaption + ")";
-			}
+			syscatCaption = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, syscatId, catalogName, null);
 		}
-		
-		if (branchCaption != null) {
-			json.addProperty(FIELD_BRANCHNAME, branchCaption);
-		}
-		
+
+		String excludeCat = (String) layoutParams.get(LAYOUT_PARAM_CAT_EXCLUDE);
+		String catCaption = null;
 		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId) &&
+				
+				(excludeCat == null || !this.catalogId.equals(excludeCat)) &&
 				
 				//not showing catalog link if items is on branch/store's root catalog
 				!this.catalogId.equals(this.branchId)) {
 			
 			//catTypeName = TYPENAME_CAT;
 			//catId = catalogId;
-			catalogName = this.catName;
+			//catalogName = this.catName;
 			
-			json.addProperty(FIELD_CATID, this.catalogId);
-			json.addProperty(FIELD_CATNAME, makeDrillLink(linkPrefix, TYPENAME_CAT, catalogId, catName, null));
+			//json.addProperty(FIELD_CATID, this.catalogId);
+			//json.addProperty(FIELD_CATNAME, makeDrillLink(linkPrefix, TYPENAME_CAT, catalogId, catName, null));
+			catCaption = makeDrillLink(linkPrefix, TYPENAME_CAT, this.catalogId, this.catName, null);
+		}
+
+		if (catCaption != null) {
+			if (syscatCaption == null) {
+				syscatCaption = catCaption;
+			} else {
+				syscatCaption += " / " + catCaption;
+			}
+		}
+		
+		if (branchCaption == null) {
+			branchCaption = syscatCaption;
+		} else {
+			if (syscatCaption != null) {
+				branchCaption += " (" + syscatCaption + ")";
+			}
+		}
+		
+		if (branchCaption != null) {
+			json.addProperty(FIELD_BRANCHNAME, branchCaption);
 		}
 		
 		boolean withDetails = (LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS;
