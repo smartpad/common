@@ -136,26 +136,39 @@ public class CatalogItem implements ICatalogItem, Feed {
 		json.addProperty(FIELD_SYSCATID, this.syscatId);
 		//json.addProperty(FIELD_NAME, this.getFieldValue(ICatalogField.F_NAME));
 		json.addProperty(FIELD_DESC, this.getFieldValue(ICatalogField.F_DESC));
-		
+
+		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
+		String branchCaption = null;
 		if ((LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);
+			branchCaption = SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, this.branchName, null);
 		}
 		
 		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
-		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
-		String catTypeName = null;
-		String catId = null;
+		//String catTypeName = null;
+		//String catId = null;
 		String catalogName = null;
 		if ((LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && (excludeSyscat == null || !this.syscatId.equals(excludeSyscat))) {
 
-			catTypeName = TYPENAME_SYSCAT;
-			catId = syscatId;
+			//catTypeName = TYPENAME_SYSCAT;
+			//catId = syscatId;
 			catalogName = PartnerManager.instance.getSystemCatalog(syscatId).getName();
 			
 			//either catname or syscat name, never both
 			json.addProperty(FIELD_SYSCATNAME, catName);
 			//json.addProperty(FIELD_CATNAME, PartnerManager.instance.getSystemCatalog(syscatId).getName());
+			
+			String syscatCaption = SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_SYSCAT, syscatId, catalogName, null);
+			if (branchCaption == null) {
+				branchCaption = syscatCaption;
+			} else {
+				branchCaption += " (" + syscatCaption + ")";
+			}
+		}
+		
+		if (branchCaption != null) {
+			json.addProperty(FIELD_BRANCHNAME, branchCaption);
 		}
 		
 		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId) &&
@@ -163,29 +176,29 @@ public class CatalogItem implements ICatalogItem, Feed {
 				//not showing catalog link if items is on branch/store's root catalog
 				!this.catalogId.equals(this.branchId)) {
 			
-			catTypeName = TYPENAME_CAT;
-			catId = catalogId;
+			//catTypeName = TYPENAME_CAT;
+			//catId = catalogId;
 			catalogName = this.catName;
 			
 			json.addProperty(FIELD_CATID, this.catalogId);
-			json.addProperty(FIELD_CATNAME, this.catName);
+			json.addProperty(FIELD_CATNAME, SmartpadCommon.makeDrillLink(linkPrefix, TYPENAME_CAT, catalogId, catName, null));
 		}
 		
-		/*String nameAndCat = "<a href='" + linkPrefix + "/" + TYPENAME_CATITEM + "/" + this.syscatId + "/" +
-				this.itemId + "/" + REST_DRILL + "'>" + this.getFieldValue(ICatalogField.F_NAME) + "</a>";
-		if (catTypeName != null) {
-			nameAndCat += " (<a href='" + linkPrefix + "/" + catTypeName + "/" + catId + "/" + REST_DRILL + "'>" +
-							catalogName + "</a>)";
+		boolean withDetails = (LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS;
+		String nameCaption;
+		if (withDetails) {
+			nameCaption = this.getFieldValue(ICatalogField.F_NAME);
+		} else {
+			nameCaption = SmartpadCommon.makeDrillLink(linkPrefix + "/" + TYPENAME_CATITEM, 
+					this.syscatId, this.itemId, this.getFieldValue(ICatalogField.F_NAME), null);
+		}
+		/*if (catTypeName != null) {
+			nameCaption += " (" + SmartpadCommon.makeDrillLink(linkPrefix, catTypeName, catId, catalogName, null) + ")";
 		}*/
-		String nameAndCat = SmartpadCommon.makeDrillLink(linkPrefix + "/" + TYPENAME_CATITEM, 
-				this.syscatId, this.itemId, this.getFieldValue(ICatalogField.F_NAME), null);
-		if (catTypeName != null) {
-			nameAndCat += " (" + SmartpadCommon.makeDrillLink(linkPrefix, catTypeName, catId, catalogName, null) + ")";
-		}
-		json.addProperty(FIELD_NAME, nameAndCat);
+		json.addProperty(FIELD_NAME, nameCaption);
 		
 		
-		if ((LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS) {
+		if (withDetails) {
 			String details = generateDetails(linkPrefix);
 			if (details != null) {
 				json.addProperty(FIELD_DISP, details);
