@@ -163,9 +163,20 @@ public class CatalogItem implements ICatalogItem, Feed {
 			
 			syscatCaption = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, syscatId, catalogName, null);
 		}
+		
+		if (branchCaption == null) {
+			branchCaption = syscatCaption;
+		} else {
+			if (syscatCaption != null) {
+				branchCaption += " (" + syscatCaption + ")";
+			}
+		}
+		
+		if (branchCaption != null) {
+			json.addProperty(FIELD_BRANCHNAME, branchCaption);
+		}
 
 		String excludeCat = (String) layoutParams.get(LAYOUT_PARAM_CAT_EXCLUDE);
-		String catCaption = null;
 		if ((LAYOPT_WITHCAT & layoutOptions) == LAYOPT_WITHCAT && !this.catalogId.equals(this.syscatId) &&
 				
 				(excludeCat == null || !this.catalogId.equals(excludeCat)) &&
@@ -179,27 +190,8 @@ public class CatalogItem implements ICatalogItem, Feed {
 			
 			//json.addProperty(FIELD_CATID, this.catalogId);
 			//json.addProperty(FIELD_CATNAME, makeDrillLink(linkPrefix, TYPENAME_CAT, catalogId, catName, null));
-			catCaption = makeDrillLink(linkPrefix, TYPENAME_CAT, this.catalogId, this.catName, null);
-		}
-
-		if (catCaption != null) {
-			if (syscatCaption == null) {
-				syscatCaption = catCaption;
-			} else {
-				syscatCaption += " / " + catCaption;
-			}
-		}
-		
-		if (branchCaption == null) {
-			branchCaption = syscatCaption;
-		} else {
-			if (syscatCaption != null) {
-				branchCaption += " (" + syscatCaption + ")";
-			}
-		}
-		
-		if (branchCaption != null) {
-			json.addProperty(FIELD_BRANCHNAME, branchCaption);
+			String catCaption = makeDrillLink(linkPrefix, TYPENAME_CAT, this.catalogId, this.catName, null);
+			json.addProperty(FIELD_CATNAME, catCaption);
 		}
 		
 		boolean withDetails = (LAYOPT_WITHDETAILS & layoutOptions) == LAYOPT_WITHDETAILS;
