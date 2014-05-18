@@ -1,6 +1,7 @@
 package com.jinnova.smartpad.partner;
 
 import static com.jinnova.smartpad.partner.IDetailManager.*;
+import static com.jinnova.smartpad.LinkSupport.*;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -397,12 +398,19 @@ public class Operation implements IOperation, Feed {
 			json.addProperty(FIELD_TYPENUM, TYPE_STORE);
 		}
 		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
-		json.addProperty(FIELD_NAME, this.name.getName());
+		//json.addProperty(FIELD_NAME, this.name.getName());
+		
+		String nameCaption = this.name.getName();
 
 		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
 		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {
-			json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
+			//json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
+			nameCaption += " (" + makeDrillLink(linkPrefix, TYPENAME_SYSCAT, systemCatalogId,
+					PartnerManager.instance.getSystemCatalog(systemCatalogId).getName(), null) + ")";
 		}
+		json.addProperty(FIELD_NAME, nameCaption);
+		
 		if ((layoutOptions & LAYOPT_WITHBRANCH) == LAYOPT_WITHBRANCH) {
 			json.addProperty(FIELD_BRANCHID, this.branchId);
 			json.addProperty(FIELD_BRANCHNAME, this.branchName);

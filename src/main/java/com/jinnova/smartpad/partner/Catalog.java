@@ -487,6 +487,62 @@ public class Catalog implements ICatalog, Feed {
 
 	@Override
 	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
+		if ((LAYOPT_PRIVATECAT & layoutOptions) == LAYOPT_PRIVATECAT) {
+			return generateFeedJsonPrivateCat(layoutOptions, layoutParams);
+		} else {
+			return generateFeedJsonSysCat(layoutOptions, layoutParams);
+		}
+	}
+
+	private JsonObject generateFeedJsonPrivateCat(int layoutOptions, HashMap<String, Object> layoutParams) {
+		JsonObject json = new JsonObject();
+		json.addProperty(FIELD_ID, this.catalogId);
+		
+		boolean syscat = this.systemCatalogId == null;
+		String typeName = syscat ? TYPENAME_SYSCAT : TYPENAME_CAT;
+		json.addProperty(FIELD_TYPE, typeName);
+		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
+		
+		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
+		String nameAndUp = this.name.getName();
+		
+		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT &&
+				!this.branchId.equals(this.parentCatalogId)) {
+			//json.addProperty(FIELD_UP_ID, this.parentCatalogId);
+			//json.addProperty(FIELD_UP_NAME, this.parentCatName);
+			
+			String upLink = makeDrillLink(linkPrefix, typeName, this.parentCatalogId, this.parentCatName, null);
+			if (upLink != null && !"".equals(upLink)) {
+				nameAndUp += " (" + upLink + ")";
+			}
+		}
+		json.addProperty(FIELD_NAME, nameAndUp);
+		
+		String branchCaption = null;
+		if (!syscat && (LAYOPT_WITHBRANCH & layoutOptions) == LAYOPT_WITHBRANCH) {
+			branchCaption = makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, this.branchName, null);
+		}
+		
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		if (!syscat && (LAYOPT_WITHSYSCAT & layoutOptions) == LAYOPT_WITHSYSCAT && 
+				(excludeSyscat == null || !this.systemCatalogId.equals(excludeSyscat))) {
+			
+			String s = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, systemCatalogId, 
+					PartnerManager.instance.getSystemCatalog(systemCatalogId).getName(), null);
+			if (branchCaption == null) {
+				branchCaption = s;
+			} else {
+				branchCaption += " (" + s + ")";
+			}
+		}
+		
+		if (branchCaption != null) {
+			json.addProperty(FIELD_BRANCHNAME, branchCaption);
+		}
+		return json;
+	}
+
+	private JsonObject generateFeedJsonSysCat(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_ID, this.catalogId);
 		
