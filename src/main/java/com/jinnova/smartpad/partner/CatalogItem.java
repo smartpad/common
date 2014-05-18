@@ -21,6 +21,8 @@ public class CatalogItem implements ICatalogItem, Feed {
 	
 	private String syscatId;
 	
+	private String parentCatId;
+	
 	private String itemId;
 	
 	//private final Name name = new Name();
@@ -41,11 +43,12 @@ public class CatalogItem implements ICatalogItem, Feed {
 	
 	private final HashMap<String, String[]> fieldValuesMulti = new HashMap<>(); 
 	
-	public CatalogItem(String branchId, String storeId, String catalogId, String syscatId, String itemId) {
+	public CatalogItem(String branchId, String storeId, String catalogId, String syscatId, String parentCatId, String itemId) {
 		this.branchId = branchId;
 		this.storeId = storeId;
 		this.catalogId = catalogId;
 		this.syscatId = syscatId;
+		this.parentCatId = parentCatId;
 		this.itemId = itemId;
 	}
 	
@@ -68,6 +71,10 @@ public class CatalogItem implements ICatalogItem, Feed {
 	
 	public String getSyscatId() {
 		return this.syscatId;
+	}
+	
+	public String getParentCatId() {
+		return this.parentCatId;
 	}
 	
 	public String getBranchId() {

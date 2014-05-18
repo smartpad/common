@@ -122,6 +122,13 @@ class DaoSupport {
 		return field + operator + "'" + value + "'";
 	}
 
+	static String buildConditionIfNotNull2(String field, String operator, String value) {
+		if (value == null) {
+			return null;
+		}
+		return field + operator + "'" + value + "'";
+	}
+
 	static String buildConditionIfNotNull(String field, String operator, Integer value) {
 		if (value == null) {
 			return "";
@@ -144,10 +151,59 @@ class DaoSupport {
 			return field + " = '" + value + "'";
 		}
 	}
+
+	static boolean appendTerm(StringBuffer buffer, String operator, String term) {
+		if (term == null) {
+			return false;
+		}
+		if (buffer.length() > 0 && operator != null) {
+			buffer.append(operator);
+		}
+		buffer.append(term);
+		return true;
+	}
 	
 	static String buildDGradeField(BigDecimal lon, BigDecimal lat) {
 		String lonS = lon == null ? "null" : lon.toPlainString();
 		String latS = lat == null ? "null" : lat.toPlainString();
 		return "sp_dist_grade(gps_lon, gps_lat, " + lonS + ", " + latS + ")";
 	} 
+}
+
+class Expression {
+	
+	Object op1, op2;
+	String operator;
+	
+	Expression(Object op1, String operator, Object op2) {
+		this.op1 = op1;
+		this.op2 = op2;
+		this.operator = operator;
+	}
+	
+	String genString() {
+		
+		if (op1 == null && op2 == null) {
+			return null;
+		} else if (op1 == null) {
+			return genString(op2, false);
+		} else if (op2 == null) {
+			return genString(op1, false);
+		} else {
+			return genString(op1, true) + operator + genString(op2, true);
+		}
+	}
+	
+	private static String genString(Object op, boolean withBraces) {
+		
+		if (op instanceof String) {
+			return (String) op;
+		} else {
+			if (withBraces) {
+				return "(" + ((Expression) op).genString() + ")";
+			} else {
+				return ((Expression) op).genString();
+			}
+		}
+	}
 }

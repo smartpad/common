@@ -163,7 +163,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	@Override
 	public CatalogItem populate(ResultSet rs) throws SQLException {
 		CatalogItem item = new CatalogItem(rs.getString("branch_id"), rs.getString("store_id"), 
-				rs.getString("catalog_id"), rs.getString("syscat_id"), rs.getString("item_id"));
+				rs.getString("catalog_id"), rs.getString("syscat_id"), rs.getString("parentcat_id"), rs.getString("item_id"));
 		item.setBranchName(rs.getString("branch_name"));
 		item.setCatalogName(rs.getString("cat_name"));
 		if (popNameDescOnly) {
@@ -188,12 +188,13 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			//ICatalogSpec spec = item.catalog.getSystemCatalog().getCatalogSpec();
 			ps = conn.prepareStatement("insert into " + /*CS +*/ spec.getSpecId() + 
-					" set item_id=?, catalog_id=?, syscat_id=?, branch_id=?, store_id=?, branch_name=?, cat_name=?, " + 
+					" set item_id=?, catalog_id=?, syscat_id=?, parentcat_id=?, branch_id=?, store_id=?, branch_name=?, cat_name=?, " + 
 					DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + genSpecFields(spec));
 			int i = 1;
 			ps.setString(i++, itemId);
 			ps.setString(i++, item.getCatalogId());
 			ps.setString(i++, item.getSyscatId());
+			ps.setString(i++, item.getParentCatId());
 			ps.setString(i++, item.getBranchId());
 			ps.setString(i++, item.storeId);
 			ps.setString(i++, item.getBranchName());
@@ -250,7 +251,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			tableSql.append("cluster_id int default null, cluster_rank int default null, ");
 		}
 		tableSql.append("item_id varchar(32) not null, catalog_id varchar(32) NOT NULL, syscat_id varchar(128) not null, " +
-				"store_id varchar(32) NOT NULL, branch_id varchar(32) DEFAULT NULL, " +
+				"parentcat_id varchar(32) NOT NULL, store_id varchar(32) NOT NULL, branch_id varchar(32) DEFAULT NULL, " +
 				"branch_name varchar(2048) DEFAULT NULL, cat_name varchar(2048) NOT NULL, " +
 				"gps_lon float DEFAULT NULL, gps_lat float DEFAULT NULL, gps_inherit varchar(8) default null");
 		for (ICatalogField f : spec.getAllFields()) {
@@ -344,7 +345,8 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			catField = "catalog_id";
 			fromTable = specId;
 		}
-		StringBuffer sql = new StringBuffer("select item_id, catalog_id, syscat_id, store_id, branch_id, gps_lon, gps_lat, branch_name, cat_name, name, descript, " + 
+		StringBuffer sql = new StringBuffer("select item_id, catalog_id, syscat_id, parentcat_id, "
+				+ "store_id, branch_id, gps_lon, gps_lat, branch_name, cat_name, name, descript, " + 
 				DaoSupport.buildDGradeField(lon, lat) + " as dist_grade from " + fromTable + 
 				" where " + DaoSupport.buildConditionLike(catField, catId, recursive) +
 				DaoSupport.buildConditionIfNotNull(" and item_id", "!=", excludeItemId) +

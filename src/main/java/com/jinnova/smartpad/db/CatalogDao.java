@@ -1,6 +1,7 @@
 package com.jinnova.smartpad.db;
 
 import static com.jinnova.smartpad.partner.IDetailManager.CLUSPRE;
+import static com.jinnova.smartpad.db.DaoSupport.*;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -354,12 +355,12 @@ public class CatalogDao implements DbPopulator<Catalog> {
 	public DbIterator<Catalog> iterateCatalogs(String parentCatalogId, String excludeCatId, boolean recursive, int offset, int count) throws SQLException {
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
-		StringBuffer sql = new StringBuffer("select * from catalogs where " + 
-				DaoSupport.buildConditionLike("parent_id", parentCatalogId, recursive) +
-				DaoSupport.buildConditionLike(" or parent_cross_id", parentCatalogId, recursive));
-		
-		sql.append(DaoSupport.buildConditionIfNotNull(" and catalog_id", "!=", excludeCatId));
-		sql.append(DaoSupport.buildLimit(offset, count));
+		StringBuffer sql = new StringBuffer("select * from catalogs");
+		Expression exp = new Expression(buildConditionLike("parent_id", parentCatalogId, recursive), " or ", 
+				buildConditionLike("parent_cross_id", parentCatalogId, recursive));
+		exp = new Expression(exp, " and ", buildConditionIfNotNull2("catalog_id", "!=", excludeCatId));
+		appendTerm(sql, " where ", exp.genString());
+		sql.append(buildLimit(offset, count));
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
 		return new DbIterator<Catalog>(conn, stmt, rs, this);

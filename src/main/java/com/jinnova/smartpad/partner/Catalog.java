@@ -82,7 +82,7 @@ public class Catalog implements ICatalog, Feed {
 		
 		//this is for syscat to have system items
 		String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
-		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, branchName, name.getName(), gps);
+		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, parentCatalogId, branchName, name.getName(), gps);
 	}
 	
 	public void setCreateCatItemClusterTable() {
@@ -231,13 +231,13 @@ public class Catalog implements ICatalog, Feed {
 	
 	public static CachedPagingList<ICatalogItem, ICatalogItemSort> createCatalogItemPagingList(
 			final String branchId, final String storeId, final String catalogId, final String systemCatalogId, 
-			final String branchName, final String catName, final GPSInfo gps) {
+			final String parentCatId, final String branchName, final String catName, final GPSInfo gps) {
 		PageEntrySupport<ICatalogItem, ICatalogItemSort> catalogItemSupport = new PageEntrySupport<ICatalogItem, ICatalogItemSort>() {
 			
 
 			@Override
 			public ICatalogItem newEntryInstance(IUser authorizedUser) {
-				CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, null);
+				CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, parentCatId, null);
 				ci.setBranchName(branchName);
 				ci.setCatalogName(catName);
 				ci.gps.inherit(gps, gps.getInheritFrom());
