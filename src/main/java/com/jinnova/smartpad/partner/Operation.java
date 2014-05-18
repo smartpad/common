@@ -388,8 +388,18 @@ public class Operation implements IOperation, Feed {
 	
 	@Override
 	public JsonObject generateFeedJson(int layoutOptions, HashMap<String, Object> layoutParams) {
+		if ((layoutOptions & LAYOPT_STORE) == LAYOPT_STORE) {
+			return generateFeedJsonStore(layoutOptions, layoutParams);
+		} else {
+			return generateFeedJsonBranch(layoutOptions, layoutParams);
+		}
+	}
+	
+	private JsonObject generateFeedJsonBranch(int layoutOptions, HashMap<String, Object> layoutParams) {
 		JsonObject json = new JsonObject();
-		json.addProperty(FIELD_ID, this.storeId);
+		json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
+		json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
+		/*json.addProperty(FIELD_ID, this.storeId);
 		if (this.storeId.equals(this.branchId)) {
 			json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 			json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
@@ -397,13 +407,42 @@ public class Operation implements IOperation, Feed {
 			json.addProperty(FIELD_TYPE, TYPENAME_STORE);
 			json.addProperty(FIELD_TYPENUM, TYPE_STORE);
 		}
-		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);
+		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);*/
 		//json.addProperty(FIELD_NAME, this.name.getName());
-		
+
+		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
 		String nameCaption = this.name.getName();
+		if ((layoutOptions & LAYOPT_NAMELINK) == LAYOPT_NAMELINK) {
+			nameCaption = makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, nameCaption, null);
+		}
 
 		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {
+			//json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
+			nameCaption += " (" + makeDrillLink(linkPrefix, TYPENAME_SYSCAT, systemCatalogId,
+					PartnerManager.instance.getSystemCatalog(systemCatalogId).getName(), null) + ")";
+		}
+		json.addProperty(FIELD_NAME, nameCaption);
+		
+		if ((layoutOptions & LAYOPT_WITHBRANCH) == LAYOPT_WITHBRANCH) {
+			json.addProperty(FIELD_BRANCHID, this.branchId);
+			json.addProperty(FIELD_BRANCHNAME, this.branchName);
+		}
+		return json;
+	}
+	
+	private JsonObject generateFeedJsonStore(int layoutOptions, HashMap<String, Object> layoutParams) {
+		JsonObject json = new JsonObject();
+		json.addProperty(FIELD_TYPE, TYPENAME_STORE);
+		json.addProperty(FIELD_TYPENUM, TYPE_STORE);
+
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
+		String nameCaption = this.name.getName();
+		if ((layoutOptions & LAYOPT_NAMELINK) == LAYOPT_NAMELINK) {
+			nameCaption = makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, nameCaption, null);
+		}
+
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
 		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {
 			//json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
 			nameCaption += " (" + makeDrillLink(linkPrefix, TYPENAME_SYSCAT, systemCatalogId,
