@@ -46,7 +46,9 @@ public class Catalog implements ICatalog, Feed {
 	
 	public final GPSInfo gps = new GPSInfo();
 	
-	private final Name name = new Name();
+	private String name;
+	
+	private final Name desc = new Name();
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
@@ -78,18 +80,18 @@ public class Catalog implements ICatalog, Feed {
 	
 	public void createPagingLists() {
 		//String syscatId = systemCatalogId;
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps, createCatItemClusterTable);
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name, gps, createCatItemClusterTable);
 		
 		//this is for syscat to have system items
 		String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
-		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, parentCatalogId, branchName, name.getName(), gps);
+		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, parentCatalogId, branchName, name, gps);
 	}
 	
 	public void setCreateCatItemClusterTable() {
 		this.createCatItemClusterTable = true;
 		//String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
 		//String syscatId = systemCatalogId;
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name.getName(), gps, createCatItemClusterTable);
+		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name, gps, createCatItemClusterTable);
 	}
 	
 	/*public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
@@ -134,7 +136,7 @@ public class Catalog implements ICatalog, Feed {
 			@Override
 			public void insert(IUser authorizedUser, ICatalog newMember) throws SQLException {
 				Catalog subCat = (Catalog) newMember;
-				if (subCat.name.getName() == null || "".equals(subCat.name.getName().trim())) {
+				if (subCat.name == null || "".equals(subCat.name.trim())) {
 					throw new RuntimeException("Catalog's name unset");
 				}
 				if (subCat.catalogSpec != null && subCat.systemCatalogId != null) {
@@ -386,17 +388,17 @@ public class Catalog implements ICatalog, Feed {
 
 	@Override
 	public IName getDesc() {
-		return this.name;
+		return this.desc;
 	}
 	
 	@Override
 	public String getName() {
-		return this.name.getName();
+		return this.name;
 	}
 	
 	@Override
 	public void setName(String s) {
-		this.name.setName(s);
+		this.name = s;
 		createPagingLists();
 	}
 
@@ -504,7 +506,7 @@ public class Catalog implements ICatalog, Feed {
 		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
 		
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
-		String nameAndUp = this.name.getName();
+		String nameAndUp = this.name;
 		
 		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT &&
 				!this.branchId.equals(this.parentCatalogId)) {
@@ -552,7 +554,7 @@ public class Catalog implements ICatalog, Feed {
 		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
 		
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
-		String nameAndUp = this.name.getName();
+		String nameAndUp = this.name;
 		
 		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT) {
 			json.addProperty(FIELD_UP_ID, this.parentCatalogId);

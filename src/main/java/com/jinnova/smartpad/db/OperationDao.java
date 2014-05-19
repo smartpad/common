@@ -36,7 +36,8 @@ public class OperationDao implements DbPopulator<Operation> {
 		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
 				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);
 		oper.setBranchName(rs.getString("branch_name"));
-		DaoSupport.populateName(rs, (Name) oper.getDesc());
+		oper.setName(rs.getString("name"));
+		DaoSupport.populateDesc(rs, (Name) oper.getDesc());
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		//DaoSupport.populateGps(rs, oper.gps);
 		//oper.getOpenHours().setText(rs.getString("open_text"));
@@ -162,7 +163,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("insert into operations set branch_id=?, store_id=?, " + 
-					DaoSupport.NAME_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS);
+					DaoSupport.DESC_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS);
 			Operation op = (Operation) operation;
 			int i = 1;
 			ps.setString(i++, branchId);
@@ -186,7 +187,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update operations set " + DaoSupport.NAME_FIELDS + ", " + 
+			ps = conn.prepareStatement("update operations set " + DaoSupport.DESC_FIELDS + ", " + 
 					DaoSupport.RECINFO_FIELDS + ", " + OP_FIELDS + " where store_id = ?");
 			Operation op = (Operation) operation;
 			int i = 1;
@@ -206,12 +207,13 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 	
 	//TODO update store syscat / promotion syscat on changing in branch/store
-	private static final String OP_FIELDS = "branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " +
+	private static final String OP_FIELDS = "name=?, branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " +
 			"phone=?, email=?, address=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
-		i = DaoSupport.setNameFields(ps, (Name) op.getDesc(), i);
+		i = DaoSupport.setDescFields(ps, (Name) op.getDesc(), i);
 		i = DaoSupport.setRecinfoFields(ps, op.getRecordInfo(), i);
+		ps.setString(i++, op.getName());
 		ps.setString(i++, op.getBranchName());
 		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
 		ps.setString(i++, op.getOpenHours().writeJson().toString());

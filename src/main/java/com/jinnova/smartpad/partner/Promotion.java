@@ -26,7 +26,9 @@ public class Promotion implements IPromotion, Feed {
 	
 	public final String syscatId;
 	
-	private final Name name = new Name();
+	private String name;
+	
+	private final Name desc = new Name();
 	
 	public final GPSInfo gps = new GPSInfo();
 	
@@ -142,17 +144,17 @@ public class Promotion implements IPromotion, Feed {
 
 	@Override
 	public IName getDesc() {
-		return name;
+		return desc;
 	}
 	
 	@Override
 	public String getName() {
-		return this.name.getName();
+		return this.name;
 	}
 	
 	@Override
 	public void setName(String s) {
-		this.name.setName(s);
+		this.name = s;
 	}
 
 	@Override
@@ -178,7 +180,7 @@ public class Promotion implements IPromotion, Feed {
 		json.addProperty(FIELD_ID, this.promotionId);
 		json.addProperty(FIELD_TYPE, IDetailManager.TYPENAME_PROMO);
 		json.addProperty(FIELD_TYPENUM, IDetailManager.TYPE_PROMO);
-		json.addProperty(FIELD_NAME, name.getName());
+		json.addProperty(FIELD_NAME, name);
 		return json;
 	}
 }

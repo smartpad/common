@@ -7,19 +7,19 @@ import com.jinnova.smartpad.IName;
 
 public class Name implements IName {
 	
-	private String name;
+	//private String name;
 	
 	private String description;
 	
 	private final LinkedList<String> images = new LinkedList<String>();
 
-	public String getName() {
+	/*public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
-	}
+	}*/
 
 	@Override
 	public String getDescription() {

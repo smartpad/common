@@ -39,7 +39,9 @@ public class Operation implements IOperation, Feed {
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
-	private final Name name = new Name();
+	private String name;
+	
+	private final Name desc = new Name();
 	
 	public final GPSInfo gps = new GPSInfo();
 
@@ -285,21 +287,21 @@ public class Operation implements IOperation, Feed {
 
 	@Override
 	public IName getDesc() {
-		return name;
+		return desc;
 	}
 	
 	@Override
 	public String getName() {
-		return name.getName();
+		return name;
 	}
 	
 	@Override
 	public void setName(String name) {
-		this.name.setName(name);
+		this.name = name;
 		if (this.branch) {
 			this.branchName = name;
-			createRootCatalog();
 		}
+		createRootCatalog();
 	}
 	
 	public void setBranchName(String bn) {
@@ -411,7 +413,7 @@ public class Operation implements IOperation, Feed {
 		//json.addProperty(FIELD_NAME, this.name.getName());
 
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
-		String nameCaption = this.name.getName();
+		String nameCaption = this.name;
 		if ((layoutOptions & LAYOPT_NAMELINK) == LAYOPT_NAMELINK) {
 			nameCaption = makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, nameCaption, null);
 		}
@@ -454,7 +456,7 @@ public class Operation implements IOperation, Feed {
 			json.addProperty(FIELD_BRANCHNAME, branchCaption);
 		}
 
-		String nameCaption = this.name.getName();
+		String nameCaption = this.name;
 		if ((layoutOptions & LAYOPT_NAMELINK) == LAYOPT_NAMELINK) {
 			nameCaption = makeDrillLink(linkPrefix, TYPENAME_STORE, this.storeId, nameCaption, null);
 		}

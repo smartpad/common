@@ -94,12 +94,13 @@ public class MemberDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("insert into members set member_id=?, oper_id=?, branch_id=?, " +
-					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+			ps = conn.prepareStatement("insert into members set member_id=?, oper_id=?, branch_id=?, name=?, " +
+					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.DESC_FIELDS);
 			int i = 1;
 			ps.setString(i++, memberId);
 			ps.setString(i++, operationId);
 			ps.setString(i++, branchId);
+			ps.setString(i++, t.getName());
 			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
@@ -118,9 +119,10 @@ public class MemberDao {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update members set " + DaoSupport.RECINFO_FIELDS + ", " + 
-					DaoSupport.NAME_FIELDS + " where member_id=?");
+			ps = conn.prepareStatement("update members set name=?, " + DaoSupport.RECINFO_FIELDS + ", " + 
+					DaoSupport.DESC_FIELDS + " where member_id=?");
 			int i = 1;
+			ps.setString(i++, t.getName());
 			i = DaoSupport.setRecinfoFields(ps, t.getRecordInfo(), i);
 			ps.setString(i++, memberId);
 			System.out.println("SQL: " + ps);

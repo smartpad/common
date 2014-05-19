@@ -157,8 +157,9 @@ public class CatalogDao implements DbPopulator<Catalog> {
 				rs.getString("catalog_id"), rs.getString("parent_id"), rs.getString("syscat_id"));
 		cat.setBranchName(rs.getString("branch_name"));
 		cat.setParentCatName(rs.getString("parent_name"));
+		cat.setName(rs.getString("name"));
 		DaoSupport.populateGps(rs, cat.gps);
-		DaoSupport.populateName(rs, (Name) cat.getDesc());
+		DaoSupport.populateDesc(rs, (Name) cat.getDesc());
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
 		String spec = rs.getString("spec");
 		if (specParser != null && spec != null) {
@@ -200,7 +201,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			}
 			
 			ps = conn.prepareStatement("insert into catalogs set catalog_id=?, partial_id=?, parent_id=?, branch_id=?, store_id=?, syscat_id=?, " +
-					"branch_name=?, parent_name=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+					"branch_name=?, parent_name=?, name=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.DESC_FIELDS);
 			rollbackable = true;
 			int i = 1;
 			ps.setString(i++, catalogIdGen[0]);
@@ -211,11 +212,12 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(i++, cat.getSystemCatalogId());
 			ps.setString(i++, cat.getBranchName());
 			ps.setString(i++, cat.getParentCatName());
+			ps.setString(i++, cat.getName());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpecUnresoved();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, (Name) cat.getDesc(), i);
+			i = DaoSupport.setDescFields(ps, (Name) cat.getDesc(), i);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();
 			
@@ -267,16 +269,17 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update catalogs set syscat_id=?, branch_name=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " +
-					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS + " where catalog_id=?");
+			ps = conn.prepareStatement("update catalogs set syscat_id=?, branch_name=?, name=?, spec=?, " + DaoSupport.GPS_FIELDS + ", " +
+					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.DESC_FIELDS + " where catalog_id=?");
 			int i = 1;
 			ps.setString(i++, cat.getSystemCatalogId());
 			ps.setString(i++, cat.getBranchName());
+			ps.setString(i++, cat.getName());
 			CatalogSpec spec = (CatalogSpec) cat.getCatalogSpecUnresoved();
 			ps.setString(i++, spec == null ? null : spec.toJson().toString());
 			i = DaoSupport.setGpsFields(ps, cat.gps, i);
 			i = DaoSupport.setRecinfoFields(ps, cat.getRecordInfo(), i);
-			i = DaoSupport.setNameFields(ps, (Name) cat.getDesc(), i);
+			i = DaoSupport.setDescFields(ps, (Name) cat.getDesc(), i);
 			ps.setString(i++, catalogId);
 			System.out.println("SQL: " + ps);
 			ps.executeUpdate();

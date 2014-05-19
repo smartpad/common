@@ -15,17 +15,17 @@ import com.jinnova.smartpad.partner.StringArrayUtils;
 
 class DaoSupport {
 
-	static final String NAME_FIELDS = "name=?, descript=?, images=?";
+	static final String DESC_FIELDS = "descript=?, images=?";
 	
-	static int setNameFields(PreparedStatement ps, Name name, int i) throws SQLException {
-		ps.setString(i++, name.getName());
+	static int setDescFields(PreparedStatement ps, Name name, int i) throws SQLException {
+		//ps.setString(i++, name.getName());
 		ps.setString(i++, name.getDescription());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(name.getImages()));
 		return i;
 	}
 	
-	static void populateName(ResultSet rs, Name name) throws SQLException {
-		name.setName(rs.getString("name"));
+	static void populateDesc(ResultSet rs, Name name) throws SQLException {
+		//name.setName(rs.getString("name"));
 		name.setDescription(rs.getString("descript"));
 		name.setImages(StringArrayUtils.stringArrayFromJson(rs.getString("images")));
 	}

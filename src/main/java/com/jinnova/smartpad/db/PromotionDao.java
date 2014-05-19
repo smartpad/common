@@ -129,6 +129,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 	@Override
 	public Promotion populate(ResultSet rs) throws SQLException {
 		Promotion promo = new Promotion(rs.getString("promo_id"), rs.getString("branch_id"), rs.getString("store_id"), rs.getString("syscat_id"));
+		promo.setName(rs.getString("name"));
 		promo.setRequiredMemberLevel(rs.getInt("member_level"));
 		promo.setRequiredMemberPoint(rs.getInt("member_point"));
 		promo.readCCardOptions(JsonSupport.parseJsonArray(parser, rs.getString("ccard_req")));
@@ -136,7 +137,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		
 		DaoSupport.populateGps(rs, promo.gps);
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
-		DaoSupport.populateName(rs, (Name) promo.getDesc());
+		DaoSupport.populateDesc(rs, (Name) promo.getDesc());
 		return promo;
 	}
 
@@ -146,7 +147,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("insert into promos set promo_id=?, branch_id=?, store_id=?, syscat_id=?, " +
-					FIELDS + ", " + DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS);
+					FIELDS + ", " + DaoSupport.GPS_FIELDS + ", " + DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.DESC_FIELDS);
 			int i = 1;
 			ps.setString(i++, promotionId);
 			ps.setString(i++, branchId);
@@ -165,16 +166,17 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		}
 	}
 	
-	private static final String FIELDS =  "member_level=?, member_point=?, ccard_req=?, schedule=?";
+	private static final String FIELDS =  "name=?, member_level=?, member_point=?, ccard_req=?, schedule=?";
 	
 	private int setFields(int i, Promotion p, PreparedStatement ps) throws SQLException {
+		ps.setString(i++, p.getName());
 		ps.setInt(i++, p.getRequiredMemberLevel());
 		ps.setInt(i++, p.getRequiredMemberPoint());
 		ps.setString(i++, p.getCCardOptionsJson());
 		ps.setString(i++, p.getSchedule().writeJson());
 		i = DaoSupport.setGpsFields(ps, p.gps, i);
 		i = DaoSupport.setRecinfoFields(ps, p.getRecordInfo(), i);
-		i = DaoSupport.setNameFields(ps, (Name) p.getDesc(), i);
+		i = DaoSupport.setDescFields(ps, (Name) p.getDesc(), i);
 		return i;
 	}
 
@@ -183,8 +185,8 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		PreparedStatement ps = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("update promos set " + DaoSupport.GPS_FIELDS + ", " + 
-					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.NAME_FIELDS + " where promo_id=?");
+			ps = conn.prepareStatement("update promos set " + FIELDS + ", " + DaoSupport.GPS_FIELDS + ", " + 
+					DaoSupport.RECINFO_FIELDS + ", " + DaoSupport.DESC_FIELDS + " where promo_id=?");
 			int i = 1;
 			i = setFields(i, t, ps);
 			ps.setString(i++, promotionId);

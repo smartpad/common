@@ -19,4 +19,15 @@ public class CatalogTest extends TestCase {
         newCat.setName("test");
         paging.put(u, newCat);
 	}
+	
+	public void testBranchRootCat() throws SQLException {
+		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "");
+        IUser u = SmartpadCommon.partnerManager.login("lotte", "lotte");
+        ICatalog rootCat = u.getBranch().getRootCatalog();
+        assertNotNull(rootCat);
+        assertNotNull(rootCat.getName());
+        String s = u.getBranch().getRootCatalog().getSystemCatalog().getName();
+        System.out.println(s);
+        assertNotNull(s);
+	}
 }
