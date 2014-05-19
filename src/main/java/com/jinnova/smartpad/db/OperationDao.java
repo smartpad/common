@@ -155,7 +155,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 
-	public void createOperation(String operId, String branchId, Operation operation) throws SQLException {
+	public void insertOperation(String operId, String branchId, Operation operation) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -206,7 +206,8 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 	
 	//TODO update store syscat / promotion syscat on changing in branch/store
-	private static final String OP_FIELDS = "branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " + DaoSupport.GPS_FIELDS;
+	private static final String OP_FIELDS = "branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " +
+			"phone=?, email=?, address=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
 		i = DaoSupport.setNameFields(ps, (Name) op.getDesc(), i);
@@ -215,6 +216,9 @@ public class OperationDao implements DbPopulator<Operation> {
 		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
 		ps.setString(i++, op.getOpenHours().writeJson().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));
+		ps.setString(i++, op.getPhone());
+		ps.setString(i++, op.getEmail());
+		ps.setString(i++, op.getAddressLines());
 		i = DaoSupport.setGpsFields(ps, op.gps, i);
 		return i;
 	}

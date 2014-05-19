@@ -93,7 +93,7 @@ public class User implements IUser {
 				}
 				String newId = SmartpadCommon.md5(branchId +  op.getName());
 				op.setId(newId);
-				new OperationDao().createOperation(newId, branchId, op);
+				new OperationDao().insertOperation(newId, branchId, op);
 			}
 
 			@Override
@@ -189,7 +189,7 @@ public class User implements IUser {
 			branch.setId(this.branch.getBranchId());
 			branch.getRecordInfo().setCreateDate(new Date());
 			branch.getRecordInfo().setCreateBy(this.login);
-			new OperationDao().createOperation(this.branch.getBranchId(), branch.getId(), branch);
+			new OperationDao().insertOperation(this.branch.getBranchId(), branch.getId(), branch);
 		}
 	}
 	

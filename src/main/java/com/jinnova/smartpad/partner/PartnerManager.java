@@ -157,7 +157,7 @@ public class PartnerManager implements IPartnerManager {
 		branch.getRootCatalog().setSystemCatalogId(systemRootCatalog.getId());
 		branch.getRecordInfo().setCreateBy(login);
 		branch.getRecordInfo().setCreateDate(new Date());
-		new OperationDao().createOperation(login, login, branch);
+		new OperationDao().insertOperation(login, login, branch);
 		branch.setId(login);
 		u.setBranch(branch);
 		return u;
@@ -168,7 +168,7 @@ public class PartnerManager implements IPartnerManager {
 		unmanagedBranch.getRecordInfo().setCreateBy(PartnerManager.instance.systemUser.getLogin());
 		unmanagedBranch.getRecordInfo().setCreateDate(new Date());
 		unmanagedBranch.setName(branchName);
-		new OperationDao().createOperation(unmanagedBranchId, unmanagedBranchId, unmanagedBranch);
+		new OperationDao().insertOperation(unmanagedBranchId, unmanagedBranchId, unmanagedBranch);
 		unmanagedBranch.setId(unmanagedBranchId);
 		return unmanagedBranch;
 	}
