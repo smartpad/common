@@ -1,5 +1,8 @@
 package com.jinnova.smartpad;
 
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,5 +129,17 @@ public class JsonSupport {
 			array[i] = ja.get(i).getAsInt();
 		}
 		return array;
+	}
+	
+	public static BufferedImage scale(BufferedImage source, double fWidth, double fHeight) {
+		BufferedImage dest = null;
+		if (source != null) {
+			AffineTransform at = AffineTransform.getScaleInstance(fWidth, fHeight);
+			dest = new BufferedImage((int) (source.getWidth() * fWidth),
+					(int) (source.getHeight() * fHeight), source.getType());
+			Graphics2D g = dest.createGraphics();
+			g.drawRenderedImage(source, at);
+		}
+		return dest;
 	}
 }
