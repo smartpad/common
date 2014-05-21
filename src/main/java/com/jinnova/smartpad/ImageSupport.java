@@ -5,20 +5,61 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
 public class ImageSupport {
 	
 	private static final int[] WIDTHS = new int[] {50, 100, 200};
+	
+	private static String rootInQueue = "imaging/in-queue/";
+	private static String rootOut = "imaging/root/";
 
 	public static void main(String[] args) throws IOException {
-		new ImageSupport().resize(new File("imaging/in-queue"), new File("imaging/root"));
+		File rootInQueueFile = new File(rootInQueue);
+		File rootOutFile = new File(rootOut);
+		System.out.println("Imaging from " + rootInQueueFile.getAbsolutePath() + " to " + rootOutFile.getAbsolutePath());
+		new ImageSupport().resize(rootInQueueFile, rootOutFile);
 	}
 	
-	public void resize(String sourceRootFolder, String destRootFolder) {
+	public static void initialize(String rootInQueue, String rootOut) {
+		if (!rootInQueue.endsWith("/")) {
+			rootInQueue += "/";
+		}
+		if (!rootOut.endsWith("/")) {
+			rootOut += "/";
+		}
+		ImageSupport.rootInQueue = rootInQueue;
+		ImageSupport.rootOut = rootOut;
+	}
+	
+	public void queueIn(String typeName, String subTypeName, String entityId, String imageId, InputStream inputStream) throws IOException {
 		
+		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
+		File folder = new File(rootInQueue + typeName + subTypePath + "/" + entityId + "/");
+		folder.mkdirs();
+		FileOutputStream fos = new FileOutputStream(new File(folder, imageId + ".png"));
+		byte[] bytes = new byte[1024];
+		while (true) {
+			int count = inputStream.read(bytes);
+			if (count < 0) {
+				break;
+			}
+			fos.write(bytes, 0, count);
+		}
+	}
+	
+	public BufferedImage getImage(String typeName, String subTypeName, String entityId, String imageId, int size) throws IOException {
+		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
+		File f = new File(rootOut + typeName + subTypePath + "/" + entityId + "/sizes/" + imageId + "_" + size + ".png");
+		return ImageIO.read(f);
+	}
+	
+	public void resize(String sourceRootFolder, String destRootFolder) throws IOException {
+		resize(new File(sourceRootFolder), new File(destRootFolder));
 	}
 	
 	private void resize(File sourceFolder, File destFolder) throws IOException {
@@ -48,10 +89,10 @@ public class ImageSupport {
 			if (index > -1) {
 				destFileName = destFileName.substring(0, index);
 			}
-			destFileName = destFileName + "_" + expectedWidth + ".jpg";
-			ImageIO.write(scaled, "jpg", new File(sizesFolder, destFileName));
+			destFileName = destFileName + "_" + expectedWidth + ".png";
+			ImageIO.write(scaled, "png", new File(sizesFolder, destFileName));
 		}
-		ImageIO.write(sourceImage, "jpg", new File(destFolder, sourceFile.getName()));
+		ImageIO.write(sourceImage, "png", new File(destFolder, sourceFile.getName()));
 		sourceFile.delete();
 	}
 	

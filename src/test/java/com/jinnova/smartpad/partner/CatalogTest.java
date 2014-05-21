@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 public class CatalogTest extends TestCase {
 
 	public void testCreateSub() throws SQLException {
-        SmartpadCommon.initialize("localhost", null, "smartpad", "root", "");
+        SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
         IUser u = SmartpadCommon.partnerManager.login("lotte", "lotte");
         IPagingList<ICatalog, ICatalogSort> paging = u.getBranch().getRootCatalog().getSubCatalogPagingList();
         ICatalog[] cats = paging.loadPage(u, 1).getPageEntries();
@@ -21,7 +21,7 @@ public class CatalogTest extends TestCase {
 	}
 	
 	public void testBranchRootCat() throws SQLException {
-		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "");
+		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
         IUser u = SmartpadCommon.partnerManager.login("lotte", "lotte");
         ICatalog rootCat = u.getBranch().getRootCatalog();
         assertNotNull(rootCat);

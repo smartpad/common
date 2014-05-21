@@ -2,6 +2,9 @@ package com.jinnova.smartpad.partner;
 
 import static com.jinnova.smartpad.partner.IDetailManager.SYSTEM_BRANCH_ID;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
@@ -10,6 +13,7 @@ import java.util.LinkedList;
 
 import com.jinnova.smartpad.CachedPagingList;
 import com.jinnova.smartpad.IPagingList;
+import com.jinnova.smartpad.ImageSupport;
 import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.db.OperationDao;
@@ -113,8 +117,11 @@ public class PartnerManager implements IPartnerManager {
 		systemRootCatalog.setName("");
 	}
 	
-	public static void initialize(String dbhost, String dbport, String dbname, String dblogin, String dbpass) throws SQLException {
+	public static void initialize(String dbhost, String dbport, String dbname, String dblogin, String dbpass, 
+			String imageInQueuePath, String imageOutRoot) throws SQLException {
+		
 		SmartpadConnectionPool.initialize(dblogin, dbpass,  ScriptRunner.makeDburl(dbhost, dbport, dbname));
+		ImageSupport.initialize(imageInQueuePath, imageOutRoot);
 		instance = new PartnerManager();
 		loadSyscatsInitially();
 	}
@@ -220,6 +227,18 @@ public class PartnerManager implements IPartnerManager {
 	
 	public LinkedList<Catalog> getSystemSubCatalog(String parentCatId) {
 		return systemSubCatMap.get(parentCatId);
+	}
+
+	@Override
+	public void setImage(String typeName, String subTypeName, String entityId, String imageId, InputStream image) throws IOException {
+		new ImageSupport().queueIn(typeName, subTypeName, entityId, imageId, image);
+	}
+
+	@Override
+	public BufferedImage getImage(String typeName, String subTypeName,
+			String entityId, String imageId, int size) throws IOException {
+		
+		return new ImageSupport().getImage(typeName, subTypeName, entityId, imageId, size);
 	}
 	
 	/*public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {

@@ -401,8 +401,8 @@ public class Operation implements IOperation, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 		json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
-		/*json.addProperty(FIELD_ID, this.storeId);
-		if (this.storeId.equals(this.branchId)) {
+		json.addProperty(FIELD_ID, this.storeId);
+		/*if (this.storeId.equals(this.branchId)) {
 			json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 			json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
 		} else {
