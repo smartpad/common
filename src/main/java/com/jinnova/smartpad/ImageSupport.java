@@ -55,6 +55,10 @@ public class ImageSupport {
 	public BufferedImage getImage(String typeName, String subTypeName, String entityId, String imageId, int size) throws IOException {
 		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
 		File f = new File(rootOut + typeName + subTypePath + "/" + entityId + "/sizes/" + imageId + "_" + size + ".png");
+		if (!f.exists()) {
+			System.out.println("Image not exists: " + f.getAbsolutePath());
+			return null;
+		}
 		return ImageIO.read(f);
 	}
 	
