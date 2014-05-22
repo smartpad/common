@@ -401,7 +401,7 @@ public class Operation implements IOperation, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 		json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
-		json.addProperty(FIELD_ID, this.storeId);
+		json.addProperty(FIELD_ID, this.branchId);
 		/*if (this.storeId.equals(this.branchId)) {
 			json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 			json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
@@ -437,6 +437,7 @@ public class Operation implements IOperation, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_TYPE, TYPENAME_STORE);
 		json.addProperty(FIELD_TYPENUM, TYPE_STORE);
+		json.addProperty(FIELD_ID, this.storeId);
 
 		String syscatCaption = null;
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);

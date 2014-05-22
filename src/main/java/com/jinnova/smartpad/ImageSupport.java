@@ -15,6 +15,8 @@ public class ImageSupport {
 	
 	private static final int[] WIDTHS = new int[] {50, 100, 200};
 	
+	//private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+	
 	private static String rootInQueue = "imaging/in-queue/";
 	private static String rootOut = "imaging/root/";
 
@@ -36,6 +38,16 @@ public class ImageSupport {
 		ImageSupport.rootOut = rootOut;
 	}
 	
+	public BufferedImage getImage(String typeName, String subTypeName, String entityId, String imageId, int size) throws IOException {
+		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
+		File f = new File(rootOut + typeName + subTypePath + "/" + entityId + "/sizes/" + imageId + "_" + size + ".png");
+		if (!f.exists()) {
+			System.out.println("Image not exists: " + f.getAbsolutePath());
+			return null;
+		}
+		return ImageIO.read(f);
+	}
+	
 	public void queueIn(String typeName, String subTypeName, String entityId, String imageId, InputStream inputStream) throws IOException {
 		
 		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
@@ -52,19 +64,9 @@ public class ImageSupport {
 		}
 	}
 	
-	public BufferedImage getImage(String typeName, String subTypeName, String entityId, String imageId, int size) throws IOException {
-		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
-		File f = new File(rootOut + typeName + subTypePath + "/" + entityId + "/sizes/" + imageId + "_" + size + ".png");
-		if (!f.exists()) {
-			System.out.println("Image not exists: " + f.getAbsolutePath());
-			return null;
-		}
-		return ImageIO.read(f);
-	}
-	
-	public void resize(String sourceRootFolder, String destRootFolder) throws IOException {
+	/*public void resize(String sourceRootFolder, String destRootFolder) throws IOException {
 		resize(new File(sourceRootFolder), new File(destRootFolder));
-	}
+	}*/
 	
 	private void resize(File sourceFolder, File destFolder) throws IOException {
 		for (File f : sourceFolder.listFiles()) {
@@ -93,8 +95,10 @@ public class ImageSupport {
 			if (index > -1) {
 				destFileName = destFileName.substring(0, index);
 			}
-			destFileName = destFileName + "_" + expectedWidth + ".png";
-			ImageIO.write(scaled, "png", new File(sizesFolder, destFileName));
+			destFileName = destFileName + "_" + expectedWidth;
+			ImageIO.write(scaled, "png", new File(sizesFolder, destFileName + ".png"));
+			//File timestamp = new File(sizesFolder, destFileName + "_" + dateFormat.format(new Date()) + ".ts");
+			//timestamp.createNewFile();
 		}
 		ImageIO.write(sourceImage, "png", new File(destFolder, sourceFile.getName()));
 		sourceFile.delete();
