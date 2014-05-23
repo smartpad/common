@@ -41,7 +41,7 @@ public class Operation implements IOperation, Feed {
 	
 	private String name;
 	
-	private final Name desc = new Name();
+	private final Name desc;
 	
 	public final GPSInfo gps = new GPSInfo();
 
@@ -97,6 +97,7 @@ public class Operation implements IOperation, Feed {
 	//private Integer memberOfferedSurveyLevel;
 
 	public Operation(String storeId, String branchId, String systemCatalogId, BigDecimal gpsLon, BigDecimal gpsLat, String gpsInherit, boolean branch) {
+		
 		this.storeId = storeId;
 		this.branchId = branchId;
 		this.gps.setLongitude(gpsLon);
@@ -105,6 +106,12 @@ public class Operation implements IOperation, Feed {
 		
 		this.systemCatalogId = systemCatalogId;
 		this.branch = branch;
+
+		if (branch) {
+			desc = new Name(TYPENAME_BRANCH, null, this.branchId);
+		} else {
+			desc = new Name(TYPENAME_STORE, null, this.storeId);
+		}
 		createRootCatalog();
 		
 		this.promotions = createPromotionPagingList(branchId, storeId, this.systemCatalogId, gps);
@@ -402,6 +409,13 @@ public class Operation implements IOperation, Feed {
 		json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 		json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
 		json.addProperty(FIELD_ID, this.branchId);
+		
+		JsonObject imageJson = new JsonObject();
+		json.add(FIELD_IMAGE, imageJson);
+		String img = desc.getImage(IMG_LOGO_SQUARE, 50);
+		if (img != null) {
+			imageJson.addProperty(IMG_LOGO_SQUARE, img);
+		}
 		/*if (this.storeId.equals(this.branchId)) {
 			json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 			json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);

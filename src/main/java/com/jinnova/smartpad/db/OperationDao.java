@@ -22,13 +22,13 @@ public class OperationDao implements DbPopulator<Operation> {
 	
 	private boolean populateBranch;
 	
-	private JsonParser parser;
+	private JsonParser parser = new JsonParser();
 	
 	@Override
 	public void preparePopulating() {
-		if (parser == null) {
+		/*if (parser == null) {
 			parser = new JsonParser();
-		}
+		}*/
 	}
 	
 	@Override
@@ -37,7 +37,7 @@ public class OperationDao implements DbPopulator<Operation> {
 				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);
 		oper.setBranchName(rs.getString("branch_name"));
 		oper.setName(rs.getString("name"));
-		DaoSupport.populateDesc(rs, (Name) oper.getDesc());
+		DaoSupport.populateDesc(rs, (Name) oper.getDesc(), parser);
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		//DaoSupport.populateGps(rs, oper.gps);
 		//oper.getOpenHours().setText(rs.getString("open_text"));
@@ -63,7 +63,6 @@ public class OperationDao implements DbPopulator<Operation> {
 			if (!rs.next()) {
 				return null;
 			}
-			parser = new JsonParser();
 			populateBranch = true;
 			return populate(rs);
 		} finally {
@@ -110,7 +109,6 @@ public class OperationDao implements DbPopulator<Operation> {
 			rs = ps.executeQuery();
 			LinkedList<IOperation> opList = new LinkedList<IOperation>();
 			populateBranch = false;
-			parser = new JsonParser();
 			while (rs.next()) {
 				opList.add(populate(rs));
 			}
@@ -259,6 +257,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		Statement stmt = conn.createStatement();
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
+		this.populateBranch = false;
 		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
@@ -272,6 +271,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
+		this.populateBranch = true;
 		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 

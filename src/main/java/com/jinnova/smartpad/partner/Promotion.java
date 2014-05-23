@@ -28,7 +28,7 @@ public class Promotion implements IPromotion, Feed {
 	
 	private String name;
 	
-	private final Name desc = new Name();
+	private final Name desc;
 	
 	public final GPSInfo gps = new GPSInfo();
 	
@@ -49,6 +49,7 @@ public class Promotion implements IPromotion, Feed {
 		this.branchId = branchId;
 		this.storeId = storeId;
 		this.syscatId = syscatId;
+		desc = new Name(TYPENAME_PROMO, null, this.promotionId);
 	}
 
 	@Override

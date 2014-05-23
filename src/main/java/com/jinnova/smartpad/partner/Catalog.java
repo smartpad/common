@@ -48,7 +48,7 @@ public class Catalog implements ICatalog, Feed {
 	
 	private String name;
 	
-	private final Name desc = new Name();
+	private final Name desc;
 	
 	private final RecordInfo recordInfo = new RecordInfo();
 	
@@ -69,6 +69,8 @@ public class Catalog implements ICatalog, Feed {
 		this.storeId = storeId;
 		this.catalogId = catalogId;
 		this.parentCatalogId = parentCatalogId;
+		desc = new Name(TYPENAME_CAT, null, this.catalogId);
+		
 		if (systemCatalogId == null) {
 			this.catalogSpec = new CatalogSpec();
 		} else {

@@ -24,7 +24,9 @@ import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class CatalogDao implements DbPopulator<Catalog> {
 	
-	private JsonParser specParser;
+	private JsonParser parser = new JsonParser();
+	
+	private boolean loadSpec = false;
 	
 	/*public CatalogDao() {
 		this(true);
@@ -69,15 +71,16 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
+		this.loadSpec = loadSpec;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("select * from catalogs where catalog_id = ?");
 			ps.setString(1, catId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
-			if (loadSpec) {
+			/*if (loadSpec) {
 				specParser = new JsonParser();
-			}
+			}*/
 			if (!rs.next()) {
 				return null;
 			}
@@ -96,7 +99,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 	}
 
 	public LinkedList<ICatalog> loadSubCatalogs(String parentId, int offset,
-			int pageSize, ICatalogSort sortField, boolean ascending, boolean parseSpec) throws SQLException {
+			int pageSize, ICatalogSort sortField, boolean ascending, boolean loadSpec) throws SQLException {
 		
 		String fieldName;
 		if (sortField == ICatalogSort.createBy) {
@@ -123,10 +126,10 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			ps.setString(1, parentId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
-			
-			if (parseSpec) {
+			this.loadSpec = loadSpec;
+			/*if (parseSpec) {
 				specParser = new JsonParser();
-			}
+			}*/
 			LinkedList<ICatalog> subCatalogs = new LinkedList<ICatalog>();
 			while (rs.next()) {
 				Catalog cat = populate(rs);
@@ -159,15 +162,17 @@ public class CatalogDao implements DbPopulator<Catalog> {
 		cat.setParentCatName(rs.getString("parent_name"));
 		cat.setName(rs.getString("name"));
 		DaoSupport.populateGps(rs, cat.gps);
-		DaoSupport.populateDesc(rs, (Name) cat.getDesc());
+		DaoSupport.populateDesc(rs, (Name) cat.getDesc(), parser);
 		DaoSupport.populateRecinfo(rs, cat.getRecordInfo());
-		String spec = rs.getString("spec");
-		if (specParser != null && spec != null) {
-			JsonObject json = specParser.parse(spec).getAsJsonObject();
-			cat.populateSpec(json);
-			
-			json = JsonSupport.parseJsonObject(specParser, rs.getString("segments"));
-			cat.populateSegments(json);
+		if (loadSpec) {
+			String spec = rs.getString("spec");
+			if (spec != null) {
+				JsonObject json = parser.parse(spec).getAsJsonObject();
+				cat.populateSpec(json);
+				
+				json = JsonSupport.parseJsonObject(parser, rs.getString("segments"));
+				cat.populateSegments(json);
+			}
 		}
 		cat.createPagingLists(); //TODO do this more properly?
 		return cat;

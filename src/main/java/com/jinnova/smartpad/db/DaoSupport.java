@@ -7,11 +7,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.jinnova.smartpad.Name;
 import com.jinnova.smartpad.RecordInfo;
 import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IRecordInfo;
-import com.jinnova.smartpad.partner.StringArrayUtils;
 
 class DaoSupport {
 
@@ -20,14 +21,20 @@ class DaoSupport {
 	static int setDescFields(PreparedStatement ps, Name name, int i) throws SQLException {
 		//ps.setString(i++, name.getName());
 		ps.setString(i++, name.getDescription());
-		ps.setString(i++, StringArrayUtils.stringArrayToJson(name.getImages()));
+		ps.setString(i++, name.getImagesJson());
 		return i;
 	}
 	
-	static void populateDesc(ResultSet rs, Name name) throws SQLException {
+	static void populateDesc(ResultSet rs, Name name, JsonParser parser) throws SQLException {
 		//name.setName(rs.getString("name"));
 		name.setDescription(rs.getString("descript"));
-		name.setImages(StringArrayUtils.stringArrayFromJson(rs.getString("images")));
+		String s = rs.getString("images");
+		if (s != null) {
+			JsonElement je = parser.parse(s);
+			if (je != null && !je.isJsonNull() && je.isJsonObject()) {
+				name.populate(je.getAsJsonObject());
+			}
+		}
 	}
 
 	static final String RECINFO_FIELDS = "create_date=?, update_date=?, create_by=?, update_by=?";

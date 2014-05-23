@@ -120,13 +120,40 @@ public class JsonSupport {
 			return null;
 		}
 		JsonElement je = json.get(memberName);
-		if (je == null || je.isJsonNull()) {
+		if (je == null || je.isJsonNull() || !je.isJsonArray()) {
 			return null;
 		}
+		
 		JsonArray ja = je.getAsJsonArray();
 		int[] array = new int[ja.size()];
 		for (int i = 0; i < ja.size(); i++) {
 			array[i] = ja.get(i).getAsInt();
+		}
+		return array;
+	}
+
+	public static String[] toArrayString(JsonObject json, String memberName) {
+		if (json == null) {
+			return null;
+		}
+		JsonElement je = json.get(memberName);
+		if (je == null || je.isJsonNull()) {
+			return null;
+		}
+		if (!je.isJsonArray()) {
+			return null;
+		}
+		JsonArray ja = je.getAsJsonArray();
+		String[] array = new String[ja.size()];
+		for (int i = 0; i < ja.size(); i++) {
+			je = ja.get(i);
+			if (je == null || je.isJsonNull()) {
+				continue;
+			}
+			if (!je.isJsonPrimitive()) {
+				continue;
+			}
+			array[i] = je.getAsString();
 		}
 		return array;
 	}

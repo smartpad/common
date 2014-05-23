@@ -38,6 +38,15 @@ public class ImageSupport {
 		ImageSupport.rootOut = rootOut;
 	}
 	
+	public static String buildImagePath(String typeName, String subTypeName, String targetId, String imageName, int size) {
+		String path = "/" + typeName;
+		if (subTypeName != null) {
+			path += "/" + subTypeName;
+		}
+		path += "/" + targetId + "/sizes/" + imageName + "_" + size + ".png";
+		return path;
+	}
+	
 	public BufferedImage getImage(String typeName, String subTypeName, String entityId, String imageId, int size) throws IOException {
 		String subTypePath = subTypeName == null ? "" : "/" + subTypeName;
 		File f = new File(rootOut + typeName + subTypePath + "/" + entityId + "/sizes/" + imageId + "_" + size + ".png");

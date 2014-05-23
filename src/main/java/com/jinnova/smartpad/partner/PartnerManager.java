@@ -4,7 +4,6 @@ import static com.jinnova.smartpad.partner.IDetailManager.SYSTEM_BRANCH_ID;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
@@ -229,10 +228,10 @@ public class PartnerManager implements IPartnerManager {
 		return systemSubCatMap.get(parentCatId);
 	}
 
-	@Override
+	/*@Override
 	public void setImage(String typeName, String subTypeName, String entityId, String imageId, InputStream image) throws IOException {
 		new ImageSupport().queueIn(typeName, subTypeName, entityId, imageId, image);
-	}
+	}*/
 
 	@Override
 	public BufferedImage getImage(String typeName, String subTypeName,

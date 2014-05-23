@@ -19,7 +19,7 @@ import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 
 public class PromotionDao implements DbPopulator<Promotion> {
 	
-	private JsonParser parser;
+	private JsonParser parser = new JsonParser();
 
 	public int count(String operationId) throws SQLException {
 		Connection conn = null;
@@ -63,7 +63,6 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			if (!rs.next()) {
 				return null;
 			}
-			parser = new JsonParser();
 			return populate(rs);
 		} finally {
 			if (rs != null) {
@@ -102,7 +101,6 @@ public class PromotionDao implements DbPopulator<Promotion> {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IPromotion> promoList = new LinkedList<IPromotion>();
-			parser = new JsonParser();
 			while (rs.next()) {
 				Promotion promo = populate(rs);
 				promoList.add(promo);
@@ -123,7 +121,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 	
 	@Override
 	public void preparePopulating() {
-		parser = new JsonParser();
+		//parser = new JsonParser();
 	}
 	
 	@Override
@@ -137,7 +135,7 @@ public class PromotionDao implements DbPopulator<Promotion> {
 		
 		DaoSupport.populateGps(rs, promo.gps);
 		DaoSupport.populateRecinfo(rs, promo.getRecordInfo());
-		DaoSupport.populateDesc(rs, (Name) promo.getDesc());
+		DaoSupport.populateDesc(rs, (Name) promo.getDesc(), parser);
 		return promo;
 	}
 
