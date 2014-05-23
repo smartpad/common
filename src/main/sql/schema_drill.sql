@@ -23,6 +23,7 @@ CREATE TABLE `operations_clusters` (
   `branch_name` varchar(2048) NOT NULL,
   
   `name` varchar(2048) NOT NULL,
+  `name_md` varchar(32) NOT NULL,
   `descript` text DEFAULT NULL,
   `images` text DEFAULT NULL,
   

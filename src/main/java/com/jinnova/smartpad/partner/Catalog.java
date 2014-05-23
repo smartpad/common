@@ -242,7 +242,10 @@ public class Catalog implements ICatalog, Feed {
 			@Override
 			public ICatalogItem newEntryInstance(IUser authorizedUser) {
 				CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, parentCatId, null);
-				ci.setBranchName(branchName);
+				CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
+				if (spec.isManaged()) {
+					ci.setBranchName(branchName);
+				}
 				ci.setCatalogName(catName);
 				ci.gps.inherit(gps, gps.getInheritFrom());
 				return ci;
@@ -276,23 +279,35 @@ public class Catalog implements ICatalog, Feed {
 				}
 				
 				//branch
-				if (IDetailManager.SYSTEM_BRANCH_ID.equals(branchId)) {
-					String branchName = item.getBranchName();
-					/*if (branchName == null) {
-						branchName = "unset";
-						item.setBranchName(branchName);
-					}*/
-					String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(branchName));
-					Operation unmanageBranch = new OperationDao().loadBranch(unmanagedBranchId);
+				//CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
+				String itemBranchName = item.getBranchName();
+				//if (IDetailManager.SYSTEM_BRANCH_ID.equals(branchId)) {
+				if (itemBranchName == null) {
+					throw new RuntimeException("missing branch name");
+				}
+				String itemBranchId = new OperationDao().loadBranchIdByName(systemCatalogId, itemBranchName);
+				if (itemBranchId == null) {
+					//String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(itemBranchName));
+					String unmanagedBranchId = OperationDao.generateNameDigest(systemCatalogId, itemBranchName);
+					PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
+					/*Operation unmanageBranch = new OperationDao().loadBranch(unmanagedBranchId);
 					if (unmanageBranch == null) {
-						unmanageBranch = PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, branchName);
-					}
-					item.setBranchId(unmanagedBranchId);
-					item.setCatalogId(unmanagedBranchId);
+						unmanageBranch = PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
+					}*/
+					itemBranchId = unmanagedBranchId;
+				}
+				
+				if (!itemBranchId.equals(item.getBranchId())) {
+					item.setBranchId(itemBranchId);
+					item.setStoreId(itemBranchId);
+					item.setCatalogId(itemBranchId);
 				}
 				
 				String newId = SmartpadCommon.md5(branchId + catalogId + name);
 				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+				if (syscat == null) {
+					throw new RuntimeException("Null systemCatalogId");
+				}
 				while (syscat != null) {
 					new CatalogItemDao().insert(newId, syscat.getCatalogSpec(), item);
 					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());

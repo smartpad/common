@@ -196,7 +196,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			ps.setString(i++, item.getSyscatId());
 			ps.setString(i++, item.getParentCatId());
 			ps.setString(i++, item.getBranchId());
-			ps.setString(i++, item.storeId);
+			ps.setString(i++, item.getStoreId());
 			ps.setString(i++, item.getBranchName());
 			ps.setString(i++, item.getCatalogName());
 			i = setSpecFields(spec, item, ps, i);

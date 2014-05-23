@@ -27,6 +27,8 @@ public class CatalogSpec implements ICatalogSpec {
 	
 	private HashSet<String> attributeHiddenSegments;
 	
+	private boolean managed;
+	
 	public CatalogSpec() {
 		
 	}
@@ -39,6 +41,15 @@ public class CatalogSpec implements ICatalogSpec {
 	@Override
 	public void setSpecId(String specId) {
 		this.specId = specId;
+	}
+	
+	//@Override
+	public boolean isManaged() {
+		return this.managed;
+	}
+	
+	public void setManaged(boolean b) {
+		this.managed = b;
 	}
 	
 	@Override
@@ -103,6 +114,7 @@ public class CatalogSpec implements ICatalogSpec {
 		
 		JsonObject json = new JsonObject();
 		json.add("sid", new JsonPrimitive(specId));
+		json.addProperty("managed", managed);
 		
 		JsonArray ja = new JsonArray();
 		for (String s : sectionNames) {
@@ -134,6 +146,7 @@ public class CatalogSpec implements ICatalogSpec {
 		}
 		
 		specId = json.get("sid").getAsString();
+		managed = json.get("managed").getAsBoolean();
 		JsonArray ja = json.get("sNames").getAsJsonArray();
 		for (int i = 0; i < ja.size(); i++) {
 			sectionNames.add(ja.get(i).getAsString());

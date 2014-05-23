@@ -14,7 +14,7 @@ public class CatalogItem implements ICatalogItem, Feed {
 	
 	private String branchId;
 	
-	public final String storeId;
+	private String storeId;
 	
 	//public final Catalog catalog;
 	private String catalogId;
@@ -83,6 +83,14 @@ public class CatalogItem implements ICatalogItem, Feed {
 	
 	public void setBranchId(String id) {
 		this.branchId = id;
+	}
+	
+	public String getStoreId() {
+		return this.storeId;
+	}
+	
+	public void setStoreId(String id) {
+		this.storeId = id;
 	}
 
 	@Override

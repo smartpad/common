@@ -15,6 +15,7 @@ import com.jinnova.smartpad.partner.GPSInfo;
 import com.jinnova.smartpad.partner.IOperation;
 import com.jinnova.smartpad.partner.IOperationSort;
 import com.jinnova.smartpad.partner.Operation;
+import com.jinnova.smartpad.partner.SmartpadCommon;
 import com.jinnova.smartpad.partner.SmartpadConnectionPool;
 import com.jinnova.smartpad.partner.StringArrayUtils;
 
@@ -65,6 +66,39 @@ public class OperationDao implements DbPopulator<Operation> {
 			}
 			populateBranch = true;
 			return populate(rs);
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+			if (ps != null) {
+				ps.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+	
+	public static String generateNameDigest(String syscatId, String name) {
+		String s = SmartpadCommon.standarizeIdentity(name);
+		return SmartpadCommon.md5(syscatId + s);
+	}
+
+	public String loadBranchIdByName(String syscatId, String branchName) throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
+			ps = conn.prepareStatement("select branch_id from operations where branch_id=store_id and name_md=? ");
+			ps.setString(1, generateNameDigest(syscatId, branchName));
+			System.out.println("SQL: " + ps);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				return null;
+			}
+			return rs.getString("branch_id");
 		} finally {
 			if (rs != null) {
 				rs.close();
@@ -205,15 +239,17 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 	
 	//TODO update store syscat / promotion syscat on changing in branch/store
-	private static final String OP_FIELDS = "name=?, branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " +
+	private static final String OP_FIELDS = "name=?, name_md=?, branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " +
 			"phone=?, email=?, address=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
 		i = DaoSupport.setDescFields(ps, (Name) op.getDesc(), i);
 		i = DaoSupport.setRecinfoFields(ps, op.getRecordInfo(), i);
 		ps.setString(i++, op.getName());
+		String syscatId = ((Catalog) op.getRootCatalog()).getSystemCatalogId();
+		ps.setString(i++, generateNameDigest(syscatId, op.getName()));
 		ps.setString(i++, op.getBranchName());
-		ps.setString(i++, ((Catalog) op.getRootCatalog()).getSystemCatalogId());
+		ps.setString(i++, syscatId);
 		ps.setString(i++, op.getOpenHours().writeJson().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));
 		ps.setString(i++, op.getPhone());
