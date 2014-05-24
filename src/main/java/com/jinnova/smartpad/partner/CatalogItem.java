@@ -72,6 +72,11 @@ public class CatalogItem implements ICatalogItem, Feed {
 	public String getSyscatId() {
 		return this.syscatId;
 	}
+
+	@Override
+	public void setSystemCatalogId(String sysid) {
+		this.syscatId = sysid;
+	}
 	
 	public String getParentCatId() {
 		return this.parentCatId;

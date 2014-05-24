@@ -31,51 +31,54 @@ public class CatalogTest extends TestCase {
         assertNotNull(s);
 	}
 	
-	public void testManagedBranchName() throws SQLException {
+	public void testCreateItem() throws SQLException {
+		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
+		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("testCreateItem", "testCreateItem");
+		//u.getBranch().setSystemCatalogId("z");
+		//u.updateBranch();
+        ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
+        item.setBranchName("testCreateItem");
+        item.setSystemCatalogId("z");
+        item.setField(ICatalogField.F_NAME, "testCreateItem");
+    	u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
+	}
+	
+	public void testCreateItemInManagedBranchName() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
 		 IUser u = SmartpadCommon.partnerManager.login("lotte", "lotte");
         ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
-        item.setField(ICatalogField.F_NAME, "test");
+        item.setField(ICatalogField.F_NAME, "testCreateItemInManagedBranchName");
         u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
 	}
 	
 	public void testMissingBranchName() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
-		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("test", "test");
+		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("testMissingBranchName", "testMissingBranchName");
 		//u.getBranch().setSystemCatalogId("z");
 		//u.updateBranch();
         ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
-        item.setField(ICatalogField.F_NAME, "test");
+        item.setField(ICatalogField.F_NAME, "testMissingBranchName");
         try {
         	u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
         	assert(false);
-        } catch (RuntimeException e) {
-        	
+        } catch (Exception e) {
+        	assert(true);
         }
 	}
 	
-	public void testAddSyscatItem() throws SQLException {
+	public void testMissingSyscat() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
-		IUser u = SmartpadCommon.partnerManager.login("test", "test");
+		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("testMissingSyscat", "testMissingSyscat");
+		//u.getBranch().setSystemCatalogId("z");
+		//u.updateBranch();
         ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
-        item.setField(ICatalogField.F_NAME, "test2");
-        item.setBranchName("branch 2");
-        u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
-	}
-	
-	public void testAddItemToManagedBranch() throws SQLException {
-		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
-		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("test3", "test3");
-		u.getBranch().setSystemCatalogId("z_entertain_foods_fastfoods");
-		u.updateBranch();
-        ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
-        item.setField(ICatalogField.F_NAME, "test3");
-        item.setBranchName("kfc");
+        item.setBranchName("testMissingSyscat");
+        item.setField(ICatalogField.F_NAME, "testMissingSyscat");
         try {
         	u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
         	assert(false);
-        } catch (RuntimeException e) {
-        	//ok
+        } catch (Exception e) {
+        	assert(true);
         }
 	}
 }

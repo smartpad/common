@@ -159,7 +159,7 @@ public class PartnerManager implements IPartnerManager {
 		new UserDao().createUser(login, u);
 		
 		Operation branch = new Operation(login, login, IDetailManager.SYSTEM_CAT_ALL, null, null, GPSInfo.INHERIT_PROVIDED, true /*branch*/);
-		branch.setName("");
+		branch.setName(login);
 		branch.getRecordInfo().setCreateBy(login);
 		branch.getRecordInfo().setCreateDate(new Date());
 		new OperationDao().insertOperation(login, login, branch);

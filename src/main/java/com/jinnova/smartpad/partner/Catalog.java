@@ -573,7 +573,8 @@ class CatalogItemPageEntrySupport implements PageEntrySupport<ICatalogItem, ICat
 
 	@Override
 	public ICatalogItem newEntryInstance(IUser authorizedUser) {
-		CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, parentCatId, null);
+		String sid = IDetailManager.SYSTEM_CAT_ALL.equals(systemCatalogId) ? null : systemCatalogId;
+		CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, sid, parentCatId, null);
 		CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
 		if (spec.isManaged()) {
 			ci.setBranchName(branchName);
