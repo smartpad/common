@@ -19,6 +19,13 @@ public class CatalogTest extends TestCase {
         newCat.setName("test");
         paging.put(u, newCat);
 	}
+
+	public void testSystemCatListing() throws SQLException {
+        SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
+        IUser u = SmartpadCommon.partnerManager.login("ngoc", "ngoc");
+        ICatalogItem[] items = PartnerManager.instance.getSystemCatalog("z").getCatalogItemPagingList().loadPage(u, 1).getPageEntries();
+        System.out.println(items);
+	}
 	
 	public void testBranchRootCat() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
