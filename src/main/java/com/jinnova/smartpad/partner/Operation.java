@@ -41,6 +41,8 @@ public class Operation implements IOperation, Feed {
 	
 	private String name;
 	
+	private String branchType = BRANCH_TYPE_CLOSED;
+	
 	private final Name desc;
 	
 	public final GPSInfo gps = new GPSInfo();
@@ -309,6 +311,14 @@ public class Operation implements IOperation, Feed {
 			this.branchName = name;
 		}
 		createRootCatalog();
+	}
+	
+	public String getBranchType() {
+		return this.branchType;
+	}
+	
+	public void setBranchType(String bt) {
+		this.branchType = bt;
 	}
 	
 	public void setBranchName(String bn) {

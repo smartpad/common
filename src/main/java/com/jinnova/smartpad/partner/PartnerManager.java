@@ -174,6 +174,7 @@ public class PartnerManager implements IPartnerManager {
 		unmanagedBranch.getRecordInfo().setCreateBy(PartnerManager.instance.systemUser.getLogin());
 		unmanagedBranch.getRecordInfo().setCreateDate(new Date());
 		unmanagedBranch.setName(branchName);
+		unmanagedBranch.setBranchType(IOperation.BRANCH_TYPE_UNMANAGED);
 		new OperationDao().insertOperation(unmanagedBranchId, unmanagedBranchId, unmanagedBranch);
 		unmanagedBranch.setId(unmanagedBranchId);
 		return unmanagedBranch;

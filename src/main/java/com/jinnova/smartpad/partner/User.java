@@ -40,7 +40,7 @@ public class User implements IUser {
 	}
 	
 	public static CachedPagingList<IOperation, IOperationSort> createStorePagingList(
-			final String branchId, final String branchSyscatId, final String branchName, final GPSInfo branchGps) {
+			final String branchId, final String branchSyscatId, final String branchName, final String branchType, final GPSInfo branchGps) {
 		
 		@SuppressWarnings("unchecked")
 		final Comparator<IOperation>[] storeComparators = new Comparator[IOperationSort.values().length];
@@ -69,6 +69,7 @@ public class User implements IUser {
 				Operation op = new Operation(null, branchId, branchSyscatId,
 						branchGps.getLongitude(), branchGps.getLatitude(), GPSInfo.INHERIT_BRANCH, false);
 				op.setBranchName(branchName);
+				op.setBranchType(branchType);
 				//op.gps.inherit(branch.gps, GPSInfo.INHERIT_BRANCH);				op.
 				return op;
 			}
@@ -203,7 +204,7 @@ public class User implements IUser {
 		
 		String syscatId = ((Catalog) branch.getRootCatalog()).getSystemCatalogId();
 		if (syscatId != null) {
-			this.storePagingList = createStorePagingList(branchId, syscatId, branch.getBranchName(), branch.gps);
+			this.storePagingList = createStorePagingList(branchId, syscatId, branch.getBranchName(), branch.getBranchType(), branch.gps);
 		}
 	}
 	

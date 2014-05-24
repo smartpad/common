@@ -38,6 +38,7 @@ public class OperationDao implements DbPopulator<Operation> {
 				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);
 		oper.setBranchName(rs.getString("branch_name"));
 		oper.setName(rs.getString("name"));
+		oper.setBranchType(rs.getString("branch_type"));
 		DaoSupport.populateDesc(rs, (Name) oper.getDesc(), parser);
 		DaoSupport.populateRecinfo(rs, oper.getRecordInfo());
 		//DaoSupport.populateGps(rs, oper.gps);
@@ -84,21 +85,36 @@ public class OperationDao implements DbPopulator<Operation> {
 		return SmartpadCommon.md5(syscatId + s);
 	}
 
-	public String loadBranchIdByName(String syscatId, String branchName) throws SQLException {
+	public Operation loadBranchByName(String syscatId, String branchName) throws SQLException {
+		
+		while (true) {
+			Operation op = loadBranchByNameInternal(syscatId, branchName);
+			if (op != null) {
+				return op;
+			}
+			int i = syscatId.lastIndexOf('_');
+			if (i < 0) {
+				return null;
+			}
+			syscatId = syscatId.substring(0, i);
+		}
+	}
+
+	private Operation loadBranchByNameInternal(String syscatId, String branchName) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select branch_id from operations where branch_id=store_id and name_md=? ");
+			ps = conn.prepareStatement("select * from operations where branch_id=store_id and name_md=? ");
 			ps.setString(1, generateNameDigest(syscatId, branchName));
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
 				return null;
 			}
-			return rs.getString("branch_id");
+			return populate(rs);
 		} finally {
 			if (rs != null) {
 				rs.close();
@@ -239,7 +255,7 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 	
 	//TODO update store syscat / promotion syscat on changing in branch/store
-	private static final String OP_FIELDS = "name=?, name_md=?, branch_name=?, syscat_id=?, open_hours=?, member_levels=?, " +
+	private static final String OP_FIELDS = "name=?, name_md=?, branch_name=?, branch_type=?, syscat_id=?, open_hours=?, member_levels=?, " +
 			"phone=?, email=?, address=?, " + DaoSupport.GPS_FIELDS;
 	
 	private static int setFields(int i, Operation op, PreparedStatement ps) throws SQLException {
@@ -249,6 +265,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		String syscatId = ((Catalog) op.getRootCatalog()).getSystemCatalogId();
 		ps.setString(i++, generateNameDigest(syscatId, op.getName()));
 		ps.setString(i++, op.getBranchName());
+		ps.setString(i++, op.getBranchType());
 		ps.setString(i++, syscatId);
 		ps.setString(i++, op.getOpenHours().writeJson().toString());
 		ps.setString(i++, StringArrayUtils.stringArrayToJson(op.getMemberLevels()));

@@ -285,8 +285,16 @@ public class Catalog implements ICatalog, Feed {
 				if (itemBranchName == null) {
 					throw new RuntimeException("missing branch name");
 				}
-				String itemBranchId = new OperationDao().loadBranchIdByName(systemCatalogId, itemBranchName);
-				if (itemBranchId == null) {
+				
+				String itemBranchId;
+				Operation itemBranch = new OperationDao().loadBranchByName(systemCatalogId, itemBranchName);
+				if (itemBranch != null) {
+					if (!authorizedUser.getBranch().getId().equals(itemBranch.getId()) &&
+							IOperation.BRANCH_TYPE_CLOSED.equals(itemBranch.getBranchType())) {
+						throw new RuntimeException("Cannot add item to closed branch");
+					}
+					itemBranchId = itemBranch.getBranchId();
+				} else {
 					//String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(itemBranchName));
 					String unmanagedBranchId = OperationDao.generateNameDigest(systemCatalogId, itemBranchName);
 					PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
@@ -303,7 +311,7 @@ public class Catalog implements ICatalog, Feed {
 					item.setCatalogId(itemBranchId);
 				}
 				
-				String newId = SmartpadCommon.md5(branchId + catalogId + name);
+				String newId = SmartpadCommon.md5(branchId + /*catalogId +*/ name);
 				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
 				if (syscat == null) {
 					throw new RuntimeException("Null systemCatalogId");

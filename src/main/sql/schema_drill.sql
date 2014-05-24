@@ -21,6 +21,7 @@ CREATE TABLE `operations_clusters` (
   `syscat_id` varchar(32) NOT NULL,
   
   `branch_name` varchar(2048) NOT NULL,
+  `branch_type` varchar(16) NOT NULL,
   
   `name` varchar(2048) NOT NULL,
   `name_md` varchar(32) NOT NULL,

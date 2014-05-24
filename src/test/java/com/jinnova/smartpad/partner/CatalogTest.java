@@ -59,13 +59,25 @@ public class CatalogTest extends TestCase {
 	public void testAddSyscatItem() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
 		IUser u = SmartpadCommon.partnerManager.login("test", "test");
-		u.getBranch().setSystemCatalogId("z");
-		u.updateBranch();
-		//IUser u = SmartpadCommon.partnerManager.login("test", "test");
-        //ICatalog syscat = SmartpadCommon.partnerManager.getSystemCatalog("z");
         ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
         item.setField(ICatalogField.F_NAME, "test2");
         item.setBranchName("branch 2");
         u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
+	}
+	
+	public void testAddItemToManagedBranch() throws SQLException {
+		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
+		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("test3", "test3");
+		u.getBranch().setSystemCatalogId("z_entertain_foods_fastfoods");
+		u.updateBranch();
+        ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
+        item.setField(ICatalogField.F_NAME, "test3");
+        item.setBranchName("kfc");
+        try {
+        	u.getBranch().getRootCatalog().getCatalogItemPagingList().put(u, item);
+        	assert(false);
+        } catch (RuntimeException e) {
+        	//ok
+        }
 	}
 }
