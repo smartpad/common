@@ -43,7 +43,7 @@ public class CatalogSpec implements ICatalogSpec {
 		this.specId = specId;
 	}
 	
-	//@Override
+	@Override
 	public boolean isManaged() {
 		return this.managed;
 	}

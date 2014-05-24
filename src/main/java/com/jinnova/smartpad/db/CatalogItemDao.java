@@ -41,15 +41,25 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		this.spec = spec;
 	}*/
 
-	public int countCatalogItems(String catalogId, String specId) throws SQLException {
+	public int countCatalogItems(String catalogId, String specId, boolean syscat) throws SQLException {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
-			ps = conn.prepareStatement("select count(*) from " + /*CS +*/ specId + " where catalog_id = ?");
-			ps.setString(1, catalogId);
+			String sql;
+			if (syscat) {
+				sql = "select count(*) from " + specId + " where syscat_id like ?";
+			} else {
+				sql = "select count(*) from " + specId + " where catalog_id = ?";
+			}
+			ps = conn.prepareStatement(sql);
+			if (syscat) {
+				ps.setString(1, catalogId + "_%");
+			} else {
+				ps.setString(1, catalogId);
+			}
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (rs.next()) {
@@ -103,7 +113,7 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 		}
 	}
 
-	public LinkedList<ICatalogItem> loadCatalogItems(String catalogId, ICatalogSpec spec, int offset,
+	public LinkedList<ICatalogItem> loadCatalogItems(String catalogId, ICatalogSpec spec, boolean syscat, int offset,
 			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
 		
 		String fieldName;
@@ -130,8 +140,18 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 			//ICatalogSpec spec = catalog.getSystemCatalog().getCatalogSpec();
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			//syscatId = spec.getSpecId();
-			ps = conn.prepareStatement("select * from " + /*CS +*/ spec.getSpecId() + " where catalog_id = ? " + orderLimitClause);
-			ps.setString(1, catalogId);
+			String sql;
+			if (syscat) {
+				sql = "select * from " + spec.getSpecId() + " where syscat_id like ? " + orderLimitClause;
+			} else {
+				sql = "select * from " + spec.getSpecId() + " where catalog_id = ? " + orderLimitClause;
+			}
+			ps = conn.prepareStatement(sql);
+			if (syscat) {
+				ps.setString(1, catalogId + "_%");
+			} else {
+				ps.setString(1, catalogId);
+			}
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<ICatalogItem> catalogItems = new LinkedList<ICatalogItem>();

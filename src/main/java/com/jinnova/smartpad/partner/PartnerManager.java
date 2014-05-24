@@ -15,6 +15,7 @@ import com.jinnova.smartpad.IPagingList;
 import com.jinnova.smartpad.ImageSupport;
 import com.jinnova.smartpad.PageEntrySupport;
 import com.jinnova.smartpad.RecordInfo;
+import com.jinnova.smartpad.db.CatalogItemDao;
 import com.jinnova.smartpad.db.OperationDao;
 import com.jinnova.smartpad.db.ScriptRunner;
 import com.jinnova.smartpad.db.UserDao;
@@ -201,6 +202,12 @@ public class PartnerManager implements IPartnerManager {
 	public IPagingList<IUser, IUserSort> getUserPagingList() throws SQLException {
 		return userPagingList;
 	}
+	
+	@Override
+	public IPagingList<ICatalogItem, ICatalogItemSort> createSyscatItemPagingList(String syscatId) {
+		return new CachedPagingList<ICatalogItem, ICatalogItemSort>(new SyscatItemPageEntrySupport(syscatId), 
+				Catalog.createCatalogItemComparators(), ICatalogItemSort.createDate, new ICatalogItem[0]);
+	}
 
 	@Override
 	public Catalog getSystemRootCatalog() {
@@ -244,4 +251,58 @@ public class PartnerManager implements IPartnerManager {
 	/*public DbIterator<User> iterateAllPrimaryUsers(Connection conn) throws SQLException {
 		return new UserDao().iterateAllPrimaryUsers(conn);
 	}*/
+}
+
+class SyscatItemPageEntrySupport implements PageEntrySupport<ICatalogItem, ICatalogItemSort> {
+	
+	private String syscatId;
+	
+	private String specId;
+
+	public SyscatItemPageEntrySupport(String syscatId) {
+		super();
+		this.syscatId = syscatId;
+		this.specId = PartnerManager.instance.getCatalogSpec(syscatId).getSpecId();
+	}
+
+	@Override
+	public ICatalogItem newEntryInstance(IUser authorizedUser) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isPersisted(ICatalogItem member) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int count(IUser authorizedUser) throws SQLException {
+		return new CatalogItemDao().countCatalogItems(syscatId, specId, true);
+	}
+	
+	@Override
+	public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
+			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
+
+		ICatalog syscat = PartnerManager.instance.getSystemCatalog(syscatId);
+		return new CatalogItemDao().loadCatalogItems(
+				syscatId, syscat.getCatalogSpec(), true, offset, pageSize, sortField, ascending);
+	}
+
+	@Override
+	public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
+		throw new UnsupportedOperationException();
+		
+	}
+
+	@Override
+	public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
+		throw new UnsupportedOperationException();
+	}
+	
 }

@@ -149,7 +149,7 @@ public class Catalog implements ICatalog, Feed {
 		return subCatalogComparators;
 	}
 	
-	private static Comparator<ICatalogItem>[] createCatalogItemComparators() {
+	public static Comparator<ICatalogItem>[] createCatalogItemComparators() {
 
 		@SuppressWarnings("unchecked")
 		Comparator<ICatalogItem>[] catalogItemComparators = new Comparator[ICatalogItemSort.values().length];		
@@ -591,7 +591,7 @@ class CatalogItemPageEntrySupport implements PageEntrySupport<ICatalogItem, ICat
 	
 	@Override
 	public int count(IUser authorizedUser) throws SQLException {
-		return new CatalogItemDao().countCatalogItems(catalogId, systemCatalogId);
+		return new CatalogItemDao().countCatalogItems(catalogId, systemCatalogId, false);
 	}
 	
 	@Override
@@ -600,7 +600,7 @@ class CatalogItemPageEntrySupport implements PageEntrySupport<ICatalogItem, ICat
 
 		ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
 		return new CatalogItemDao().loadCatalogItems(
-				catalogId, syscat.getCatalogSpec(), offset, pageSize, sortField, ascending);
+				catalogId, syscat.getCatalogSpec(), false, offset, pageSize, sortField, ascending);
 	}
 	
 	@Override
