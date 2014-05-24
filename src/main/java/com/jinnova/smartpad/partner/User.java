@@ -164,6 +164,18 @@ public class User implements IUser {
 	public void setPassword(String password) {
 		this.passhash = SmartpadCommon.md5(password);
 	}
+	
+	/*@Override
+	public void createBranch() throws SQLException {
+		Operation branch = new Operation(login, login, null, null, null, GPSInfo.INHERIT_PROVIDED, true branch);
+		branch.setName("");
+		branch.getRootCatalog().setSystemCatalogId(PartnerManager.instance.getSystemRootCatalog().getId());
+		branch.getRecordInfo().setCreateBy(login);
+		branch.getRecordInfo().setCreateDate(new Date());
+		new OperationDao().insertOperation(login, login, branch);
+		branch.setId(login);
+		this.branch = branch;
+	}*/
 
 	@Override
 	public void updateBranch() throws SQLException {

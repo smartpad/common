@@ -42,10 +42,8 @@ public class CatalogTest extends TestCase {
 	public void testMissingBranchName() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
 		IUser u = SmartpadCommon.partnerManager.createPrimaryUser("test", "test");
-		u.getBranch().setSystemCatalogId("z");
-		u.updateBranch();
-		//IUser u = SmartpadCommon.partnerManager.login("test", "test");
-        //ICatalog syscat = SmartpadCommon.partnerManager.getSystemCatalog("z");
+		//u.getBranch().setSystemCatalogId("z");
+		//u.updateBranch();
         ICatalogItem item = u.getBranch().getRootCatalog().getCatalogItemPagingList().newEntryInstance(u);
         item.setField(ICatalogField.F_NAME, "test");
         try {

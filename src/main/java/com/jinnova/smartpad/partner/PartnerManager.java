@@ -158,14 +158,14 @@ public class PartnerManager implements IPartnerManager {
 		((RecordInfo) u.getRecordInfo()).setCreateDate(new Date());
 		new UserDao().createUser(login, u);
 		
-		Operation branch = new Operation(login, login, null, null, null, GPSInfo.INHERIT_PROVIDED, true /*branch*/);
+		Operation branch = new Operation(login, login, IDetailManager.SYSTEM_CAT_ALL, null, null, GPSInfo.INHERIT_PROVIDED, true /*branch*/);
 		branch.setName("");
-		branch.getRootCatalog().setSystemCatalogId(systemRootCatalog.getId());
 		branch.getRecordInfo().setCreateBy(login);
 		branch.getRecordInfo().setCreateDate(new Date());
 		new OperationDao().insertOperation(login, login, branch);
 		branch.setId(login);
 		u.setBranch(branch);
+		//getUserPagingList().put(u, u);
 		return u;
 	}
 	
