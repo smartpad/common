@@ -32,13 +32,13 @@ public class Catalog implements ICatalog, Feed {
 	
 	public final String storeId;
 	
-	private String catalogId;
+	String catalogId;
 	
-	private final CatalogSpec catalogSpec;
+	final CatalogSpec catalogSpec;
 	
-	private String parentCatalogId;
+	String parentCatalogId;
 	
-	private String systemCatalogId;
+	String systemCatalogId;
 	
 	private String branchName;
 	
@@ -46,7 +46,7 @@ public class Catalog implements ICatalog, Feed {
 	
 	public final GPSInfo gps = new GPSInfo();
 	
-	private String name;
+	String name;
 	
 	private final Name desc;
 	
@@ -82,115 +82,33 @@ public class Catalog implements ICatalog, Feed {
 	
 	public void createPagingLists() {
 		//String syscatId = systemCatalogId;
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name, gps, createCatItemClusterTable);
+		PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport = new SubCatalogPageEntrySupport(
+				branchId, storeId, catalogId, systemCatalogId, branchName, name, gps, createCatItemClusterTable);
+		
+		subCatalogPagingList = new CachedPagingList<ICatalog, ICatalogSort>(
+				subCatalogSupport, createSubCatalogComparators(), ICatalogSort.createDate, new Catalog[0]);
 		
 		//this is for syscat to have system items
 		String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
-		catalogItemPagingList = createCatalogItemPagingList(branchId, storeId, catalogId, syscatId, parentCatalogId, branchName, name, gps);
+		CatalogItemPageEntrySupport catalogItemSupport = new CatalogItemPageEntrySupport(
+				branchId, storeId, catalogId, syscatId, parentCatalogId, branchName, name, gps);
+		
+		catalogItemPagingList = new CachedPagingList<ICatalogItem, ICatalogItemSort>(
+				catalogItemSupport, createCatalogItemComparators(), ICatalogItemSort.createDate, new CatalogItem[0]);
 	}
 	
 	public void setCreateCatItemClusterTable() {
 		this.createCatItemClusterTable = true;
 		//String syscatId = systemCatalogId != null ? systemCatalogId : catalogSpec.getSpecId();
 		//String syscatId = systemCatalogId;
-		subCatalogPagingList = createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, name, gps, createCatItemClusterTable);
+		PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport = new SubCatalogPageEntrySupport(
+				branchId, storeId, catalogId, systemCatalogId, branchName, name, gps, createCatItemClusterTable);
+		
+		subCatalogPagingList = new CachedPagingList<ICatalog, ICatalogSort>(
+				subCatalogSupport, createSubCatalogComparators(), ICatalogSort.createDate, new Catalog[0]);
 	}
 	
-	/*public static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
-			final String catalogId, final String systemCatalogId, final String branchName, final GPSInfo gps) {
-		
-		return createSubCatalogPagingList(branchId, storeId, catalogId, systemCatalogId, branchName, gps, false);
-	}*/
-	
-	private static CachedPagingList<ICatalog, ICatalogSort> createSubCatalogPagingList(final String branchId, final String storeId, 
-			final String catalogId, final String systemCatalogId, final String branchName, final String catalogName, 
-			final GPSInfo gps, final boolean createCatItemClusterTable) {
-		
-		PageEntrySupport<ICatalog, ICatalogSort> subCatalogSupport = new PageEntrySupport<ICatalog, ICatalogSort>() {
-			
-			@Override
-			public ICatalog newEntryInstance(IUser authorizedUser) {
-				Catalog subCat = new Catalog(branchId, storeId, null, catalogId, systemCatalogId);
-				subCat.setBranchName(branchName);
-				subCat.setParentCatName(catalogName);
-				subCat.gps.inherit(gps, null);
-				return subCat;
-			}
-			
-			@Override
-			public boolean isPersisted(ICatalog member) {
-				return ((Catalog) member).catalogId != null;
-			}
-			
-			@Override
-			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogDao().countSubCatalogs(catalogId);
-			}
-			
-			@Override
-			public LinkedList<ICatalog> load(IUser authorizedUser, int offset,
-					int pageSize, ICatalogSort sortField, boolean ascending) throws SQLException {
-				
-				boolean parseSpec = systemCatalogId == null;
-				return new CatalogDao().loadSubCatalogs(catalogId, offset, pageSize, sortField, ascending, parseSpec);
-			}
-			
-			@Override
-			public void insert(IUser authorizedUser, ICatalog newMember) throws SQLException {
-				Catalog subCat = (Catalog) newMember;
-				if (subCat.name == null || "".equals(subCat.name.trim())) {
-					throw new RuntimeException("Catalog's name unset");
-				}
-				if (subCat.catalogSpec != null && subCat.systemCatalogId != null) {
-					throw new RuntimeException("A system catalog must not linked to any other system catalog");
-				}
-				
-				if (subCat.catalogSpec == null && subCat.systemCatalogId == null) {
-					throw new RuntimeException("This catalog must be linked to a system catalog");
-				}
-				
-				String newIdPrefix;
-				String[] newIdGen = new String[1];
-				if (subCat.catalogSpec == null) {
-					//newIdPrefix = SmartpadCommon.md5(catalogId + subCat.name.getName());
-					newIdPrefix = catalogId;
-				} else {
-					//newIdPrefix = subCat.catalogSpec.getSpecId();
-					String providedSyscatId = subCat.catalogSpec.getSpecId();
-					if (providedSyscatId.contains(" ") || providedSyscatId.contains("_")) {
-						throw new RuntimeException("CatalogSpec id can't contains special charaters");
-					}
-					newIdPrefix = null;
-					if (IDetailManager.SYSTEM_BRANCH_ID.equals(catalogId)) {
-						newIdGen[0] = providedSyscatId;
-					} else {
-						newIdGen[0] = catalogId + "_" + providedSyscatId;
-					}
-					subCat.getCatalogSpec().setSpecId(newIdGen[0]);
-				}
-				new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat, createCatItemClusterTable);
-				subCat.catalogId = newIdGen[0];
-				subCat.createPagingLists();
-				
-				if (subCat.catalogSpec != null) {
-					PartnerManager.instance.putSystemCatalog(subCat);
-				}
-			}
-			
-			@Override
-			public void update(IUser authorizedUser, ICatalog member) throws SQLException {
-				Catalog subCat = (Catalog) member;
-				new CatalogDao().update(subCat.catalogId, subCat);
-				//TODO need to alter item table
-			}
-			
-			@Override
-			public void delete(IUser authorizedUser, ICatalog member) throws SQLException {
-				Catalog subCat = (Catalog) member;
-				new CatalogDao().delete(subCat.catalogId);
-			}
-		};
-
+	private static Comparator<ICatalog>[] createSubCatalogComparators() {
 		@SuppressWarnings("unchecked")
 		Comparator<ICatalog>[] subCatalogComparators = new Comparator[ICatalogSort.values().length];
 		subCatalogComparators[ICatalogSort.createDate.ordinal()] = new Comparator<ICatalog>() {
@@ -228,123 +146,11 @@ public class Catalog implements ICatalog, Feed {
 				return o1.getName().compareTo(o2.getName());
 			}
 		};
-		
-		return new CachedPagingList<ICatalog, ICatalogSort>(
-				subCatalogSupport, subCatalogComparators, ICatalogSort.createDate, new Catalog[0]);
+		return subCatalogComparators;
 	}
 	
-	public static CachedPagingList<ICatalogItem, ICatalogItemSort> createCatalogItemPagingList(
-			final String branchId, final String storeId, final String catalogId, final String systemCatalogId, 
-			final String parentCatId, final String branchName, final String catName, final GPSInfo gps) {
-		PageEntrySupport<ICatalogItem, ICatalogItemSort> catalogItemSupport = new PageEntrySupport<ICatalogItem, ICatalogItemSort>() {
-			
+	private static Comparator<ICatalogItem>[] createCatalogItemComparators() {
 
-			@Override
-			public ICatalogItem newEntryInstance(IUser authorizedUser) {
-				CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, parentCatId, null);
-				CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
-				if (spec.isManaged()) {
-					ci.setBranchName(branchName);
-				}
-				ci.setCatalogName(catName);
-				ci.gps.inherit(gps, gps.getInheritFrom());
-				return ci;
-			}
-			
-			@Override
-			public boolean isPersisted(ICatalogItem member) {
-				return ((CatalogItem) member).getId() != null;
-			}
-			
-			@Override
-			public int count(IUser authorizedUser) throws SQLException {
-				return new CatalogItemDao().countCatalogItems(catalogId, systemCatalogId);
-			}
-			
-			@Override
-			public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
-					int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
-
-				ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				return new CatalogItemDao().loadCatalogItems(
-						catalogId, syscat.getCatalogSpec(), offset, pageSize, sortField, ascending);
-			}
-			
-			@Override
-			public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
-				CatalogItem item = (CatalogItem) newMember;
-				String name = item.getFieldValue(ICatalogField.F_NAME);
-				if (name == null || "".equals(name.trim())) {
-					throw new RuntimeException("CatalogItem's name unset");
-				}
-				
-				//branch
-				//CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
-				String itemBranchName = item.getBranchName();
-				//if (IDetailManager.SYSTEM_BRANCH_ID.equals(branchId)) {
-				if (itemBranchName == null) {
-					throw new RuntimeException("missing branch name");
-				}
-				
-				String itemBranchId;
-				Operation itemBranch = new OperationDao().loadBranchByName(systemCatalogId, itemBranchName);
-				if (itemBranch != null) {
-					if (!authorizedUser.getBranch().getId().equals(itemBranch.getId()) &&
-							IOperation.BRANCH_TYPE_CLOSED.equals(itemBranch.getBranchType())) {
-						throw new RuntimeException("Cannot add item to closed branch");
-					}
-					itemBranchId = itemBranch.getBranchId();
-				} else {
-					//String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(itemBranchName));
-					String unmanagedBranchId = OperationDao.generateNameDigest(systemCatalogId, itemBranchName);
-					PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
-					/*Operation unmanageBranch = new OperationDao().loadBranch(unmanagedBranchId);
-					if (unmanageBranch == null) {
-						unmanageBranch = PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
-					}*/
-					itemBranchId = unmanagedBranchId;
-				}
-				
-				if (!itemBranchId.equals(item.getBranchId())) {
-					item.setBranchId(itemBranchId);
-					item.setStoreId(itemBranchId);
-					item.setCatalogId(itemBranchId);
-				}
-				
-				String newId = SmartpadCommon.md5(branchId + /*catalogId +*/ name);
-				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				if (syscat == null) {
-					throw new RuntimeException("Null systemCatalogId");
-				}
-				while (syscat != null) {
-					new CatalogItemDao().insert(newId, syscat.getCatalogSpec(), item);
-					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
-				}
-				item.setId(newId);
-			}
-			
-			@Override
-			public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
-				CatalogItem item = (CatalogItem) member;
-				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				while (syscat != null) {
-					new CatalogItemDao().update(item.getId(), syscat.getCatalogSpec(), item);
-					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
-				}
-			}
-			
-			@Override
-			public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
-				CatalogItem item = (CatalogItem) member;
-				Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
-				while (syscat != null) {
-					String specId = PartnerManager.instance.getCatalogSpec(systemCatalogId).getSpecId();
-					new CatalogItemDao().delete(item.getId(), specId);
-					syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
-				}
-			}
-		};
-		
 		@SuppressWarnings("unchecked")
 		Comparator<ICatalogItem>[] catalogItemComparators = new Comparator[ICatalogItemSort.values().length];		
 		catalogItemComparators[ICatalogItemSort.createDate.ordinal()] = new Comparator<ICatalogItem>() {
@@ -382,9 +188,7 @@ public class Catalog implements ICatalog, Feed {
 				return StringArrayUtils.compare(o1, o2, ICatalogField.F_NAME);
 			}
 		};
-		
-		return new CachedPagingList<ICatalogItem, ICatalogItemSort>(
-				catalogItemSupport, catalogItemComparators, ICatalogItemSort.createDate, new CatalogItem[0]);
+		return catalogItemComparators;
 	}
 	
 	@Override
@@ -748,3 +552,231 @@ public class Catalog implements ICatalog, Feed {
 		return this.parentCatName;
 	}
 }
+
+class CatalogItemPageEntrySupport implements PageEntrySupport<ICatalogItem, ICatalogItemSort> {
+	
+	final String branchId; final String storeId; final String catalogId; final String systemCatalogId; 
+	final String parentCatId; final String branchName; final String catName; final GPSInfo gps;
+	
+	public CatalogItemPageEntrySupport(final String branchId, final String storeId, final String catalogId, final String systemCatalogId, 
+			final String parentCatId, final String branchName, final String catName, final GPSInfo gps) {
+		super();
+		this.branchId = branchId;
+		this.storeId = storeId;
+		this.catalogId = catalogId;
+		this.systemCatalogId = systemCatalogId;
+		this.parentCatId = parentCatId;
+		this.branchName = branchName;
+		this.catName = catName;
+		this.gps = gps;
+	}
+
+	@Override
+	public ICatalogItem newEntryInstance(IUser authorizedUser) {
+		CatalogItem ci = new CatalogItem(branchId, storeId, catalogId, systemCatalogId, parentCatId, null);
+		CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
+		if (spec.isManaged()) {
+			ci.setBranchName(branchName);
+		}
+		ci.setCatalogName(catName);
+		ci.gps.inherit(gps, gps.getInheritFrom());
+		return ci;
+	}
+	
+	@Override
+	public boolean isPersisted(ICatalogItem member) {
+		return ((CatalogItem) member).getId() != null;
+	}
+	
+	@Override
+	public int count(IUser authorizedUser) throws SQLException {
+		return new CatalogItemDao().countCatalogItems(catalogId, systemCatalogId);
+	}
+	
+	@Override
+	public LinkedList<ICatalogItem> load(IUser authorizedUser, int offset,
+			int pageSize, ICatalogItemSort sortField, boolean ascending) throws SQLException {
+
+		ICatalog syscat = PartnerManager.instance.getSystemCatalog(systemCatalogId);
+		return new CatalogItemDao().loadCatalogItems(
+				catalogId, syscat.getCatalogSpec(), offset, pageSize, sortField, ascending);
+	}
+	
+	@Override
+	public void insert(IUser authorizedUser, ICatalogItem newMember) throws SQLException {
+		CatalogItem item = (CatalogItem) newMember;
+		String name = item.getFieldValue(ICatalogField.F_NAME);
+		if (name == null || "".equals(name.trim())) {
+			throw new RuntimeException("CatalogItem's name unset");
+		}
+		
+		//branch
+		//CatalogSpec spec = (CatalogSpec) PartnerManager.instance.getCatalogSpec(systemCatalogId);
+		String itemBranchName = item.getBranchName();
+		//if (IDetailManager.SYSTEM_BRANCH_ID.equals(branchId)) {
+		if (itemBranchName == null) {
+			throw new RuntimeException("missing branch name");
+		}
+		
+		String itemBranchId;
+		Operation itemBranch = new OperationDao().loadBranchByName(systemCatalogId, itemBranchName);
+		if (itemBranch != null) {
+			if (!authorizedUser.getBranch().getId().equals(itemBranch.getId()) &&
+					IOperation.BRANCH_TYPE_CLOSED.equals(itemBranch.getBranchType())) {
+				throw new RuntimeException("Cannot add item to closed branch");
+			}
+			itemBranchId = itemBranch.getBranchId();
+		} else {
+			//String unmanagedBranchId = SmartpadCommon.md5(systemCatalogId + SmartpadCommon.standarizeIdentity(itemBranchName));
+			String unmanagedBranchId = OperationDao.generateNameDigest(systemCatalogId, itemBranchName);
+			PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
+			/*Operation unmanageBranch = new OperationDao().loadBranch(unmanagedBranchId);
+			if (unmanageBranch == null) {
+				unmanageBranch = PartnerManager.instance.createUnmanagedBranch(unmanagedBranchId, systemCatalogId, itemBranchName);
+			}*/
+			itemBranchId = unmanagedBranchId;
+		}
+		
+		if (!itemBranchId.equals(item.getBranchId())) {
+			item.setBranchId(itemBranchId);
+			item.setStoreId(itemBranchId);
+			item.setCatalogId(itemBranchId);
+		}
+		
+		String newId = SmartpadCommon.md5(branchId + /*catalogId +*/ name);
+		Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+		if (syscat == null) {
+			throw new RuntimeException("Null systemCatalogId");
+		}
+		while (syscat != null) {
+			new CatalogItemDao().insert(newId, syscat.getCatalogSpec(), item);
+			syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
+		}
+		item.setId(newId);
+	}
+	
+	@Override
+	public void update(IUser authorizedUser, ICatalogItem member) throws SQLException {
+		CatalogItem item = (CatalogItem) member;
+		Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+		while (syscat != null) {
+			new CatalogItemDao().update(item.getId(), syscat.getCatalogSpec(), item);
+			syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
+		}
+	}
+	
+	@Override
+	public void delete(IUser authorizedUser, ICatalogItem member) throws SQLException {
+		CatalogItem item = (CatalogItem) member;
+		Catalog syscat = (Catalog) PartnerManager.instance.getSystemCatalog(systemCatalogId);
+		while (syscat != null) {
+			String specId = PartnerManager.instance.getCatalogSpec(systemCatalogId).getSpecId();
+			new CatalogItemDao().delete(item.getId(), specId);
+			syscat = (Catalog) PartnerManager.instance.getSystemCatalog(syscat.getParentCatalogId());
+		}
+	}
+};
+
+
+class SubCatalogPageEntrySupport implements PageEntrySupport<ICatalog, ICatalogSort> {
+	
+	final String branchId; final String storeId; 
+	final String catalogId; final String systemCatalogId; final String branchName; final String catalogName; 
+	final GPSInfo gps; final boolean createCatItemClusterTable;
+	
+	public SubCatalogPageEntrySupport(final String branchId, final String storeId, 
+			final String catalogId, final String systemCatalogId, final String branchName, 
+			final String catalogName, final GPSInfo gps, final boolean createCatItemClusterTable) {
+		super();
+		this.branchId = branchId;
+		this.storeId = storeId;
+		this.catalogId = catalogId;
+		this.systemCatalogId = systemCatalogId;
+		this.branchName = branchName;
+		this.catalogName = catalogName;
+		this.gps = gps;
+		this.createCatItemClusterTable = createCatItemClusterTable;
+	}
+	
+	@Override
+	public ICatalog newEntryInstance(IUser authorizedUser) {
+		Catalog subCat = new Catalog(branchId, storeId, null, catalogId, systemCatalogId);
+		subCat.setBranchName(branchName);
+		subCat.setParentCatName(catalogName);
+		subCat.gps.inherit(gps, null);
+		return subCat;
+	}
+
+	@Override
+	public boolean isPersisted(ICatalog member) {
+		return ((Catalog) member).catalogId != null;
+	}
+	
+	@Override
+	public int count(IUser authorizedUser) throws SQLException {
+		return new CatalogDao().countSubCatalogs(catalogId);
+	}
+	
+	@Override
+	public LinkedList<ICatalog> load(IUser authorizedUser, int offset,
+			int pageSize, ICatalogSort sortField, boolean ascending) throws SQLException {
+		
+		boolean parseSpec = systemCatalogId == null;
+		return new CatalogDao().loadSubCatalogs(catalogId, offset, pageSize, sortField, ascending, parseSpec);
+	}
+	
+	@Override
+	public void insert(IUser authorizedUser, ICatalog newMember) throws SQLException {
+		Catalog subCat = (Catalog) newMember;
+		if (subCat.name == null || "".equals(subCat.name.trim())) {
+			throw new RuntimeException("Catalog's name unset");
+		}
+		if (subCat.catalogSpec != null && subCat.systemCatalogId != null) {
+			throw new RuntimeException("A system catalog must not linked to any other system catalog");
+		}
+		
+		if (subCat.catalogSpec == null && subCat.systemCatalogId == null) {
+			throw new RuntimeException("This catalog must be linked to a system catalog");
+		}
+		
+		String newIdPrefix;
+		String[] newIdGen = new String[1];
+		if (subCat.catalogSpec == null) {
+			//newIdPrefix = SmartpadCommon.md5(catalogId + subCat.name.getName());
+			newIdPrefix = catalogId;
+		} else {
+			//newIdPrefix = subCat.catalogSpec.getSpecId();
+			String providedSyscatId = subCat.catalogSpec.getSpecId();
+			if (providedSyscatId.contains(" ") || providedSyscatId.contains("_")) {
+				throw new RuntimeException("CatalogSpec id can't contains special charaters");
+			}
+			newIdPrefix = null;
+			if (IDetailManager.SYSTEM_BRANCH_ID.equals(catalogId)) {
+				newIdGen[0] = providedSyscatId;
+			} else {
+				newIdGen[0] = catalogId + "_" + providedSyscatId;
+			}
+			subCat.getCatalogSpec().setSpecId(newIdGen[0]);
+		}
+		new CatalogDao().insert(subCat.branchId, subCat.storeId, newIdPrefix, newIdGen, subCat.parentCatalogId, subCat, createCatItemClusterTable);
+		subCat.catalogId = newIdGen[0];
+		subCat.createPagingLists();
+		
+		if (subCat.catalogSpec != null) {
+			PartnerManager.instance.putSystemCatalog(subCat);
+		}
+	}
+	
+	@Override
+	public void update(IUser authorizedUser, ICatalog member) throws SQLException {
+		Catalog subCat = (Catalog) member;
+		new CatalogDao().update(subCat.catalogId, subCat);
+		//TODO need to alter item table
+	}
+	
+	@Override
+	public void delete(IUser authorizedUser, ICatalog member) throws SQLException {
+		Catalog subCat = (Catalog) member;
+		new CatalogDao().delete(subCat.catalogId);
+	}
+};
