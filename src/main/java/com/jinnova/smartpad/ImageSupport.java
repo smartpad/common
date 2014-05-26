@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 
 public class ImageSupport {
 	
-	private static final int[] WIDTHS = new int[] {50, 100, 200};
+	private static final int[] WIDTHS = new int[] {50, 100, 200, 300, 400, 500, 600, 800};
 	
 	//private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	
@@ -21,6 +21,10 @@ public class ImageSupport {
 	private static String rootOut = "imaging/root/";
 
 	public static void main(String[] args) throws IOException {
+		if (args != null && args.length >= 2) {
+			rootInQueue = args[0];
+			rootOut = args[1];
+		}
 		File rootInQueueFile = new File(rootInQueue);
 		File rootOutFile = new File(rootOut);
 		System.out.println("Imaging from " + rootInQueueFile.getAbsolutePath() + " to " + rootOutFile.getAbsolutePath());
