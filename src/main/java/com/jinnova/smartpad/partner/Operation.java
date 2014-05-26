@@ -418,41 +418,52 @@ public class Operation implements IOperation, Feed {
 		JsonObject json = new JsonObject();
 		json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
 		json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
-		json.addProperty(FIELD_ID, this.branchId);
-		
+
 		JsonObject imageJson = new JsonObject();
 		json.add(FIELD_IMAGE, imageJson);
-		String img = desc.getImage(IMG_LOGO_SQUARE, 50);
-		if (img != null) {
-			imageJson.addProperty(IMG_LOGO_SQUARE, img);
-		}
-		/*if (this.storeId.equals(this.branchId)) {
-			json.addProperty(FIELD_TYPE, TYPENAME_BRANCH);
-			json.addProperty(FIELD_TYPENUM, TYPE_BRANCH);
-		} else {
-			json.addProperty(FIELD_TYPE, TYPENAME_STORE);
-			json.addProperty(FIELD_TYPENUM, TYPE_STORE);
-		}
-		json.addProperty(FIELD_SYSCATID, this.systemCatalogId);*/
-		//json.addProperty(FIELD_NAME, this.name.getName());
-
+		String squareLogo = desc.getImage(IMG_LOGO_SQUARE, 200);
+		
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
+
+		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
+		String syscatCaption = null;
+		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {
+			syscatCaption = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, systemCatalogId,
+					PartnerManager.instance.getSystemCatalog(systemCatalogId).getName(), null);
+		}
 		String nameCaption = this.name;
 		if ((layoutOptions & LAYOPT_NAMELINK) == LAYOPT_NAMELINK) {
 			nameCaption = makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, nameCaption, null);
 		}
-
-		String excludeSyscat = (String) layoutParams.get(LAYOUT_PARAM_SYSCAT_EXCLUDE);
-		if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {
-			//json.addProperty(FIELD_SYSCATNAME, PartnerManager.instance.getSystemCatalog(systemCatalogId).getName());
-			nameCaption += " (" + makeDrillLink(linkPrefix, TYPENAME_SYSCAT, systemCatalogId,
-					PartnerManager.instance.getSystemCatalog(systemCatalogId).getName(), null) + ")";
-		}
-		json.addProperty(FIELD_NAME, nameCaption);
 		
-		if ((layoutOptions & LAYOPT_WITHBRANCH) == LAYOPT_WITHBRANCH) {
-			json.addProperty(FIELD_BRANCHID, this.branchId);
-			json.addProperty(FIELD_BRANCHNAME, this.branchName);
+		boolean detailed = (layoutOptions & LAYOPT_WITHDETAILS) == LAYOPT_WITHDETAILS;
+		if (!detailed) {
+			json.addProperty(FIELD_LAYOUTOPT, LAYOUTOPT_DEFAULT);
+			json.addProperty(FIELD_LINK, makeDrillLink(linkPrefix, TYPENAME_BRANCH, this.branchId, null, null));
+			if (squareLogo != null) {
+				imageJson.addProperty(IMG_LOGO_SQUARE, squareLogo);
+			}
+			
+			if (syscatCaption != null) {
+				nameCaption = nameCaption + " (" + syscatCaption + ")";
+			}
+			json.addProperty(FIELD_NAME, nameCaption);
+		} else {
+
+			json.addProperty(FIELD_NAME, nameCaption);
+			if ((layoutOptions & LAYOPT_WITHSYSCAT) == LAYOPT_WITHSYSCAT && !systemCatalogId.equals(excludeSyscat)) {;
+				json.addProperty(FIELD_SYSCATNAME, syscatCaption);
+			}
+			
+			String wideLogo = desc.getImage(IMG_LOGO_WIDERECT, 600);
+			if (wideLogo != null) {
+				imageJson.addProperty(IMG_LOGO_SQUARE, wideLogo);
+				json.addProperty(FIELD_LAYOUTOPT, LAYOUTOPT_DETAIL_WIDE);
+			} else if (squareLogo != null) {
+				imageJson.addProperty(IMG_LOGO_SQUARE, squareLogo);
+				json.addProperty(FIELD_LAYOUTOPT, LAYOUTOPT_DETAIL_SQUARE);
+				json.addProperty(FIELD_NAME, nameCaption);
+			}
 		}
 		return json;
 	}

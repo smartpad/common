@@ -10,7 +10,11 @@ public class LinkSupport {
 		if (linkPostfix == null) {
 			linkPostfix = "";
 		}
-		return "<a href='" + linkPrefix + "/" + typeName + "/" + id + "/" + REST_DRILL + linkPostfix + "'>" + name + "</a>";
+		String href = linkPrefix + "/" + typeName + "/" + id + "/" + REST_DRILL + linkPostfix;
+		if (name == null) {
+			return href;
+		}
+		return "<a href='" + href + "'>" + name + "</a>";
 	}
 	
 	public static String buildParamSet(String paramName, SortedSet<String> paramSet) {
@@ -28,7 +32,7 @@ public class LinkSupport {
 				buffer.append("&" + paramName + "=" + one);
 			}
 		}
-		return "?" + buffer.toString();
+		return /*"?" +*/ buffer.toString();
 	}
 	
 	/*public static String buildParamSet(String paramName, List<String> paramList) {
