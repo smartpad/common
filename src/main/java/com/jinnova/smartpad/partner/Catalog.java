@@ -335,7 +335,12 @@ public class Catalog implements ICatalog, Feed {
 		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
 		
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
-		String nameAndUp = this.name;
+		String nameAndUp;
+		if ((LAYOPT_NAMELINK & layoutOptions) == LAYOPT_NAMELINK) {
+			nameAndUp = makeDrillLink(linkPrefix, TYPENAME_CAT, this.catalogId, this.name, null);
+		} else {
+			nameAndUp = this.name;
+		}
 		
 		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT &&
 				!this.branchId.equals(this.parentCatalogId)) {
@@ -383,8 +388,12 @@ public class Catalog implements ICatalog, Feed {
 		json.addProperty(FIELD_TYPENUM, this.systemCatalogId != null ? String.valueOf(TYPE_CAT) : String.valueOf(TYPE_SYSCAT));
 		
 		String linkPrefix = (String) layoutParams.get(LAYOUT_PARAM_LINKPREFIX);
-		String nameAndUp = this.name;
-		
+		String nameAndUp;
+		if ((LAYOPT_NAMELINK & layoutOptions) == LAYOPT_NAMELINK) {
+			nameAndUp = makeDrillLink(linkPrefix, TYPENAME_SYSCAT, this.catalogId, this.name, null);
+		} else {
+			nameAndUp = this.name;
+		}
 		if ((LAYOPT_WITHPARENT & layoutOptions) == LAYOPT_WITHPARENT) {
 			json.addProperty(FIELD_UP_ID, this.parentCatalogId);
 			json.addProperty(FIELD_UP_NAME, this.parentCatName);
