@@ -21,7 +21,7 @@ import com.jinnova.smartpad.partner.StringArrayUtils;
 
 public class OperationDao implements DbPopulator<Operation> {
 	
-	private boolean populateBranch;
+	private boolean populatingBranch;
 	
 	private JsonParser parser = new JsonParser();
 	
@@ -35,7 +35,7 @@ public class OperationDao implements DbPopulator<Operation> {
 	@Override
 	public Operation populate(ResultSet rs) throws SQLException {
 		Operation oper = new Operation(rs.getString("store_id"), rs.getString("branch_id"), rs.getString("syscat_id"),
-				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populateBranch);
+				rs.getBigDecimal("gps_lon"), rs.getBigDecimal("gps_lat"), rs.getString("gps_inherit"), populatingBranch);
 		oper.setBranchName(rs.getString("branch_name"));
 		oper.setName(rs.getString("name"));
 		oper.setBranchType(rs.getString("branch_type"));
@@ -52,6 +52,18 @@ public class OperationDao implements DbPopulator<Operation> {
 	}
 
 	public Operation loadBranch(String branchId) throws SQLException {
+
+		populatingBranch = true;
+		return load(branchId);
+	}
+
+	public Operation loadStore(String storeId) throws SQLException {
+
+		populatingBranch = false;
+		return load(storeId);
+	}
+	
+	private Operation load(String storeId) throws SQLException {
 		
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -59,13 +71,12 @@ public class OperationDao implements DbPopulator<Operation> {
 		try {
 			conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 			ps = conn.prepareStatement("select * from operations where store_id = ?");
-			ps.setString(1, branchId);
+			ps.setString(1, storeId);
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			if (!rs.next()) {
 				return null;
 			}
-			populateBranch = true;
 			return populate(rs);
 		} finally {
 			if (rs != null) {
@@ -128,11 +139,6 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 	}
 
-	public Operation loadStore(String storeId) throws SQLException {
-		
-		return loadBranch(storeId);
-	}
-
 	public LinkedList<IOperation> loadStores(String branchId, int offset, int pageSize, 
 			IOperationSort sortField, boolean ascending) throws SQLException {
 
@@ -158,7 +164,7 @@ public class OperationDao implements DbPopulator<Operation> {
 			System.out.println("SQL: " + ps);
 			rs = ps.executeQuery();
 			LinkedList<IOperation> opList = new LinkedList<IOperation>();
-			populateBranch = false;
+			populatingBranch = false;
 			while (rs.next()) {
 				opList.add(populate(rs));
 			}
@@ -310,7 +316,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		Statement stmt = conn.createStatement();
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
-		this.populateBranch = false;
+		this.populatingBranch = false;
 		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
@@ -324,7 +330,7 @@ public class OperationDao implements DbPopulator<Operation> {
 		}
 		System.out.println("SQL: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
-		this.populateBranch = true;
+		this.populatingBranch = true;
 		return new DbIterator<Operation>(conn, stmt, rs, this);
 	}
 
