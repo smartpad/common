@@ -3,6 +3,7 @@ package com.jinnova.smartpad.partner;
 import static com.jinnova.smartpad.partner.ICatalogField.*;
 import static com.jinnova.smartpad.partner.ICatalogFieldType.*;
 import static com.jinnova.smartpad.partner.IDetailManager.*;
+import static com.jinnova.smartpad.partner.SmartpadCommon.*;
 
 import java.sql.SQLException;
 
@@ -13,19 +14,8 @@ public class SystemCatalogGenrator {
 	private static final boolean UNMANAGED = false;
 
 	private static User systemUser;
-	private static User user;
 	
 	public static boolean createClusterTable = false;
-
-	private static String[] clothFields;
-	
-	private static String[] washerFields;
-
-	private static String[] mattressFields;
-
-	private static String[] drapFields;
-
-	private static String[] pillowFields;
 	
 	/**
 	 * constructor for reflection
@@ -201,64 +191,6 @@ public class SystemCatalogGenrator {
 		if (generateDetailsAtt) {
 			cat.getCatalogSpec().setAttribute(ICatalogSpec.ATT_DISP_DETAIL, displayDetails.toString());
 		}
-	}
-
-	private static IUser createNormalSeller(String login, String syscatId) throws SQLException {
-		IPartnerManager pm = SmartpadCommon.partnerManager;
-		IUser primaryUser;
-		primaryUser = pm.createPrimaryUser(login, login);
-		//pm.getUserPagingList().put(primaryUser, primaryUser);
-		//primaryUser.createBranch();
-		IOperation branch = primaryUser.getBranch();
-		branch.setSystemCatalogId(syscatId);
-		primaryUser.updateBranch();
-		return primaryUser;
-	}
-
-	public static void createItems() throws SQLException {
-		
-		//systemUser = PartnerManager.instance.systemUser;
-		user = (User) createNormalSeller("ngoc", "z_household");
-		//"wash_type", "wash_load", "max_rpm", "capacity", "water", "power", "sizes", "weight", "madein"
-		ICatalog cat = PartnerManager.instance.getSystemCatalog("z_elec_appliance_washer");
-		createItem(cat, washerFields, "Sanyo ASW-D90VT", "SANYO", "Máy giặt lồng đứng", 9,   850, 65, 122, 160, "590 x 564 x 988", 41, "Việt Nam");
-		createItem(cat, washerFields, "LG WFD8525DD",    "LG",    "Máy giặt lồng đứng", 8.5, 850, 79, 410, 0,   "540 x 910 x 540", 39, null);
-		createItem(cat, washerFields, "Sanyo ASW-U850HT", "Sanyo","Máy giặt lồng nghiêng",8.5,840,62, 410, 0,   "589 x 620 x 988", 43, null);
-		
-		//"material", "length", "width", "thick", "madein"
-		cat = PartnerManager.instance.getSystemCatalog("z_household_mattress");
-		createItem(cat, mattressFields, "Nệm cao su Vạn Thành", "Vạn Thành", "Cao su", 160, 200, 5, "Việt Nam");
-		createItem(cat, mattressFields, "Nệm cao su Liên Á Classic 180x200x10cm", "Liên Á", "Cao su", 180, 200, 10, "Việt Nam");
-		createItem(cat, mattressFields, "Nệm cao su Venus Vạn Thành 100x200x10cm", "Vạn Thành", "Cao su", 100, 200, 10, "Việt Nam");
-		createItem(cat, mattressFields, "Nệm bông ép Hàn Quốc Cuscino 140x200x5cm", "Cuscino", "Bông tấm PE ép", 140, 200, 5, "Hàn Quốc");
-		
-		//resort
-		cat = PartnerManager.instance.getSystemCatalog("z_entertain_resort");
-		createItem(cat, null, "Thiên Ý Resort", "Thiên Ý Resort");
-		createItem(cat, null, "Vinpearl Resort", "Vinpearl Resort");
-		
-		//áo quần
-		//"trademark", "material", "color", "style", "size", "madein", "sex"
-		cat = PartnerManager.instance.getSystemCatalog("z_fashion_clothes");
-		createItem(cat, clothFields, "Váy đầm dạ hội trẻ trung quyến rũ,đa dạng cho phụ nữ Việt Nam DV144",
-				"DV", "Thun", "Đen/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
-		createItem(cat, clothFields, "Đầm body Ngọc Trinh 2 dây đơn giản sang trọng DV145", 
-				"DV", "Thun", "Đỏ/trắng", "Đầm liền", "Freesize", "Việt Nam", "Nữ");
-	}
-	
-	private static void createItem(ICatalog cat, String[] fieldNames, Object... data) throws SQLException {
-		CatalogItem item = (CatalogItem) cat.getCatalogItemPagingList().newEntryInstance(user);
-		item.setField(F_NAME, String.valueOf(data[0]));
-		item.setBranchName((String) data[1]);
-		
-		if (fieldNames == null) {
-			return;
-		}
-		int offset = 2;
-		for (int i = 0; i < fieldNames.length; i++) {
-			item.setField(fieldNames[i], data[offset + i] == null ? null : String.valueOf(data[offset + i]));
-		}
-		cat.getCatalogItemPagingList().put(user, item);
 	}
 
 }
