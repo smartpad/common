@@ -353,17 +353,22 @@ public class CatalogItemDao implements DbPopulator<CatalogItem> {
 	 * @throws SQLException
 	 */
 	public DbIterator<CatalogItem> iterateItems(String catId, String specId, String excludeItemId, HashMap<String, LinkedList<String>> segments,
-			boolean bySyscat, Integer clusterId, boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
+			boolean byBranch, boolean bySyscat, Integer clusterId, boolean recursive, BigDecimal lon, BigDecimal lat, int offset, int size) throws SQLException {
 		
 		Connection conn = SmartpadConnectionPool.instance.dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		String catField, fromTable;
-		if (bySyscat) {
-			catField = "syscat_id";
+		if (byBranch) {
+			catField = "branch_id";
 			fromTable = IDetailManager.CLUSPRE + specId;
 		} else {
-			catField = "catalog_id";
-			fromTable = specId;
+			if (bySyscat) {
+				catField = "syscat_id";
+				fromTable = IDetailManager.CLUSPRE + specId;
+			} else {
+				catField = "catalog_id";
+				fromTable = specId;
+			}
 		}
 		StringBuffer sql = new StringBuffer("select item_id, catalog_id, syscat_id, parentcat_id, "
 				+ "store_id, branch_id, gps_lon, gps_lat, branch_name, cat_name, name, descript, " + 

@@ -649,8 +649,8 @@ class CatalogItemPageEntrySupport implements PageEntrySupport<ICatalogItem, ICat
 		
 		if (!itemBranchId.equals(item.getBranchId())) {
 			item.setBranchId(itemBranchId);
-			item.setStoreId(itemBranchId);
-			item.setCatalogId(itemBranchId);
+			//item.setStoreId(itemBranchId);
+			//item.setCatalogId(itemBranchId);
 		}
 		
 		String newId = SmartpadCommon.md5(branchId + /*catalogId +*/ name);

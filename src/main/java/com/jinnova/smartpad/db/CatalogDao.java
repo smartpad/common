@@ -196,7 +196,7 @@ public class CatalogDao implements DbPopulator<Catalog> {
 			String sql = "select max(partial_id) from catalogs where parent_id='" + parentCatalogId + "'";
 			System.out.println("SQL: " + sql);
 			rs = stmtSubcount.executeQuery(sql);
-			int partialId = 1;
+			int partialId = 0;
 			if (rs.next()) {
 				partialId = rs.getInt(1);
 			}

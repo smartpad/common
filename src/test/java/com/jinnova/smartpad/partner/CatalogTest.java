@@ -26,6 +26,21 @@ public class CatalogTest extends TestCase {
         ICatalogItem[] items = PartnerManager.instance.createSyscatItemPagingList("z").loadPage(u, 1).getPageEntries();
         System.out.println(items);
 	}
+
+	/*public void testSystemCatListingBranch1() throws SQLException {
+        SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
+        IUser u = SmartpadCommon.partnerManager.login("ngoc", "ngoc");
+        ICatalogItem[] items = PartnerManager.instance.createSyscatItemPagingList("z_entertain").loadPage(u, 1).getPageEntries();
+        System.out.println(items);
+	}*/
+
+	public void testCatListing() throws SQLException {
+        SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
+        IUser u = SmartpadCommon.partnerManager.login("b1", "b1");
+        ICatalog cat = u.getBranch().getRootCatalog().getSubCatalogPagingList().loadPage(u, 1).getPageEntries()[0];
+        ICatalogItem[] items = cat.getCatalogItemPagingList().loadPage(u, 1).getPageEntries();
+        System.out.println(items[0].getFieldValue(ICatalogField.F_NAME).equals("B1-Cat1-Item1"));
+	}
 	
 	public void testBranchRootCat() throws SQLException {
 		SmartpadCommon.initialize("localhost", null, "smartpad", "root", "", "../app-server/imaging/in-queue", "../app-server/imaging/root");
