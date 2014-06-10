@@ -115,7 +115,7 @@ public class CachedPagingList<T, E extends Enum<?>> implements IPagingList<T, E>
 		}
 		
 		if (pageSize > 0) {
-			if (totalCount < 0) {
+			if (pageCount < 0 || totalCount < 0) {
 				totalCount = memberMate.count(authorizedUser);
 				/*if (pageSize > 0) {
 					pageCount = totalCount / pageSize;
